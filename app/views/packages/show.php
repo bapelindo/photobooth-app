@@ -1,66 +1,92 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pilih Paket Photobooth!</title>
+    <title>Pilih Paket Kecerianmu!</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+
     <style>
-        body { font-family: 'Comic Sans MS', cursive, sans-serif; background-color: #f0f8ff; text-align: center; }
-        .header { padding: 40px; }
-        .header h1 { font-size: 3em; color: #ff4500; }
-        .packages-container { display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; }
-        .package-card {
-            background-color: #fff;
-            border: 5px dashed #ff69b4;
-            border-radius: 20px;
-            padding: 20px;
-            width: 250px;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-            transition: transform 0.3s;
+        /* ... CSS Anda yang sudah ada ... */
+        html, body { height: 100%; margin: 0; overflow: hidden; }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #FDF4F5;
+            text-align: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 1vw;
+            box-sizing: border-box;
+            /* --- CSS UNTUK TRANSISI HALUS --- */
+            opacity: 1;
+            transition: opacity 0.4s ease-out;
         }
-        .package-card:hover {
-            transform: scale(1.05) rotate(3deg);
+        body.fade-out {
+            opacity: 0;
         }
-        .package-card h2 { color: #1e90ff; }
-        .package-card .price { font-size: 2em; font-weight: bold; color: #32cd32; margin: 10px 0; }
-        .package-card ul { list-style: none; padding: 0; text-align: left; }
-        .package-card ul li { margin-bottom: 10px; }
+        /* ... sisa CSS Anda ... */
+
+        .main-container { width: 100%; max-width: 1100px; }
+        .header-container { margin-bottom: 2vh; }
+        .mascot { width: clamp(80px, 12vh, 120px); height: auto; animation: bounce 2s infinite ease-in-out; }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        .header-container h1 { font-family: 'Fredoka One', cursive; font-size: clamp(2rem, 5.5vmin, 3.5rem); margin: 1vh 0; text-shadow: 2px 2px #FFD166; }
+        .header-container p { font-size: clamp(0.8rem, 2vmin, 1rem); max-width: 600px; margin: 0 auto; }
+        .packages-container { display: flex; justify-content: center; gap: 2vw; flex-wrap: wrap; }
+        .package-card { background-color: #FFFFFF; border: 2px solid #333; border-radius: 15px; padding: 1.5vw; width: 280px; box-shadow: 6px 6px 0px #333; transition: all 0.3s ease; text-align: left; }
+        .package-card:hover { transform: translate(-3px, -3px); box-shadow: 9px 9px 0px #333; }
+        .package-card h2 { font-family: 'Fredoka One', cursive; font-size: clamp(1.5rem, 3.5vmin, 1.8rem); color: #6C63FF; margin: 0 0 1vh; }
+        .package-card .price { font-family: 'Fredoka One', cursive; font-size: clamp(2rem, 4.5vmin, 2.5rem); color: #FF6584; margin-bottom: 2vh; }
+        .package-card p { font-size: clamp(0.75rem, 1.8vmin, 0.9rem); margin-bottom: 2vh; min-height: 3vh; }
+        .package-card ul { list-style: none; padding: 0; margin: 0 0 2vh; }
+        .package-card ul li { margin-bottom: 1vh; font-weight: 600; font-size: clamp(0.75rem, 1.8vmin, 0.9rem); }
         .package-card ul li::before { content: '⭐'; margin-right: 10px; }
-        .select-button {
-            background-color: #ff6347;
-            color: white;
-            padding: 15px 30px;
-            border: none;
-            border-radius: 50px;
-            font-size: 1.2em;
-            cursor: pointer;
-            margin-top: 20px;
-            transition: background-color 0.3s;
-        }
-        .select-button:hover { background-color: #ff4500; }
+        .select-button { display: inline-block; font-family: 'Fredoka One', cursive; font-size: clamp(1rem, 2.2vmin, 1.2rem); background-color: #FFD166; color: #333; padding: 1.5vh 3vw; border: 2px solid #333; border-radius: 50px; text-decoration: none; cursor: pointer; transition: all 0.2s ease; box-shadow: 3px 3px 0 #333; }
+        .select-button:hover { transform: translate(-2px, -2px); box-shadow: 5px 5px 0 #333; }
+        .select-button:active { transform: translate(3px, 3px); box-shadow: none; }
     </style>
 </head>
 <body>
-
-    <div class="header">
-        <h1>Pilih Paket Kecerianmu!</h1>
-        <p>Setiap foto adalah ledakan tawa yang tak terlupakan!</p>
+    <div class="main-container">
+        <div class="header-container">
+            <img src="https://em-content.zobj.net/source/microsoft-teams/363/camera_1f4f7.png" alt="Cute Camera Mascot" class="mascot">
+            <h1>Pilih Paket Kecerianmu!</h1>
+            <p>Setiap foto adalah ledakan tawa yang tak terlupakan. Yuk, pilih paket yang paling seru buat kamu!</p>
+        </div>
+        <div class="packages-container">
+            <?php foreach ($packages as $package): ?>
+                <div class="package-card">
+                    <h2><?= htmlspecialchars($package->name); ?></h2>
+                    <div class="price">Rp <?= number_format($package->price, 0, ',', '.'); ?></div>
+                    <p><?= htmlspecialchars($package->description); ?></p>
+                    <ul>
+                        <li><b><?= $package->photo_limit; ?>x</b> Ambil Foto</li>
+                        <li><b><?= $package->retake_limit; ?>x</b> Kesempatan Ulang</li>
+                    </ul>
+                    <a href="<?= URLROOT; ?>/payment/process/<?= $package->id ?>" class="select-button">Pilih Paket Ini!</a>
+                </div>
+            <?php endforeach; ?>
+        </div>
     </div>
 
-    <div class="packages-container">
-        <?php foreach ($packages as $package): ?>
-            <div class="package-card">
-                <h2><?= htmlspecialchars($package->name); ?></h2>
-                <div class="price">Rp <?= number_format($package->price, 0, ',', '.'); ?></div>
-                <p><?= htmlspecialchars($package->description); ?></p>
-                <ul>
-                    <li><b><?= $package->photo_limit; ?>x</b> Ambil Foto</li>
-                    <li><b><?= $package->retake_limit; ?>x</b> Ulang Ah!</li>
-                </ul>
-                <button class="select-button" onclick="location.href='<?= URLROOT; ?>/payment/process/<?= $package->id ?>'">Pilih Paket Ini!</button>
-            </div>
-        <?php endforeach; ?>
-    </div>
-
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const selectButtons = document.querySelectorAll('.select-button');
+            
+            selectButtons.forEach(button => {
+                button.addEventListener('click', function(event) {
+                    event.preventDefault();
+                    const destinationUrl = this.href;
+                    document.body.classList.add('fade-out');
+                    setTimeout(() => {
+                        window.location.href = destinationUrl;
+                    }, 400); // Cocokkan dengan durasi transisi di CSS
+                });
+            });
+        });
+    </script>
 </body>
 </html>

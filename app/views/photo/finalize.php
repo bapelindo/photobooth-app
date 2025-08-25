@@ -1,40 +1,183 @@
-<?php require APPROOT . '/views/layouts/header.php'; ?>
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fotomu Sudah Jadi! 🎉</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
 
-<style>
-    .finalize-container { text-align: center; max-width: 600px; margin: auto; }
-    .photo-preview { max-width: 100%; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); margin-bottom: 2rem; }
-    .action-buttons { display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap; margin-bottom: 2rem; }
-    .email-form { display: flex; justify-content: center; gap: 0.5rem; margin-top: 1.5rem; }
-    .email-input { padding: 0.8rem; border-radius: 50px; border: 2px solid #ccc; font-size: 1rem; width: 250px; }
-    #email-status { margin-top: 1rem; font-weight: bold; }
-</style>
+    <style>
+        :root {
+            --primary-color: #6C63FF;
+            --secondary-color: #FF6584;
+            --accent-color: #FFD166;
+            --card-bg: #FFFFFF;
+            --dark-text: #333;
+            --font-display: 'Fredoka One', cursive;
+            --font-main: 'Poppins', sans-serif;
+        }
 
-<div class="main-content finalize-container">
-    <h1>Foto Anda Siap! ✨</h1>
-    <p>Satu langkah lagi untuk menyimpan kenangan Anda.</p>
+        html, body {
+            height: 100%;
+            margin: 0;
+            overflow: hidden;
+            background: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%);
+        }
 
-<div id="print-area">
-    <img src="<?= URLROOT . htmlspecialchars($photo->file_path); ?>" alt="Final Photobooth Photo" class="photo-preview">
-</div>
+        body {
+            font-family: var(--font-main);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
 
-    <div class="action-buttons">
-        <button onclick="window.print()" class="action-button">🖨️ Cetak Foto</button>
-        <a href="<?= URLROOT; ?>" class="action-button secondary">📸 Sesi Baru</a>
-    </div>
-    
-    <hr>
+        .finalize-container {
+            display: flex;
+            gap: 40px;
+            width: 100%;
+            max-width: 1000px;
+            height: 90vh;
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(12px);
+            border-radius: 25px;
+            padding: 40px;
+            box-sizing: border-box;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            align-items: center;
+        }
 
-    <div>
-        <h3>Kirim ke Email</h3>
-        <div class="email-form">
-            <input type="email" id="email-input" class="email-input" placeholder="Masukkan alamat email...">
-            <button id="send-email-btn" class="action-button">Kirim</button>
+        .photo-display {
+            flex-grow: 1;
+            text-align: center;
+        }
+        
+        .photo-display h1 {
+            font-family: var(--font-display);
+            color: var(--primary-color);
+            font-size: clamp(2rem, 5vh, 2.8rem);
+            margin-top: 0;
+            margin-bottom: 20px;
+        }
+        
+        .photo-preview {
+            max-width: 100%;
+            max-height: 55vh;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            border: 5px solid white;
+        }
+
+        .actions-panel {
+            flex-basis: 350px;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        .action-box, .email-box {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 25px;
+            text-align: center;
+            border: 2px solid #eee;
+        }
+        
+        .action-box h3, .email-box h3 {
+            font-family: var(--font-display);
+            font-size: 1.5rem;
+            margin-top: 0;
+            margin-bottom: 20px;
+            color: var(--dark-text);
+        }
+
+        .action-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+        
+        .action-button {
+            display: inline-block;
+            font-family: var(--font-display);
+            font-size: 1.1rem;
+            color: var(--dark-text);
+            padding: 15px 25px;
+            border: 3px solid var(--dark-text);
+            border-radius: 50px;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 4px 4px 0 var(--dark-text);
+            background-color: var(--accent-color);
+        }
+        .action-button:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 6px 6px 0 var(--dark-text);
+        }
+        .action-button:active {
+            transform: translate(4px, 4px);
+            box-shadow: none;
+        }
+        .action-button.secondary {
+            background-color: #f0f0f0;
+        }
+
+        .email-form { display: flex; flex-direction: column; gap: 15px; }
+        .email-input {
+            width: 100%;
+            padding: 12px;
+            border-radius: 50px;
+            border: 2px solid #ccc;
+            font-size: 1rem;
+            box-sizing: border-box;
+            text-align: center;
+        }
+        .email-input:focus {
+            border-color: var(--primary-color);
+            outline: none;
+        }
+        #email-status { font-weight: bold; min-height: 20px; }
+
+    </style>
+</head>
+<body>
+
+    <div class="finalize-container">
+        
+        <div class="photo-display">
+            <h1>Ini Dia Hasil Karyamu!</h1>
+            <img src="<?= URLROOT . htmlspecialchars($photo->file_path); ?>" alt="Final Photobooth Photo" class="photo-preview">
         </div>
-        <p id="email-status"></p>
+
+        <div class="actions-panel">
+            <div class="action-box">
+                <h3>Mau diapain fotonya?</h3>
+                <div class="action-buttons">
+                    <button onclick="window.print()" class="action-button">🖨️ Cetak</button>
+                    <a href="<?= URLROOT; ?>" class="action-button secondary">📸 Sesi Baru</a>
+                </div>
+            </div>
+            
+            <div class="email-box">
+                <h3>Kirim ke Emailmu!</h3>
+                <div class="email-form">
+                    <input type="email" id="email-input" class="email-input" placeholder="contoh@email.com">
+                    <button id="send-email-btn" class="action-button">Kirim Sekarang!</button>
+                </div>
+                <p id="email-status"></p>
+            </div>
+        </div>
+
     </div>
-</div>
 
 <script>
+    // JavaScript tidak berubah, hanya memindahkan ke sini
     const sendEmailBtn = document.getElementById('send-email-btn');
     const emailInput = document.getElementById('email-input');
     const emailStatus = document.getElementById('email-status');
@@ -61,7 +204,7 @@
 
             const result = await response.json();
 
-            if (result.success) {
+            if (response.ok && result.success) {
                 emailStatus.textContent = 'Email berhasil dikirim!';
                 emailStatus.style.color = 'green';
                 emailInput.value = '';
@@ -73,9 +216,10 @@
             emailStatus.style.color = 'red';
         } finally {
             sendEmailBtn.disabled = false;
-            sendEmailBtn.textContent = 'Kirim';
+            sendEmailBtn.textContent = 'Kirim Sekarang!';
         }
     });
 </script>
 
-<?php require APPROOT . '/views/layouts/footer.php'; ?>
+</body>
+</html>

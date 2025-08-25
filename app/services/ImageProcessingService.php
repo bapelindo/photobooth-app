@@ -7,17 +7,18 @@ use ImagickException;
 
 class ImageProcessingService
 {
-    /**
-     * Menerapkan frame dan stiker ke gambar.
-     * (Metode ini tetap ada jika Anda ingin menggunakannya di tempat lain)
-     */
+    // Method applyOverlays tidak berubah
     public function applyOverlays($baseImagePath, $framePath, $stickers, $outputPath)
     {
         try {
-            $baseImage = new Imagick(realpath($baseImagePath));
+            if (!file_exists($baseImagePath) || !is_readable($baseImagePath)) {
+                error_log("ImageMagick Error (applyOverlays): Base image not found or not readable at " . $baseImagePath);
+                return false;
+            }
+            $baseImage = new Imagick($baseImagePath);
 
-            if ($framePath && file_exists(realpath($framePath))) {
-                $frameImage = new Imagick(realpath($framePath));
+            if ($framePath && file_exists($framePath) && is_readable($framePath)) {
+                $frameImage = new Imagick($framePath);
                 $frameImage->resizeImage($baseImage->getImageWidth(), $baseImage->getImageHeight(), Imagick::FILTER_LANCZOS, 1);
                 $baseImage->compositeImage($frameImage, Imagick::COMPOSITE_OVER, 0, 0);
                 $frameImage->clear();
@@ -25,8 +26,8 @@ class ImageProcessingService
 
             if (!empty($stickers)) {
                 foreach ($stickers as $stickerData) {
-                    $stickerPath = realpath($stickerData['path']);
-                    if ($stickerPath && file_exists($stickerPath)) {
+                    $stickerPath = $stickerData['path'];
+                    if ($stickerPath && file_exists($stickerPath) && is_readable($stickerPath)) {
                         $stickerImage = new Imagick($stickerPath);
                         if (isset($stickerData['width']) && isset($stickerData['height']) && $stickerData['width'] > 0 && $stickerData['height'] > 0) {
                             $stickerImage->resizeImage($stickerData['width'], $stickerData['height'], Imagick::FILTER_LANCZOS, 1);
@@ -50,13 +51,9 @@ class ImageProcessingService
     }
 
     /**
+     * --- METHOD YANG DIPERBAIKI ---
      * Menggabungkan beberapa foto menjadi satu photostrip dengan frame.
-     *
-     * @param array $photoPaths Array berisi path ke setiap foto sementara.
-     * @param string|null $framePath Path ke file frame (PNG).
-     * @param string $outputPath Path untuk menyimpan hasil akhir.
-     * @return bool
-     * @throws ImagickException
+     * PERBAIKAN: Mengonversi semua hasil kalkulasi menjadi integer.
      */
     public function createPhotoStrip($photoPaths, $framePath, $outputPath)
     {
@@ -65,41 +62,47 @@ class ImageProcessingService
                 return false;
             }
 
-            $photoCount = count($photoPaths);
-            $firstImage = new Imagick(realpath($photoPaths[0]));
+            $firstImage = new Imagick($photoPaths[0]);
             $photoWidth = $firstImage->getImageWidth();
             $photoHeight = $firstImage->getImageHeight();
             $firstImage->clear();
-
-            // Asumsi layout vertikal dengan sedikit spasi
-            $spacing = 10; // Spasi antar foto dalam piksel
-            $stripWidth = $photoWidth;
-            $stripHeight = ($photoHeight * $photoCount) + ($spacing * ($photoCount - 1));
+            
+            $photoCount = count($photoPaths);
+            $spacing = 10;
 
             $photoStrip = new Imagick();
-            $photoStrip->newImage($stripWidth, $stripHeight, 'white');
-            $photoStrip->setImageFormat('jpeg');
 
-            // Tempel setiap foto ke strip
-            $yOffset = 0;
+            if ($framePath && file_exists($framePath)) {
+                $photoStrip->readImage($framePath);
+                $stripWidth = $photoStrip->getImageWidth();
+                $stripHeight = $photoStrip->getImageHeight();
+            } else {
+                $stripWidth = $photoWidth;
+                $stripHeight = ($photoHeight * $photoCount) + ($spacing * ($photoCount - 1));
+                $photoStrip->newImage($stripWidth, $stripHeight, 'white', 'jpg');
+            }
+
+            // --- PERBAIKAN DI SINI: Bulatkan semua hasil kalkulasi ---
+            $paddingX = (int) ($stripWidth * 0.05);
+            $paddingY = (int) ($stripHeight * 0.05);
+            $contentWidth = (int) ($stripWidth - (2 * $paddingX));
+            $contentHeight = (int) ($stripHeight - (2 * $paddingY));
+            
+            $totalSpacing = (int) ($spacing * ($photoCount - 1));
+            $slotHeight = (int) (($contentHeight - $totalSpacing) / $photoCount);
+            $slotWidth = (int) $contentWidth;
+
+            $yOffset = $paddingY;
             foreach ($photoPaths as $path) {
-                $photo = new Imagick(realpath($path));
-                // Resize setiap foto ke ukuran yang sama untuk konsistensi
-                $photo->resizeImage($photoWidth, $photoHeight, Imagick::FILTER_LANCZOS, 1);
-                $photoStrip->compositeImage($photo, Imagick::COMPOSITE_OVER, 0, $yOffset);
-                $yOffset += $photoHeight + $spacing;
+                $photo = new Imagick($path);
+                $photo->resizeImage($slotWidth, $slotHeight, Imagick::FILTER_LANCZOS, 1);
+                // Pastikan yOffset juga integer
+                $photoStrip->compositeImage($photo, Imagick::COMPOSITE_OVER, $paddingX, (int) $yOffset);
+                $yOffset += $slotHeight + $spacing;
                 $photo->clear();
             }
 
-            // Terapkan frame jika ada
-            if ($framePath && file_exists(realpath($framePath))) {
-                $frameImage = new Imagick(realpath($framePath));
-                // Sesuaikan ukuran frame dengan ukuran total strip
-                $frameImage->resizeImage($stripWidth, $stripHeight, Imagick::FILTER_LANCZOS, 1);
-                $photoStrip->compositeImage($frameImage, Imagick::COMPOSITE_OVER, 0, 0);
-                $frameImage->clear();
-            }
-
+            $photoStrip->setImageFormat('jpeg');
             $photoStrip->setImageCompressionQuality(95);
             $photoStrip->writeImage($outputPath);
             $photoStrip->clear();
