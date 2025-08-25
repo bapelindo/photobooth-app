@@ -5,10 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pilih Frame Favoritmu!</title>
     <style>
-        body { font-family: 'Comic Sans MS', cursive, sans-serif; background-color: #f0f8ff; text-align: center; }
-        .header { padding: 40px; }
+        body { font-family: 'Comic Sans MS', cursive, sans-serif; background-color: #f0f8ff; text-align: center; padding: 20px; }
+        .header { margin-bottom: 40px; }
         .header h1 { font-size: 3em; color: #ff4500; }
         .frames-container { display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; }
+        a.frame-card { text-decoration: none; color: inherit; }
         .frame-card {
             background-color: #fff;
             border: 5px dashed #ff69b4;
@@ -33,14 +34,14 @@
 <body>
 
     <div class="header">
-        <h1>Pilih Frame Kecerianmu!</h1>
-        <p>Klik frame untuk memulai sesi foto!</p>
+        <h1>Pilih Frame Kerenmu!</h1>
+        <p>Klik frame yang kamu suka untuk memulai sesi foto!</p>
     </div>
 
     <div class="frames-container">
         <?php foreach ($frames as $frame): ?>
             <a href="<?= URLROOT; ?>/photo/capture/<?= $transaction_id ?>/<?= $frame->id ?>" class="frame-card">
-                <img src="<?= URLROOT; ?>/public<?= htmlspecialchars($frame->file_path); ?>" alt="<?= htmlspecialchars($frame->name); ?>">
+                <img src="<?= URLROOT . htmlspecialchars($frame->path); ?>" alt="<?= htmlspecialchars($frame->name); ?>">
                 <h2><?= htmlspecialchars($frame->name); ?></h2>
             </a>
         <?php endforeach; ?>

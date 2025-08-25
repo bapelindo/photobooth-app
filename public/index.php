@@ -9,11 +9,14 @@ use App\Core\Router;
 
 $router = new Router();
 
-// Definisikan route Anda di sini
+// --- TAMBAHKAN RUTE BARU DI SINI ---
+$router->get('home/thankyou', 'App\Controllers\HomeController@thankyou');
+
+// Definisikan route Anda yang lain
 // Rute GET
 $router->get('packages', 'App\Controllers\PackageController@index');
 $router->get('photo/capture/{transaction_id}/{frame_id}', 'App\Controllers\PhotoController@capture');
-$router->get('photo/capture/{transaction_id}', 'App\Controllers\PhotoController@capture'); // Contoh: photo/capture/some-trans-id
+$router->get('photo/capture/{transaction_id}', 'App\Controllers\PhotoController@capture');
 $router->get('photo/selectFrame/{transaction_id}', 'App\Controllers\PhotoController@selectFrame');
 $router->get('photo/editor/{photo_id}', 'App\Controllers\PhotoController@editor');
 $router->get('payment/process/{package_id}', 'App\Controllers\PaymentController@process');
@@ -29,7 +32,7 @@ $router->get('logout', 'App\Controllers\AuthController@logout');
 
 
 // Rute Admin
-$router->get('admin', 'App\Controllers\AdminController@dashboard'); // Rute utama admin
+$router->get('admin', 'App\Controllers\AdminController@dashboard');
 $router->get('admin/dashboard', 'App\Controllers\AdminController@dashboard');
 $router->get('admin/packages', 'App\Controllers\AdminController@listPackages');
 $router->get('admin/packages/create', 'App\Controllers\AdminController@createPackage');
@@ -42,7 +45,10 @@ $router->get('admin/gallery', 'App\Controllers\AdminController@showGallery');
 
 
 // Rute POST (untuk AJAX)
-$router->post('photo/ajax_take_photo', 'App\Controllers\PhotoController@ajax_take_photo');
+$router->post('photo/ajax_process_photostrip', 'App\Controllers\PhotoController@ajax_process_photostrip');
 $router->post('photo/ajax_save_photo', 'App\Controllers\PhotoController@ajax_save_photo');
+
+$router->get('photo/finalize/{photo_id}', 'App\Controllers\PhotoController@finalize');
+$router->post('photo/send_email', 'App\Controllers\PhotoController@send_email');
 
 $router->dispatch();

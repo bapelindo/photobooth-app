@@ -12,13 +12,27 @@ define('URLROOT', 'http://10.10.10.240/photobooth-app');
 // Site Name
 define('SITENAME', 'Acara Photobooth');
 
-// Email Configuration (untuk PHPMailer)
-define('SMTP_HOST', 'smtp.example.com');
-define('SMTP_USERNAME', 'user@example.com');
-define('SMTP_PASSWORD', 'your_smtp_password');
-define('SMTP_PORT', 587); // atau 465
-define('SMTP_SECURE', 'tls'); // atau 'ssl'
 
-// Email From
-define('EMAIL_FROM_ADDRESS', 'no-reply@example.com');
-define('EMAIL_FROM_NAME', 'Panitia Acara Photobooth');
+// --- PENGATURAN EMAIL (SMTP) ---
+// Ganti nilai di bawah ini dengan detail Anda
+
+// Alamat server SMTP Anda
+define('SMTP_HOST', 'smtp.gmail.com');
+
+// Nama pengguna untuk login ke server SMTP (biasanya alamat email Anda)
+define('SMTP_USERNAME', 'bapelhacker@gmail.com');
+
+// Kata sandi untuk login ke server SMTP (gunakan App Password jika memakai Gmail)
+define('SMTP_PASSWORD', 'igex uokb lmke vuwm');
+
+// Tipe enkripsi (biasanya 'tls' atau 'ssl')
+define('SMTP_SECURE', 'tls');
+
+// Port untuk koneksi SMTP
+define('SMTP_PORT', 587);
+
+// Alamat email pengirim
+define('EMAIL_FROM_ADDRESS', 'bapelhacker@gmail.com');
+
+// Nama pengirim
+define('EMAIL_FROM_NAME', 'Photobooth App');

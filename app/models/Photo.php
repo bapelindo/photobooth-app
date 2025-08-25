@@ -35,4 +35,32 @@ class Photo
         $this->db->query("SELECT photos.* FROM photos JOIN transactions ON photos.transaction_id = transactions.id ORDER BY photos.created_at DESC");
         return $this->db->resultSet();
     }
+    
+    /**
+     * Find a photo by its ID.
+     * @param int $id
+     * @return mixed
+     */
+    public function find($id)
+    {
+        $this->db->query("SELECT * FROM photos WHERE id = :id");
+        $this->db->bind(':id', $id);
+        return $this->db->single();
+    }
+
+    /**
+     * Get the ID of the last inserted photo.
+     * @return string
+     */
+    public function lastInsertId()
+    {
+        return $this->db->lastInsertId();
+    }
+        public function updateEmailedTo($id, $email)
+    {
+        $this->db->query("UPDATE photos SET emailed_to = :email WHERE id = :id");
+        $this->db->bind(':email', $email);
+        $this->db->bind(':id', $id);
+        return $this->db->execute();
+    }
 }

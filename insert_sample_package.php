@@ -3,18 +3,19 @@ require_once 'vendor/autoload.php';
 require_once 'config/config.php';
 
 use App\Models\Package;
-use App\Core\Database; // Ensure Database class is accessible
+use App\Core\Database;
 
-// Initialize Database connection (assuming it's needed for the model)
+// Initialize Database connection
 $db = new Database();
 
 $packageModel = new Package();
 
 $data = [
-    'name' => 'Paket Uji Coba',
-    'description' => 'Ini adalah paket uji coba untuk memastikan tombol muncul.',
+    'name' => 'Paket Ceria Photostrip',
+    'description' => 'Abadikan momen seru dengan 4 gaya berbeda dalam satu strip!',
     'price' => 50000.00,
-    'photo_limit' => 10,
+    'photo_limit' => 1, // Jumlah sesi photostrip
+    'photo_slots' => 4, // Jumlah foto dalam satu strip
     'retake_limit' => 3
 ];
 

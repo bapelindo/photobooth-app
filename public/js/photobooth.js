@@ -1,96 +1,171 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // --- Referensi Elemen DOM Sesuai Desain Baru ---
     const video = document.getElementById('live-preview');
-    const takePhotoBtn = document.getElementById('take-photo-btn');
-    const resultView = document.querySelector('.result-view');
-    const resultPhoto = document.getElementById('result-photo');
-    const retakeBtn = document.getElementById('retake-btn');
-    const finalizeBtn = document.getElementById('finalize-btn');
-    const initialControls = document.getElementById('initial-controls');
-    const retakeControls = document.getElementById('retake-controls');
+    const canvas = document.getElementById('capture-canvas');
+    const countdownEl = document.getElementById('countdown');
+    const infoText = document.getElementById('info-text');
+    const retakeCountEl = document.getElementById('retake-count');
 
-    // Get access to the camera
-    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-        navigator.mediaDevices.getUserMedia({ video: true })
-            .then(stream => {
-                video.srcObject = stream;
-                video.play();
-            })
-            .catch(err => {
-                console.error("Error accessing the camera: ", err);
+    // Tombol-tombol Aksi
+    const captureBtn = document.getElementById('capture-btn');
+    const photoControls = document.getElementById('photo-controls');
+    const keepBtn = document.getElementById('keep-btn');
+    const retakePhotoBtn = document.getElementById('retake-photo-btn');
+    const finishBtn = document.getElementById('finish-btn');
+    
+    // Variabel state
+    let currentSlot = 0;
+    const capturedPhotos = [];
+    let stream = null;
+
+    // --- Inisialisasi Kamera ---
+    async function initCamera() {
+        try {
+            stream = await navigator.mediaDevices.getUserMedia({
+                video: { width: { ideal: 1280 }, height: { ideal: 720 } },
+                audio: false
             });
+            video.srcObject = stream;
+            updateUIForCapture(); // Siapkan UI untuk foto pertama
+        } catch (err) {
+            console.error("Error accessing camera:", err);
+            infoText.textContent = "Kamera Error!";
+            captureBtn.style.display = 'none';
+        }
     }
 
-    // Take photo
-    takePhotoBtn.addEventListener('click', () => {
-        const canvas = document.getElementById('capture-canvas');
+    // --- Manajemen UI ---
+    function updateUIForCapture() {
+        infoText.textContent = `Foto ke-${currentSlot + 1} dari ${PHOTO_LIMIT}`;
+        photoControls.style.display = 'none';
+        captureBtn.style.display = 'flex';
+        finishBtn.style.display = 'none';
+        
+        // Tandai slot pratinjau yang aktif
+        document.querySelectorAll('.preview-slot').forEach((slot, index) => {
+            slot.classList.toggle('active', index === currentSlot);
+        });
+    }
+
+    function updateUIForConfirmation() {
+        infoText.textContent = "Gimana Hasilnya?";
+        captureBtn.style.display = 'none';
+        photoControls.style.display = 'flex';
+        retakePhotoBtn.disabled = RETAKES_LEFT <= 0;
+    }
+    
+    function updateUIForFinish() {
+        infoText.textContent = "Sesi Selesai!";
+        captureBtn.style.display = 'none';
+        photoControls.style.display = 'none';
+        finishBtn.style.display = 'flex';
+        
+        // Hilangkan tanda aktif dari semua slot
+        document.querySelectorAll('.preview-slot').forEach(slot => {
+            slot.classList.remove('active');
+        });
+        
+        stopCamera();
+    }
+
+    // --- Fungsi Hitung Mundur ---
+    function startCountdown(seconds) {
+        return new Promise(resolve => {
+            let count = seconds;
+            countdownEl.style.display = 'flex';
+            countdownEl.textContent = count;
+            const timer = setInterval(() => {
+                count--;
+                if (count > 0) {
+                    countdownEl.textContent = count;
+                } else {
+                    clearInterval(timer);
+                    countdownEl.style.display = 'none';
+                    resolve();
+                }
+            }, 1000);
+        });
+    }
+
+    // --- Aksi Tombol ---
+    async function takePhoto() {
+        captureBtn.disabled = true;
+        await startCountdown(3);
+
         const context = canvas.getContext('2d');
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
         context.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
+        
+        const previewSlot = document.getElementById(`slot-${currentSlot}`);
+        previewSlot.innerHTML = `<img src="${dataUrl}" alt="Preview Foto ${currentSlot + 1}">`;
+        capturedPhotos[currentSlot] = dataUrl;
+        
+        updateUIForConfirmation();
+        captureBtn.disabled = false;
+    }
 
-        const dataUrl = canvas.toDataURL('image/jpeg');
-        resultPhoto.src = dataUrl;
-        resultView.style.display = 'block';
-        video.style.display = 'none';
+    function keepPhoto() {
+        currentSlot++;
+        if (currentSlot < PHOTO_LIMIT) {
+            updateUIForCapture();
+        } else {
+            updateUIForFinish();
+        }
+    }
 
-        initialControls.style.display = 'none';
-        retakeControls.style.display = 'block';
+    function retakePhoto() {
+        if (RETAKES_LEFT > 0) {
+            RETAKES_LEFT--;
+            retakeCountEl.textContent = RETAKES_LEFT;
+            const previewSlot = document.getElementById(`slot-${currentSlot}`);
+            previewSlot.innerHTML = `Slot ${currentSlot + 1}`;
+            capturedPhotos[currentSlot] = null;
+            updateUIForCapture();
+        }
+    }
 
-        // Send the photo to the server
-        const transaction_id = window.location.pathname.split('/')[3];
-        const frame_id = window.location.pathname.split('/')[4];
+    async function processPhotoStrip() {
+        infoText.textContent = "Memproses...";
+        finishBtn.disabled = true;
+        const finalPhotos = capturedPhotos.filter(p => p);
 
-        fetch('/photobooth-app/photo/ajax_take_photo', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                image: dataUrl,
-                transaction_id: transaction_id,
-                frame_id: frame_id
-            })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                window.location.href = `/photobooth-app/photo/editor/${data.photo_id}`;
-            } else {
-                console.error('Error saving photo:', data.message);
+        try {
+            const response = await fetch(`${URLROOT}/photo/ajax_process_photostrip`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    transaction_id: TRANSACTION_ID,
+                    photos: finalPhotos,
+                    frame_path: FRAME_PATH
+                })
+            });
+
+            const result = await response.json();
+            if (!response.ok) {
+                throw new Error(result.message || `HTTP error! Status: ${response.status}`);
             }
-        });
-    });
+            window.location.href = result.final_url;
+        } catch (error) {
+            console.error('Processing error:', error);
+            infoText.textContent = `Error: ${error.message}`;
+            finishBtn.disabled = false;
+        }
+    }
+    
+    // --- Event Listeners ---
+    captureBtn.addEventListener('click', takePhoto);
+    keepBtn.addEventListener('click', keepPhoto);
+    retakePhotoBtn.addEventListener('click', retakePhoto);
+    finishBtn.addEventListener('click', processPhotoStrip);
 
-    // Retake photo
-    retakeBtn.addEventListener('click', () => {
-        resultView.style.display = 'none';
-        video.style.display = 'block';
-        initialControls.style.display = 'block';
-        retakeControls.style.display = 'none';
-    });
+    function stopCamera() {
+        if (stream) {
+            stream.getTracks().forEach(track => track.stop());
+        }
+    }
 
-    // Filter selection
-    const filterItems = document.querySelectorAll('.filter-item');
-    const livePreview = document.getElementById('live-preview');
-
-    filterItems.forEach(item => {
-        item.addEventListener('click', () => {
-            // Remove active class from all filters
-            filterItems.forEach(i => i.classList.remove('active'));
-
-            // Add active class to clicked filter
-            item.classList.add('active');
-
-            // Get filter name
-            const filter = item.dataset.filter;
-
-            // Remove all filter classes from video
-            livePreview.className = '';
-
-            // Add new filter class
-            if (filter !== 'none') {
-                livePreview.classList.add(filter);
-            }
-        });
-    });
+    // --- Mulai ---
+    initCamera();
 });

@@ -51,6 +51,7 @@ class AdminController extends Controller {
                 'description' => $_POST['description'],
                 'price' => $_POST['price'],
                 'photo_limit' => $_POST['photo_limit'],
+                'photo_slots' => $_POST['photo_limit'],
                 'retake_limit' => $_POST['retake_limit'],
             ];
 
@@ -84,6 +85,7 @@ class AdminController extends Controller {
                 'description' => $_POST['description'],
                 'price' => $_POST['price'],
                 'photo_limit' => $_POST['photo_limit'],
+                'photo_slots' => $_POST['photo_limit'],
                 'retake_limit' => $_POST['retake_limit'],
             ];
 
