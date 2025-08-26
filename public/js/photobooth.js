@@ -126,33 +126,40 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    async function processPhotoStrip() {
-        infoText.textContent = "Memproses...";
-        finishBtn.disabled = true;
-        const finalPhotos = capturedPhotos.filter(p => p);
+// Perubahan pada photobooth-app/public/js/photobooth.js
+async function processPhotoStrip() {
+    infoText.textContent = "Memproses...";
+    finishBtn.disabled = true;
+    const finalPhotos = capturedPhotos.filter(p => p);
 
-        try {
-            const response = await fetch(`${URLROOT}/photo/ajax_process_photostrip`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    transaction_id: TRANSACTION_ID,
-                    photos: finalPhotos,
-                    frame_path: FRAME_PATH
-                })
-            });
+    try {
+        const response = await fetch(`${URLROOT}/photo/ajax_process_photostrip`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                transaction_id: TRANSACTION_ID,
+                photos: finalPhotos,
+                frame_path: FRAME_PATH
+            })
+        });
 
-            const result = await response.json();
-            if (!response.ok) {
-                throw new Error(result.message || `HTTP error! Status: ${response.status}`);
-            }
-            window.location.href = result.final_url;
-        } catch (error) {
-            console.error('Processing error:', error);
-            infoText.textContent = `Error: ${error.message}`;
-            finishBtn.disabled = false;
+        const result = await response.json();
+        if (!response.ok) {
+            throw new Error(result.message || `HTTP error! Status: ${response.status}`);
         }
+        
+        // --- LOGIKA TRANSISI BARU ---
+        document.body.classList.add('fade-out');
+        setTimeout(() => {
+            window.location.href = result.final_url;
+        }, 400); // Tunggu animasi selesai
+
+    } catch (error) {
+        console.error('Processing error:', error);
+        infoText.textContent = `Error: ${error.message}`;
+        finishBtn.disabled = false;
     }
+}
     
     // --- Event Listeners ---
     captureBtn.addEventListener('click', takePhoto);

@@ -33,6 +33,9 @@
             align-items: center;
             padding: 20px;
             box-sizing: border-box;
+            /* Animasi Fade-in untuk Body */
+            opacity: 0;
+            animation: fadeIn 0.5s ease-in forwards;
         }
 
         .finalize-container {
@@ -49,7 +52,29 @@
             box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.2);
             border: 1px solid rgba(255, 255, 255, 0.2);
             align-items: center;
+            /* Animasi untuk Container */
+            opacity: 0;
+            transform: scale(0.98);
+            animation: fadeIn 0.5s ease-out 0.2s forwards; /* Muncul setelah body */
         }
+
+        /* Elemen di dalam container awalnya disembunyikan */
+        .finalize-container > * {
+            opacity: 0;
+            animation: fadeInElements 0.5s ease-out 0.7s forwards; /* Muncul setelah container */
+        }
+        
+        @keyframes fadeIn {
+            to { 
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        @keyframes fadeInElements {
+            to { opacity: 1; }
+        }
+
 
         .photo-display {
             flex-grow: 1;
@@ -177,7 +202,6 @@
     </div>
 
 <script>
-    // JavaScript tidak berubah, hanya memindahkan ke sini
     const sendEmailBtn = document.getElementById('send-email-btn');
     const emailInput = document.getElementById('email-input');
     const emailStatus = document.getElementById('email-status');

@@ -9,7 +9,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
 
     <style>
-        /* ... CSS Anda yang sudah ada ... */
         html, body { height: 100%; margin: 0; overflow: hidden; }
         body {
             font-family: 'Poppins', sans-serif;
@@ -20,16 +19,22 @@
             align-items: center;
             padding: 1vw;
             box-sizing: border-box;
-            /* --- CSS UNTUK TRANSISI HALUS --- */
             opacity: 1;
             transition: opacity 0.4s ease-out;
         }
-        body.fade-out {
+        body.fade-out { opacity: 0; }
+        
+        .main-container { 
+            width: 100%; 
+            max-width: 1100px;
             opacity: 0;
+            animation: contentFadeIn 0.5s ease-in 0.2s forwards;
+            transition: opacity 0.3s ease-out;
         }
-        /* ... sisa CSS Anda ... */
-
-        .main-container { width: 100%; max-width: 1100px; }
+        .main-container.content-fade-out { opacity: 0; }
+        @keyframes contentFadeIn { to { opacity: 1; } }
+        
+        /* ... sisa CSS tidak berubah ... */
         .header-container { margin-bottom: 2vh; }
         .mascot { width: clamp(80px, 12vh, 120px); height: auto; animation: bounce 2s infinite ease-in-out; }
         @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
@@ -74,16 +79,22 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const selectButtons = document.querySelectorAll('.select-button');
-            
-            selectButtons.forEach(button => {
-                button.addEventListener('click', function(event) {
-                    event.preventDefault();
-                    const destinationUrl = this.href;
-                    document.body.classList.add('fade-out');
+            const links = document.querySelectorAll('a.select-button');
+            const contentWrapper = document.querySelector('.main-container');
+
+            links.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const destination = this.href;
+                    if (contentWrapper) {
+                        contentWrapper.classList.add('content-fade-out');
+                    }
                     setTimeout(() => {
-                        window.location.href = destinationUrl;
-                    }, 400); // Cocokkan dengan durasi transisi di CSS
+                        document.body.classList.add('fade-out');
+                    }, 300);
+                    setTimeout(() => {
+                        window.location.href = destination;
+                    }, 700);
                 });
             });
         });

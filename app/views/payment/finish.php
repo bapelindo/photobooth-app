@@ -9,7 +9,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
 
     <style>
-        /* ... (CSS Anda yang sudah ada) ... */
         html, body { height: 100%; margin: 0; overflow: hidden; }
         body {
             font-family: 'Poppins', sans-serif;
@@ -19,19 +18,22 @@
             align-items: center;
             padding: 20px;
             box-sizing: border-box;
-            /* --- CSS UNTUK TRANSISI HALUS --- */
-            opacity: 0; /* Mulai transparan */
-            animation: fadeIn 0.5s ease-in forwards;
+            opacity: 1;
+            transition: opacity 0.4s ease-out; /* Untuk fade-out akhir */
         }
-
-        @keyframes fadeIn {
-            to {
-                opacity: 1;
-            }
+        body.fade-out { opacity: 0; }
+        
+        .status-wrapper { 
+            display: flex; align-items: center; gap: 50px; 
+            width: 100%; max-width: 800px; 
+            transition: opacity 0.3s ease-out; /* Transisi untuk konten */
+            opacity: 0;
+            animation: contentFadeIn 0.5s ease-in 0.2s forwards;
         }
-        /* ... sisa CSS Anda ... */
+        .status-wrapper.content-fade-out { opacity: 0; }
+        @keyframes contentFadeIn { to { opacity: 1; } }
 
-        .status-wrapper { display: flex; align-items: center; gap: 50px; width: 100%; max-width: 800px; }
+        /* ... sisa CSS tidak berubah ... */
         .mascot-container { flex-shrink: 0; animation: bounce 2s infinite ease-in-out; }
         .mascot { width: 200px; }
         @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
@@ -75,5 +77,28 @@
             </div>
         <?php endif; ?>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const links = document.querySelectorAll('a.action-button');
+            const contentWrapper = document.querySelector('.status-wrapper');
+
+            links.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const destination = this.href;
+                    if (contentWrapper) {
+                        contentWrapper.classList.add('content-fade-out');
+                    }
+                    setTimeout(() => {
+                        document.body.classList.add('fade-out');
+                    }, 300);
+                    setTimeout(() => {
+                        window.location.href = destination;
+                    }, 700);
+                });
+            });
+        });
+    </script>
 </body>
 </html>

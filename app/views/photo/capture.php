@@ -30,6 +30,9 @@
             min-height: 100vh;
             box-sizing: border-box;
             overflow: hidden;
+            opacity: 0;
+            /* Body muncul pertama, tanpa delay */
+            animation: fadeIn 0.5s ease-in forwards;
         }
 
         .photobooth-container {
@@ -45,21 +48,42 @@
             border-radius: 20px;
             padding: 20px;
             box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.2);
+            opacity: 0;
+            transform: scale(0.98);
+             /* Kontainer utama juga muncul pertama, tanpa delay */
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+        
+        /* Animasi untuk elemen di dalam kontainer */
+        .capture-sidebar, .capture-info-panel, .capture-main-stage {
+            opacity: 0;
+            /* Elemen di dalam muncul setelah container (0.5s) */
+            animation: fadeInElements 1s ease-out 1s forwards; 
         }
 
-        /* --- PERBAIKAN UTAMA: Styling Sidebar dengan Bingkai --- */
+        @keyframes fadeIn {
+            to { 
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        @keyframes fadeInElements {
+            to { opacity: 1; }
+        }
+
+        /* --- Styling Sidebar dengan Bingkai --- */
         .sidebar {
             grid-row: 1 / 3;
             background-color: rgba(255, 255, 255, 0.7);
             border-radius: 20px;
-            padding: 20px; /* Beri padding agar slot tidak menempel di tepi bingkai */
+            padding: 20px;
             display: flex;
             flex-direction: column;
             gap: 15px;
             overflow: hidden;
-            /* Terapkan bingkai sebagai background */
             background-image: url('<?= isset($data['selected_frame']) ? URLROOT . htmlspecialchars($data['selected_frame']->path) : '' ?>');
-            background-size: cover; /* Pastikan bingkai menutupi seluruh area */
+            background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
         }
@@ -67,7 +91,7 @@
         .preview-slot {
             width: 100%;
             aspect-ratio: 4 / 3;
-            background: rgba(224, 232, 240, 0.8); /* Buat sedikit transparan */
+            background: rgba(224, 232, 240, 0.8);
             border: 3px dashed #c0d1e6;
             border-radius: 10px;
             display: flex;
@@ -106,7 +130,6 @@
         }
         #live-preview { width: 100%; height: 100%; object-fit: cover; }
         #capture-canvas { display: none; }
-        /* Bingkai di area kamera sudah dihapus */
         #countdown { position: absolute; font-family: var(--font-display); font-size: 200px; color: var(--accent-color); text-shadow: 5px 5px 10px rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 10; animation: countdown-pop 1s infinite; }
         @keyframes countdown-pop { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
 
@@ -115,26 +138,30 @@
         .action-button { font-family: var(--font-display); font-size: 1.2rem; padding: 15px 30px; border: none; border-radius: 50px; cursor: pointer; color: var(--dark-text); transition: all 0.3s ease; display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
         .action-button:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0,0,0,0.3); }
         #capture-btn { background-color: var(--accent-color); }
-        #keep-btn { background-color: #28a745; color: var(--light-text); }
+        #keep-btn { background-color: #28a745; color: white; }
         #retake-photo-btn { background-color: #ffc107; }
-        #finish-btn { background-color: var(--primary-color); color: var(--light-text); }
+        #finish-btn { background-color: var(--primary-color); color: white; }
         .action-button:disabled { background-color: #ccc; cursor: not-allowed; transform: none; }
+        body.fade-out {
+            opacity: 0;
+            transition: opacity 0.4s ease-out;
+        }
     </style>
 </head>
 <body>
     <div class="photobooth-container">
-        <div class="sidebar">
+        <div class="sidebar capture-sidebar">
             <?php for ($i = 0; $i < $data['package']->photo_limit; $i++): ?>
                 <div class="preview-slot" id="slot-<?= $i; ?>">Slot <?= $i + 1; ?></div>
             <?php endfor; ?>
         </div>
 
-        <div class="info-panel">
+        <div class="info-panel capture-info-panel">
             <h1 id="info-text">Siap Berpose!</h1>
             <p>Sisa Kesempatan Ulang: <span id="retake-count"><?= $data['retakes_left']; ?></span> ❤️</p>
         </div>
 
-        <div class="main-stage">
+        <div class="main-stage capture-main-stage">
             <video id="live-preview" autoplay playsinline></video>
             <div id="countdown"></div>
             <canvas id="capture-canvas"></canvas>
