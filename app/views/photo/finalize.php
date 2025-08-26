@@ -33,7 +33,6 @@
             align-items: center;
             padding: 20px;
             box-sizing: border-box;
-            /* Animasi Fade-in untuk Body */
             opacity: 0;
             animation: fadeIn 0.5s ease-in forwards;
         }
@@ -49,19 +48,17 @@
             border-radius: 25px;
             padding: 40px;
             box-sizing: border-box;
-            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.2);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
             border: 1px solid rgba(255, 255, 255, 0.2);
             align-items: center;
-            /* Animasi untuk Container */
             opacity: 0;
             transform: scale(0.98);
-            animation: fadeIn 0.5s ease-out 0.2s forwards; /* Muncul setelah body */
+            animation: fadeIn 0.5s ease-out 0.2s forwards;
         }
 
-        /* Elemen di dalam container awalnya disembunyikan */
         .finalize-container > * {
             opacity: 0;
-            animation: fadeInElements 0.5s ease-out 0.7s forwards; /* Muncul setelah container */
+            animation: fadeInElements 0.5s ease-out 0.7s forwards;
         }
         
         @keyframes fadeIn {
@@ -74,7 +71,6 @@
         @keyframes fadeInElements {
             to { opacity: 1; }
         }
-
 
         .photo-display {
             flex-grow: 1;
@@ -167,7 +163,17 @@
             border-color: var(--primary-color);
             outline: none;
         }
-        #email-status { font-weight: bold; min-height: 20px; }
+        
+        /* Perubahan untuk status email */
+        #email-status { 
+            font-weight: bold; 
+            min-height: 22px; /* Jaga tinggi elemen agar tidak collaps */
+            transition: opacity 0.4s ease-out; /* Tambahkan transisi fade-out */
+            opacity: 1; /* Awalnya terlihat */
+        }
+        #email-status.fade-out {
+            opacity: 0; /* Menjadi transparan saat fade-out */
+        }
 
     </style>
 </head>
@@ -206,6 +212,7 @@
     const emailInput = document.getElementById('email-input');
     const emailStatus = document.getElementById('email-status');
     const photoId = <?= $photo->id; ?>;
+    let statusTimeout; // Variabel untuk menyimpan timeout
 
     sendEmailBtn.addEventListener('click', async () => {
         const email = emailInput.value;
@@ -218,6 +225,7 @@
         sendEmailBtn.disabled = true;
         sendEmailBtn.textContent = 'Mengirim...';
         emailStatus.textContent = '';
+        clearTimeout(statusTimeout); // Hapus timeout sebelumnya jika ada
 
         try {
             const response = await fetch('<?= URLROOT; ?>/photo/send_email', {
@@ -231,13 +239,21 @@
             if (response.ok && result.success) {
                 emailStatus.textContent = 'Email berhasil dikirim!';
                 emailStatus.style.color = 'green';
+                emailStatus.classList.remove('fade-out'); // Pastikan terlihat
                 emailInput.value = '';
+
+                // Atur timeout untuk menghilangkan pesan
+                statusTimeout = setTimeout(() => {
+                    emailStatus.classList.add('fade-out');
+                }, 3000); // Pesan akan hilang setelah 3 detik
+
             } else {
                 throw new Error(result.message || 'Gagal mengirim email.');
             }
         } catch (error) {
             emailStatus.textContent = 'Error: ' + error.message;
             emailStatus.style.color = 'red';
+            emailStatus.classList.remove('fade-out');
         } finally {
             sendEmailBtn.disabled = false;
             sendEmailBtn.textContent = 'Kirim Sekarang!';
