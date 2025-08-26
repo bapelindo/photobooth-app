@@ -34,6 +34,7 @@ $router->get('logout', 'App\Controllers\AuthController@logout');
 // Rute Admin
 $router->get('admin', 'App\Controllers\AdminController@dashboard');
 $router->get('admin/dashboard', 'App\Controllers\AdminController@dashboard');
+$router->get('admin/camera', 'App\Controllers\AdminController@cameraControl'); // <-- TAMBAHKAN BARIS INI
 $router->get('admin/packages', 'App\Controllers\AdminController@listPackages');
 $router->get('admin/packages/create', 'App\Controllers\AdminController@createPackage');
 $router->post('admin/packages/store', 'App\Controllers\AdminController@storePackage');
@@ -47,6 +48,8 @@ $router->get('admin/gallery', 'App\Controllers\AdminController@showGallery');
 // Rute POST (untuk AJAX)
 $router->post('photo/ajax_process_photostrip', 'App\Controllers\PhotoController@ajax_process_photostrip');
 $router->post('photo/ajax_save_photo', 'App\Controllers\PhotoController@ajax_save_photo');
+$router->post('photo/ajax_print_photo', 'App\Controllers\PhotoController@ajax_print_photo');
+$router->post('photo/ajax_capture_dslr', 'App\Controllers\PhotoController@ajax_capture_dslr');
 
 $router->get('photo/finalize/{photo_id}', 'App\Controllers\PhotoController@finalize');
 $router->post('photo/send_email', 'App\Controllers\PhotoController@send_email');

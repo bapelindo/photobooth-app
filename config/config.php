@@ -1,7 +1,10 @@
 <?php
 
 // Application Configuration
-
+// pip install Pillow pywin32
+// install imagick
+// install Sony Remote SDK
+// install webshocket
 // App Root
 define('APPROOT', dirname(dirname(__FILE__)) . '/app'); // -> .../photobooth-app/app
 

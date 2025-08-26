@@ -37,6 +37,7 @@
             <a href="<?= URLROOT; ?>/admin/packages">Packages</a>
             <a href="<?= URLROOT; ?>/admin/assets">Assets</a>
             <a href="<?= URLROOT; ?>/admin/gallery">Gallery</a>
+            <a href="<?= URLROOT; ?>/admin/camera">Kontrol Kamera</a>
         </div>
         <div class="user-info">
             <span>Welcome, <strong><?= htmlspecialchars(App\Core\Session::get('admin_username', 'Admin')) ?></strong></span>

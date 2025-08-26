@@ -7,7 +7,7 @@ use ImagickException;
 
 class ImageProcessingService
 {
-    // Method applyOverlays tidak berubah
+    // ... applyOverlays method remains the same ...
     public function applyOverlays($baseImagePath, $framePath, $stickers, $outputPath)
     {
         try {
@@ -50,12 +50,7 @@ class ImageProcessingService
         }
     }
 
-    /**
-     * --- METHOD YANG DIPERBAIKI ---
-     * Menggabungkan beberapa foto menjadi satu photostrip dengan frame.
-     * PERBAIKAN: Mengonversi semua hasil kalkulasi menjadi integer.
-     */
-    public function createPhotoStrip($photoPaths, $framePath, $outputPath)
+    public function createPhotoStrip($photoPaths, $framePath, $outputPath, $filter = 'none')
     {
         try {
             if (empty($photoPaths)) {
@@ -81,8 +76,7 @@ class ImageProcessingService
                 $stripHeight = ($photoHeight * $photoCount) + ($spacing * ($photoCount - 1));
                 $photoStrip->newImage($stripWidth, $stripHeight, 'white', 'jpg');
             }
-
-            // --- PERBAIKAN DI SINI: Bulatkan semua hasil kalkulasi ---
+            
             $paddingX = (int) ($stripWidth * 0.05);
             $paddingY = (int) ($stripHeight * 0.05);
             $contentWidth = (int) ($stripWidth - (2 * $paddingX));
@@ -95,8 +89,13 @@ class ImageProcessingService
             $yOffset = $paddingY;
             foreach ($photoPaths as $path) {
                 $photo = new Imagick($path);
+                
+                // Menerapkan filter jika ada
+                if ($filter !== 'none') {
+                    $this->applyFilter($photo, $filter);
+                }
+                
                 $photo->resizeImage($slotWidth, $slotHeight, Imagick::FILTER_LANCZOS, 1);
-                // Pastikan yOffset juga integer
                 $photoStrip->compositeImage($photo, Imagick::COMPOSITE_OVER, $paddingX, (int) $yOffset);
                 $yOffset += $slotHeight + $spacing;
                 $photo->clear();
@@ -112,5 +111,24 @@ class ImageProcessingService
             error_log("ImageMagick Error (createPhotoStrip): " . $e->getMessage());
             return false;
         }
+    }
+
+    /**
+     * Helper method to apply an effect based on a CSS-like filter string.
+     * @param Imagick $image The Imagick image object.
+     * @param string $filterCss The CSS filter string (e.g., "sepia(100%)").
+     */
+    private function applyFilter(Imagick $image, $filterCss)
+    {
+        // This is a simple mapping and can be expanded.
+        if (strpos($filterCss, 'grayscale') !== false) {
+            $image->modulateImage(100, 0, 100); // Brightness, Saturation, Hue
+        } elseif (strpos($filterCss, 'sepia') !== false) {
+            $image->sepiaToneImage(80); // Threshold is a percentage
+        } elseif (strpos($filterCss, 'invert') !== false) {
+            $image->negateImage(false);
+        }
+        // You can add more mappings here for contrast, brightness, etc.
+        // Example for contrast: $image->contrastImage(true);
     }
 }

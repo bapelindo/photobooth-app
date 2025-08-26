@@ -190,7 +190,7 @@
             <div class="action-box">
                 <h3>Mau diapain fotonya?</h3>
                 <div class="action-buttons">
-                    <button onclick="window.print()" class="action-button">🖨️ Cetak</button>
+                    <button id="print-btn" class="action-button">🖨️ Cetak</button>
                     <a href="<?= URLROOT; ?>" class="action-button secondary">📸 Sesi Baru</a>
                 </div>
             </div>
@@ -208,12 +208,50 @@
     </div>
 
 <script>
+    const printBtn = document.getElementById('print-btn');
+    const printStatus = document.getElementById('email-status');
+    const photoId = <?= $photo->id; ?>;
+    let printStatusTimeout;
+
+    printBtn.addEventListener('click', async () => {
+        printBtn.disabled = true;
+        printBtn.textContent = 'Mencetak...';
+        printStatus.textContent = '';
+        printStatus.classList.remove('fade-out');
+        clearTimeout(printStatusTimeout);
+        
+        try {
+            const response = await fetch('<?= URLROOT; ?>/photo/ajax_print_photo', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ photo_id: photoId })
+            });
+
+            const result = await response.json();
+            
+            if (response.ok && result.success) {
+                printStatus.textContent = 'Foto berhasil dikirim ke printer!';
+                printStatus.style.color = 'green';
+                printStatusTimeout = setTimeout(() => {
+                    printStatus.classList.add('fade-out');
+                }, 3000);
+            } else {
+                throw new Error(result.message || 'Gagal mengirim perintah cetak.');
+            }
+        } catch (error) {
+            printStatus.textContent = 'Error: ' + error.message;
+            printStatus.style.color = 'red';
+        } finally {
+            printBtn.disabled = false;
+            printBtn.textContent = '🖨️ Cetak';
+        }
+    });
+
     const sendEmailBtn = document.getElementById('send-email-btn');
     const emailInput = document.getElementById('email-input');
     const emailStatus = document.getElementById('email-status');
-    const photoId = <?= $photo->id; ?>;
-    let statusTimeout; // Variabel untuk menyimpan timeout
-
+    
+    let statusTimeout;
     sendEmailBtn.addEventListener('click', async () => {
         const email = emailInput.value;
         if (!email) {
@@ -221,31 +259,26 @@
             emailStatus.style.color = 'red';
             return;
         }
-
         sendEmailBtn.disabled = true;
         sendEmailBtn.textContent = 'Mengirim...';
         emailStatus.textContent = '';
-        clearTimeout(statusTimeout); // Hapus timeout sebelumnya jika ada
-
+        clearTimeout(statusTimeout);
         try {
             const response = await fetch('<?= URLROOT; ?>/photo/send_email', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ photo_id: photoId, email: email })
             });
-
             const result = await response.json();
-
             if (response.ok && result.success) {
                 emailStatus.textContent = 'Email berhasil dikirim!';
                 emailStatus.style.color = 'green';
-                emailStatus.classList.remove('fade-out'); // Pastikan terlihat
+                emailStatus.classList.remove('fade-out');
                 emailInput.value = '';
 
-                // Atur timeout untuk menghilangkan pesan
                 statusTimeout = setTimeout(() => {
                     emailStatus.classList.add('fade-out');
-                }, 3000); // Pesan akan hilang setelah 3 detik
+                }, 3000);
 
             } else {
                 throw new Error(result.message || 'Gagal mengirim email.');

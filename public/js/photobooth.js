@@ -1,24 +1,26 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // --- Referensi Elemen DOM Sesuai Desain Baru ---
+    // --- Referensi Elemen DOM ---
     const video = document.getElementById('live-preview');
     const canvas = document.getElementById('capture-canvas');
     const countdownEl = document.getElementById('countdown');
     const infoText = document.getElementById('info-text');
     const retakeCountEl = document.getElementById('retake-count');
-
-    // Tombol-tombol Aksi
     const captureBtn = document.getElementById('capture-btn');
     const photoControls = document.getElementById('photo-controls');
     const keepBtn = document.getElementById('keep-btn');
     const retakePhotoBtn = document.getElementById('retake-photo-btn');
     const finishBtn = document.getElementById('finish-btn');
     
+    // --- MODIFIED: Target the dropdown now ---
+    const filterSelect = document.getElementById('filter-select');
+
     // Variabel state
     let currentSlot = 0;
     const capturedPhotos = [];
     let stream = null;
+    let selectedFilter = 'none'; 
 
-    // --- Inisialisasi Kamera ---
+    // --- Inisialisasi Kamera (Tidak Berubah) ---
     async function initCamera() {
         try {
             stream = await navigator.mediaDevices.getUserMedia({
@@ -26,7 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 audio: false
             });
             video.srcObject = stream;
-            updateUIForCapture(); // Siapkan UI untuk foto pertama
+            updateUIForCapture();
         } catch (err) {
             console.error("Error accessing camera:", err);
             infoText.textContent = "Kamera Error!";
@@ -34,14 +36,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // --- Manajemen UI ---
+    // --- Manajemen UI (Tidak Berubah) ---
     function updateUIForCapture() {
         infoText.textContent = `Foto ke-${currentSlot + 1} dari ${PHOTO_LIMIT}`;
         photoControls.style.display = 'none';
         captureBtn.style.display = 'flex';
         finishBtn.style.display = 'none';
-        
-        // Tandai slot pratinjau yang aktif
         document.querySelectorAll('.preview-slot').forEach((slot, index) => {
             slot.classList.toggle('active', index === currentSlot);
         });
@@ -59,16 +59,13 @@ document.addEventListener('DOMContentLoaded', () => {
         captureBtn.style.display = 'none';
         photoControls.style.display = 'none';
         finishBtn.style.display = 'flex';
-        
-        // Hilangkan tanda aktif dari semua slot
         document.querySelectorAll('.preview-slot').forEach(slot => {
             slot.classList.remove('active');
         });
-        
         stopCamera();
     }
 
-    // --- Fungsi Hitung Mundur ---
+    // --- Fungsi Hitung Mundur (Tidak Berubah) ---
     function startCountdown(seconds) {
         return new Promise(resolve => {
             let count = seconds;
@@ -87,7 +84,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- Aksi Tombol ---
+    // --- Aksi Tombol (Tidak Berubah, kecuali takePhoto) ---
     async function takePhoto() {
         captureBtn.disabled = true;
         await startCountdown(3);
@@ -95,6 +92,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const context = canvas.getContext('2d');
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
+        
+        context.filter = selectedFilter; // Menerapkan filter
         context.drawImage(video, 0, 0, canvas.width, canvas.height);
         const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
         
@@ -126,46 +125,53 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-// Perubahan pada photobooth-app/public/js/photobooth.js
-async function processPhotoStrip() {
-    infoText.textContent = "Memproses...";
-    finishBtn.disabled = true;
-    const finalPhotos = capturedPhotos.filter(p => p);
+    async function processPhotoStrip() {
+        infoText.textContent = "Memproses...";
+        finishBtn.disabled = true;
+        const finalPhotos = capturedPhotos.filter(p => p);
 
-    try {
-        const response = await fetch(`${URLROOT}/photo/ajax_process_photostrip`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                transaction_id: TRANSACTION_ID,
-                photos: finalPhotos,
-                frame_path: FRAME_PATH
-            })
-        });
+        try {
+            const response = await fetch(`${URLROOT}/photo/ajax_process_photostrip`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    transaction_id: TRANSACTION_ID,
+                    photos: finalPhotos,
+                    frame_path: FRAME_PATH,
+                    filter: selectedFilter
+                })
+            });
 
-        const result = await response.json();
-        if (!response.ok) {
-            throw new Error(result.message || `HTTP error! Status: ${response.status}`);
+            const result = await response.json();
+            if (!response.ok) {
+                throw new Error(result.message || `HTTP error! Status: ${response.status}`);
+            }
+            
+            document.body.classList.add('fade-out');
+            setTimeout(() => {
+                window.location.href = result.final_url;
+            }, 400);
+
+        } catch (error) {
+            console.error('Processing error:', error);
+            infoText.textContent = `Error: ${error.message}`;
+            finishBtn.disabled = false;
         }
-        
-        // --- LOGIKA TRANSISI BARU ---
-        document.body.classList.add('fade-out');
-        setTimeout(() => {
-            window.location.href = result.final_url;
-        }, 400); // Tunggu animasi selesai
-
-    } catch (error) {
-        console.error('Processing error:', error);
-        infoText.textContent = `Error: ${error.message}`;
-        finishBtn.disabled = false;
     }
-}
     
     // --- Event Listeners ---
     captureBtn.addEventListener('click', takePhoto);
     keepBtn.addEventListener('click', keepPhoto);
     retakePhotoBtn.addEventListener('click', retakePhoto);
     finishBtn.addEventListener('click', processPhotoStrip);
+
+    // --- MODIFIED: Event Listener for Filter Dropdown ---
+    if (filterSelect) {
+        filterSelect.addEventListener('change', (event) => {
+            selectedFilter = event.target.value;
+            video.style.filter = selectedFilter;
+        });
+    }
 
     function stopCamera() {
         if (stream) {

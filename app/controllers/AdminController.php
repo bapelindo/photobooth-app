@@ -126,42 +126,54 @@ class AdminController extends Controller {
 
     public function storeAsset()
     {
-        if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['asset_file'])) {
-            $file = $_FILES['asset_file'];
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $assetType = $_POST['type'];
+            $dbPath = '';
 
-            // Validasi sederhana
-            if ($file['error'] !== UPLOAD_ERR_OK) {
-                die('File upload error!');
-            }
-            $allowedTypes = ['image/png', 'image/jpeg', 'image/gif'];
-            if (!in_array($file['type'], $allowedTypes)) {
-                die('Invalid file type. Only PNG, JPG, GIF are allowed.');
-            }
-
-            $assetType = $_POST['type']; // 'frame' or 'sticker'
-            $uploadDir = "../public/assets/{$assetType}s/";
-            if (!is_dir($uploadDir)) {
-                mkdir($uploadDir, 0777, true);
-            }
-
-            $filename = uniqid() . '-' . basename($file['name']);
-            $destination = $uploadDir . $filename;
-            $dbPath = "/assets/{$assetType}s/" . $filename;
-
-            if (move_uploaded_file($file['tmp_name'], $destination)) {
-                $data = [
-                    'name' => $_POST['name'],
-                    'type' => $assetType,
-                    'file_path' => $dbPath
-                ];
-                $assetModel = $this->model('Asset');
-                if ($assetModel->create($data)) {
-                    $this->redirect('admin/assets');
+            // Handle file upload for frame/sticker, or value for filter
+            if ($assetType === 'filter') {
+                $dbPath = $_POST['asset_value']; // Get CSS value from new text field
+            } else if (isset($_FILES['asset_file'])) {
+                $file = $_FILES['asset_file'];
+                if ($file['error'] !== UPLOAD_ERR_OK) {
+                    die('File upload error!');
                 }
+                $allowedTypes = ['image/png', 'image/jpeg', 'image/gif'];
+                if (!in_array($file['type'], $allowedTypes)) {
+                    die('Invalid file type. Only PNG, JPG, GIF are allowed.');
+                }
+                
+                $uploadDir = "../public/assets/{$assetType}s/";
+                if (!is_dir($uploadDir)) {
+                    mkdir($uploadDir, 0777, true);
+                }
+
+                $filename = uniqid() . '-' . basename($file['name']);
+                $destination = $uploadDir . $filename;
+                $dbPath = "/assets/{$assetType}s/" . $filename;
+
+                if (!move_uploaded_file($file['tmp_name'], $destination)) {
+                     die('Failed to save asset file.');
+                }
+            } else {
+                die('No file or value provided for asset.');
             }
-            die('Failed to save asset.');
+
+            $data = [
+                'name' => $_POST['name'],
+                'type' => $assetType,
+                'file_path' => $dbPath
+            ];
+            
+            $assetModel = $this->model('Asset');
+            if ($assetModel->create($data)) {
+                $this->redirect('admin/assets');
+            } else {
+                die('Failed to save asset to database.');
+            }
         }
     }
+
 
     public function deleteAsset($id)
     {
@@ -169,18 +181,21 @@ class AdminController extends Controller {
             $assetModel = $this->model('Asset');
             $asset = $assetModel->find($id);
 
-            if ($asset) {
+            if ($asset && $asset->type !== 'filter') { // Don't delete file for filters
                 // Hapus file dari server
-                $filePath = '../public' . $asset->file_path;
+                $filePath = '../public' . $asset->path;
                 if (file_exists($filePath)) {
                     unlink($filePath);
                 }
-                // Hapus record dari DB
+            }
+            // Hapus record dari DB
+            if ($asset) {
                 $assetModel->delete($id);
             }
             $this->redirect('admin/assets');
         }
     }
+
 
     // === GALLERY ===
 
@@ -190,5 +205,13 @@ class AdminController extends Controller {
         $data['photos'] = $photoModel->getAll();
         $data['title'] = 'Photo Gallery';
         $this->adminView('admin/gallery/index', $data);
+    }
+
+    public function cameraControl()
+    {
+        $data['title'] = 'Live Camera Control';
+        // Kirim URL WebSocket ke view admin
+        $data['live_view_websocket_url'] = LIVE_VIEW_WEBSOCKET_URL;
+        $this->adminView('admin/camera', $data);
     }
 }
