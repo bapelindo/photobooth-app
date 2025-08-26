@@ -11,8 +11,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const retakePhotoBtn = document.getElementById('retake-photo-btn');
     const finishBtn = document.getElementById('finish-btn');
     
-    // --- MODIFIED: Target the dropdown now ---
-    const filterSelect = document.getElementById('filter-select');
+    // --- MODIFIED: New Filter Elements ---
+    const filterBtn = document.getElementById('filter-btn');
+    const filterOptionsContainer = document.querySelector('.filter-options');
+    const filterOptions = document.querySelectorAll('.filter-option');
 
     // Variabel state
     let currentSlot = 0;
@@ -20,7 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let stream = null;
     let selectedFilter = 'none'; 
 
-    // --- Inisialisasi Kamera (Tidak Berubah) ---
+    // --- Inisialisasi Kamera ---
     async function initCamera() {
         try {
             stream = await navigator.mediaDevices.getUserMedia({
@@ -36,15 +38,26 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // --- Manajemen UI (Tidak Berubah) ---
+    // --- Manajemen UI ---
     function updateUIForCapture() {
-        infoText.textContent = `Foto ke-${currentSlot + 1} dari ${PHOTO_LIMIT}`;
+        if (currentSlot === 0) {
+            infoText.textContent = "Ayo, Senyum!"; // Encouraging message for the first photo
+        } else {
+            infoText.textContent = `Foto ke-${currentSlot + 1} dari ${PHOTO_LIMIT}`;
+        }
         photoControls.style.display = 'none';
         captureBtn.style.display = 'flex';
         finishBtn.style.display = 'none';
         document.querySelectorAll('.preview-slot').forEach((slot, index) => {
             slot.classList.toggle('active', index === currentSlot);
         });
+        // Ensure filter options are hidden when returning to capture state
+        if (filterOptionsContainer) {
+            filterOptionsContainer.style.display = 'none';
+        }
+        if (filterBtn) { // Ensure filter button is visible
+            filterBtn.style.display = 'flex';
+        }
     }
 
     function updateUIForConfirmation() {
@@ -52,6 +65,13 @@ document.addEventListener('DOMContentLoaded', () => {
         captureBtn.style.display = 'none';
         photoControls.style.display = 'flex';
         retakePhotoBtn.disabled = RETAKES_LEFT <= 0;
+        // Hide filter container when confirmation appears
+        if (filterOptionsContainer) {
+            filterOptionsContainer.style.display = 'none';
+        }
+        if (filterBtn) { // Also hide the filter button
+            filterBtn.style.display = 'none';
+        }
     }
     
     function updateUIForFinish() {
@@ -158,19 +178,39 @@ document.addEventListener('DOMContentLoaded', () => {
             finishBtn.disabled = false;
         }
     }
-    
+
     // --- Event Listeners ---
     captureBtn.addEventListener('click', takePhoto);
     keepBtn.addEventListener('click', keepPhoto);
     retakePhotoBtn.addEventListener('click', retakePhoto);
     finishBtn.addEventListener('click', processPhotoStrip);
 
-    // --- MODIFIED: Event Listener for Filter Dropdown ---
-    if (filterSelect) {
-        filterSelect.addEventListener('change', (event) => {
-            selectedFilter = event.target.value;
-            video.style.filter = selectedFilter;
+    // --- MODIFIED: Event Listeners for Filter Selection ---
+    if (filterBtn) {
+        filterBtn.addEventListener('click', () => {
+            filterOptionsContainer.style.display = filterOptionsContainer.style.display === 'block' ? 'none' : 'block';
         });
+
+        filterOptions.forEach(option => {
+            option.addEventListener('click', () => {
+                selectedFilter = option.dataset.filter;
+                video.style.filter = selectedFilter;
+                filterOptionsContainer.style.display = 'none';
+
+                // Update active class
+                filterOptions.forEach(opt => opt.classList.remove('active'));
+                option.classList.add('active');
+
+                // Update filter button text
+                filterBtn.textContent = `Filter: ${option.textContent}`;
+            });
+        });
+
+        // Initialize filter button text
+        const initialFilterOption = document.querySelector('.filter-option.active');
+        if (initialFilterOption) {
+            filterBtn.textContent = `Filter: ${initialFilterOption.textContent}`;
+        }
     }
 
     function stopCamera() {
