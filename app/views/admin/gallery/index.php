@@ -28,8 +28,8 @@
 <div class="gallery-grid">
     <?php foreach ($photos as $photo): ?>
         <div class="gallery-item">
-            <a href="<?= htmlspecialchars($photo->file_path) ?>" target="_blank">
-                <img src="<?= htmlspecialchars($photo->file_path) ?>" alt="Photo from transaction <?= htmlspecialchars($photo->transaction_code) ?>">
+            <a href="<?= htmlspecialchars(URLROOT . $photo->file_path) ?>" target="_blank">
+                <img src="<?= htmlspecialchars(URLROOT . $photo->file_path) ?>" alt="Photo from transaction <?= htmlspecialchars($photo->transaction_code ?? '') ?>">
             </a>
             <p>Taken: <?= date('d M Y H:i', strtotime($photo->created_at)) ?></p>
         </div>

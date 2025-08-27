@@ -2,6 +2,9 @@
 
 namespace App\Services;
 
+use Midtrans\Config;
+use Midtrans\Snap;
+
 /**
  * Ini adalah simulasi dari Payment Gateway Service.
  * Di aplikasi nyata, Anda akan menggunakan SDK resmi (misal, Midtrans-php).
@@ -13,11 +16,11 @@ class PaymentService
     public function __construct()
     {
         $this->config = require '../config/payment.php';
-        // Di aplikasi nyata:
-        // \Midtrans\Config::$serverKey = $this->config['server_key'];
-        // \Midtrans\Config::$isProduction = $this->config['is_production'];
-        // \Midtrans\Config::$isSanitized = true;
-        // \Midtrans\Config::$is3ds = true;
+        
+        Config::$serverKey = $this->config['server_key'];
+        Config::$isProduction = $this->config['is_production'];
+        Config::$isSanitized = true;
+        Config::$is3ds = true;
     }
 
     /**
@@ -27,14 +30,11 @@ class PaymentService
      */
     public function createTransaction($transactionDetails)
     {
-        // Di aplikasi nyata, Anda akan memanggil:
-        // $snapToken = \Midtrans\Snap::getSnapToken($transactionDetails);
-        // $snapUrl = \Midtrans\Snap::createTransaction($transactionDetails)->redirect_url;
+        // Add debug log to see what's being sent to Midtrans
+        error_log("Midtrans Transaction Details: " . json_encode($transactionDetails));
 
-        // Simulasi untuk demo:
-        $snapToken = 'dummy-snap-token-' . $transactionDetails['transaction_details']['order_id'];
-        // URL finish simulasi kita
-        $snapUrl = \URLROOT . '/payment/finish?order_id=' . $transactionDetails['transaction_details']['order_id'] . '&status_code=200&transaction_status=capture';
+        $snapToken = Snap::getSnapToken($transactionDetails);
+        $snapUrl = Snap::createTransaction($transactionDetails)->redirect_url;
 
         return ['token' => $snapToken, 'redirect_url' => $snapUrl];
     }

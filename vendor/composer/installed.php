@@ -1,15 +1,24 @@
 <?php return array(
     'root' => array(
         'name' => 'project/photobooth-app',
-        'pretty_version' => '1.0.0+no-version-set',
-        'version' => '1.0.0.0',
-        'reference' => null,
+        'pretty_version' => 'dev-main',
+        'version' => 'dev-main',
+        'reference' => '1d705081e18e984e941ecd3c1af6dc1106bfd946',
         'type' => 'library',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
         'dev' => true,
     ),
     'versions' => array(
+        'midtrans/midtrans-php' => array(
+            'pretty_version' => '2.6.2',
+            'version' => '2.6.2.0',
+            'reference' => '8ed7fc58ff1ababe675da17acf8233f4028eb3be',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../midtrans/midtrans-php',
+            'aliases' => array(),
+            'dev_requirement' => false,
+        ),
         'phpmailer/phpmailer' => array(
             'pretty_version' => 'v6.10.0',
             'version' => '6.10.0.0',
@@ -20,9 +29,9 @@
             'dev_requirement' => false,
         ),
         'project/photobooth-app' => array(
-            'pretty_version' => '1.0.0+no-version-set',
-            'version' => '1.0.0.0',
-            'reference' => null,
+            'pretty_version' => 'dev-main',
+            'version' => 'dev-main',
+            'reference' => '1d705081e18e984e941ecd3c1af6dc1106bfd946',
             'type' => 'library',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),

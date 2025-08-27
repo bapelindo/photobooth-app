@@ -14,8 +14,21 @@ class PhotoController extends Controller
     public function selectFrame($transaction_id)
     {
         Session::start();
-        
-        if (Session::get('workflow_step') !== 'frame_selection_unlocked' || Session::get('current_transaction_id') != $transaction_id) {
+        // error_log('PhotoController::selectFrame - Incoming transaction_id: ' . $transaction_id);
+        // error_log('PhotoController::selectFrame - Session workflow_step: ' . Session::get('workflow_step'));
+        // error_log('PhotoController::selectFrame - Session current_transaction_id: ' . Session::get('current_transaction_id'));
+
+        $sessionWorkflowStep = Session::get('workflow_step');
+        $sessionCurrentTransactionId = Session::get('current_transaction_id');
+
+        $condition1 = ($sessionWorkflowStep !== 'frame_selection_unlocked');
+        $condition2 = ($sessionCurrentTransactionId != $transaction_id);
+
+        // error_log('PhotoController::selectFrame - Condition 1 (workflow_step check): ' . ($condition1 ? 'TRUE' : 'FALSE') . ' (Session: ' . $sessionWorkflowStep . ', Expected: frame_selection_unlocked)');
+        // error_log('PhotoController::selectFrame - Condition 2 (transaction_id check): ' . ($condition2 ? 'TRUE' : 'FALSE') . ' (Session: ' . $sessionCurrentTransactionId . ', URL: ' . $transaction_id . ')');
+        // error_log('PhotoController::selectFrame - Overall condition for redirect: ' . (($condition1 || $condition2) ? 'TRUE' : 'FALSE'));
+
+        if ($condition1 || $condition2) {
             $this->flashAndRedirect('packages', 'Sesi sebelumnya telah berakhir atau tidak valid. Silakan mulai lagi.');
         }
         
@@ -25,12 +38,12 @@ class PhotoController extends Controller
         $transactionModel = $this->model('Transaction');
         $transaction = $transactionModel->find($transaction_id);
         if (!$transaction) {
-            die("Transaksi tidak ditemukan.");
+            // Handle error: Transaction not found
         }
         $packageModel = $this->model('Package');
         $package = $packageModel->find($transaction->package_id);
         if (!$package) {
-            die("Paket tidak ditemukan.");
+            // Handle error: Package not found
         }
 
         $assetModel = $this->model('Asset');
@@ -53,11 +66,11 @@ class PhotoController extends Controller
         
         $transactionModel = $this->model('Transaction');
         $transaction = $transactionModel->find($transaction_id);
-        if (!$transaction) { die("Transaksi tidak ditemukan."); }
+        if (!$transaction) { /* Handle error: Transaction not found */ }
 
         $packageModel = $this->model('Package');
         $package = $packageModel->find($transaction->package_id);
-        if (!$package) { die("Paket tidak ditemukan."); }
+        if (!$package) { $this->flashAndRedirect('packages', 'Paket tidak ditemukan.', 'error'); }
         
         $session_key = 'retake_limit_' . $transaction_id;
         if (!Session::has($session_key)) {
@@ -128,7 +141,7 @@ class PhotoController extends Controller
         
         $photoModel = $this->model('Photo');
         $data['photo'] = $photoModel->find($photo_id);
-        if (!$data['photo']) { die('Foto tidak ditemukan.'); }
+        if (!$data['photo']) { $this->flashAndRedirect('packages', 'Foto tidak ditemukan.', 'error'); }
 
         $this->view('photo/finalize', $data);
     }
@@ -209,7 +222,7 @@ class PhotoController extends Controller
 
         } catch (Throwable $e) {
             http_response_code(500);
-            error_log('Error in ajax_save_captured_photos: ' . $e->getMessage());
+                        error_log('Error in ajax_save_captured_photos: ' . $e->getMessage());
             echo json_encode(['success' => false, 'message' => 'Terjadi kesalahan internal: ' . $e->getMessage()]);
         }
     }
@@ -229,6 +242,7 @@ class PhotoController extends Controller
 
         try {
             $input = json_decode(file_get_contents('php://input'), true);
+
             $imageData = $input['image'];
             $transactionId = Session::get('transaction_id');
 
@@ -304,7 +318,6 @@ class PhotoController extends Controller
             $photoPath = dirname(APPROOT) . '/public' . $photo->file_path;
             
             if (!file_exists($photoPath) || !is_readable($photoPath)) {
-                error_log("Gagal mengirim email: File foto tidak ditemukan di " . $photoPath);
                 throw new Exception('File foto tidak dapat ditemukan di server.');
             }
 

@@ -6,6 +6,8 @@ $vendorDir = dirname(__DIR__);
 $baseDir = dirname($vendorDir);
 
 return array(
+    'SnapBi\\' => array($vendorDir . '/midtrans/midtrans-php/SnapBi'),
     'PHPMailer\\PHPMailer\\' => array($vendorDir . '/phpmailer/phpmailer/src'),
+    'Midtrans\\' => array($vendorDir . '/midtrans/midtrans-php/Midtrans'),
     'App\\' => array($baseDir . '/app'),
 );

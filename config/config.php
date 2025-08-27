@@ -5,15 +5,23 @@
 // install imagick
 // install Sony Remote SDK
 // install webshocket
+// install midtrans-php
+// install phpmailer
+// install composer
+// ngrok http 80
+
 // App Root
 define('APPROOT', dirname(dirname(__FILE__)) . '/app'); // -> .../photobooth-app/app
 
 // URL Root
 // Ganti 'http://localhost/photobooth-app' sesuai dengan URL proyek Anda
-define('URLROOT', 'http://10.10.10.240/photobooth-app'); 
+define('URLROOT', 'https://3dd32c9fef23.ngrok-free.app/photobooth-app'); 
 
 // Site Name
 define('SITENAME', 'Acara Photobooth');
+
+// Live View WebSocket URL
+define('LIVE_VIEW_WEBSOCKET_URL', 'ws://localhost:8765');
 
 
 // --- PENGATURAN EMAIL (SMTP) ---

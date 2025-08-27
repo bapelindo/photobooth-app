@@ -58,8 +58,9 @@ class AdminController extends Controller {
             $packageModel = $this->model('Package');
             if ($packageModel->create($data)) {
                 $this->redirect('admin/packages');
+            } else {
+                $this->flashAndRedirect('admin/packages', 'Gagal menyimpan paket.', 'error');
             }
-            die('Gagal menyimpan paket.');
         }
     }
 
@@ -73,7 +74,7 @@ class AdminController extends Controller {
             $data['title'] = 'Edit Package';
             $this->adminView('admin/packages/edit', $data);
         } else {
-            die('Paket tidak ditemukan.');
+            $this->flashAndRedirect('admin/packages', 'Paket tidak ditemukan.', 'error');
         }
     }
 
@@ -92,8 +93,9 @@ class AdminController extends Controller {
             $packageModel = $this->model('Package');
             if ($packageModel->update($id, $data)) {
                 $this->redirect('admin/packages');
+            } else {
+                $this->flashAndRedirect('admin/packages', 'Gagal memperbarui paket.', 'error');
             }
-            die('Gagal memperbarui paket.');
         }
     }
 
@@ -103,8 +105,9 @@ class AdminController extends Controller {
             $packageModel = $this->model('Package');
             if ($packageModel->delete($id)) {
                 $this->redirect('admin/packages');
+            } else {
+                $this->flashAndRedirect('admin/packages', 'Gagal menghapus paket.', 'error');
             }
-            die('Gagal menghapus paket.');
         }
     }
 
@@ -136,11 +139,11 @@ class AdminController extends Controller {
             } else if (isset($_FILES['asset_file'])) {
                 $file = $_FILES['asset_file'];
                 if ($file['error'] !== UPLOAD_ERR_OK) {
-                    die('File upload error!');
+                    $this->flashAndRedirect('admin/assets', 'File upload error!', 'error');
                 }
                 $allowedTypes = ['image/png', 'image/jpeg', 'image/gif'];
                 if (!in_array($file['type'], $allowedTypes)) {
-                    die('Invalid file type. Only PNG, JPG, GIF are allowed.');
+                    $this->flashAndRedirect('admin/assets', 'Invalid file type. Only PNG, JPG, GIF are allowed.', 'error');
                 }
                 
                 $uploadDir = "../public/assets/{$assetType}s/";
@@ -153,10 +156,10 @@ class AdminController extends Controller {
                 $dbPath = "/assets/{$assetType}s/" . $filename;
 
                 if (!move_uploaded_file($file['tmp_name'], $destination)) {
-                     die('Failed to save asset file.');
+                     $this->flashAndRedirect('admin/assets', 'Failed to save asset file.', 'error');
                 }
             } else {
-                die('No file or value provided for asset.');
+                $this->flashAndRedirect('admin/assets', 'No file or value provided for asset.', 'error');
             }
 
             $data = [
@@ -169,7 +172,7 @@ class AdminController extends Controller {
             if ($assetModel->create($data)) {
                 $this->redirect('admin/assets');
             } else {
-                die('Failed to save asset to database.');
+                $this->flashAndRedirect('admin/assets', 'Failed to save asset to database.', 'error');
             }
         }
     }
@@ -202,7 +205,7 @@ class AdminController extends Controller {
         $asset = $assetModel->find($id);
 
         if (!$asset || $asset->type !== 'frame') {
-            die('Frame asset not found.');
+            $this->flashAndRedirect('admin/assets', 'Frame asset not found.', 'error');
         }
 
         $data['asset'] = $asset;
