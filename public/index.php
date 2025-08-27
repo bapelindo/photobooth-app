@@ -59,6 +59,7 @@ $router->post('admin/assets/delete/{id}', 'App\Controllers\AdminController@delet
 $router->get('admin/assets/editFrame/{id}', 'App\Controllers\AdminController@editFrame');
 $router->post('admin/assets/ajax_save_frame_data', 'App\Controllers\AdminController@ajax_save_frame_data');
 $router->get('admin/gallery', 'App\Controllers\AdminController@showGallery');
+$router->post('admin/gallery/delete/{id}', 'App\Controllers\AdminController@deletePhoto');
 
 
 // Rute POST (untuk AJAX)

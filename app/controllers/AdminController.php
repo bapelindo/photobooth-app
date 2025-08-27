@@ -265,4 +265,26 @@ class AdminController extends Controller {
         $data['live_view_websocket_url'] = LIVE_VIEW_WEBSOCKET_URL;
         $this->adminView('admin/camera', $data);
     }
+
+    public function deletePhoto($id)
+    {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $photoModel = $this->model('Photo');
+            $photo = $photoModel->find($id);
+
+            if ($photo) {
+                // Hapus file dari server
+                // Assuming file_path in DB is like /public/uploads/photo/filename.png
+                $filePath = dirname(APPROOT) . $photo->file_path; 
+                
+                // Check if the file exists and is a file (not a directory) before unlinking
+                if (file_exists($filePath) && is_file($filePath)) {
+                    unlink($filePath);
+                }
+                // Hapus record dari DB
+                $photoModel->delete($id);
+            }
+            $this->redirect('admin/gallery');
+        }
+    }
 }

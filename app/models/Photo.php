@@ -56,7 +56,20 @@ class Photo
     {
         return $this->db->lastInsertId();
     }
-        public function updateEmailedTo($id, $email)
+
+    /**
+     * Delete a photo record from the database by its ID.
+     * @param int $id
+     * @return bool
+     */
+    public function delete($id)
+    {
+        $this->db->query("DELETE FROM photos WHERE id = :id");
+        $this->db->bind(':id', $id);
+        return $this->db->execute();
+    }
+
+    public function updateEmailedTo($id, $email)
     {
         $this->db->query("UPDATE photos SET emailed_to = :email WHERE id = :id");
         $this->db->bind(':email', $email);
