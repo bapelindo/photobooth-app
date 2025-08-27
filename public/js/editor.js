@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const saveBtn = document.getElementById('save-photo-btn');
     const trashCan = document.getElementById('trash-can');
 
-    // --- Konfigurasi Kontrol Stiker (Tetap sama) ---
+    // --- Konfigurasi Kontrol Stiker ---
     fabric.Object.prototype.set({
         transparentCorners: false,
         cornerColor: 'rgba(102,153,255,0.8)',
@@ -14,21 +14,20 @@ document.addEventListener('DOMContentLoaded', () => {
         padding: 10,
         cornerStyle: 'circle',
         borderDashArray: [3, 3],
-        // Menambahkan property kustom untuk menyimpan status hover asli
         _isHovered: false 
     });
 
-    // --- Pengaturan Ukuran Kanvas (Tetap sama) ---
+    // --- Pengaturan Ukuran Kanvas ---
     const DPI = 150;
     const STRIP_WIDTH_IN = 2;
     const STRIP_HEIGHT_IN = 6;
-    const highResWidth = STRIP_WIDTH_IN * DPI; // 300px
-    const highResHeight = STRIP_HEIGHT_IN * DPI; // 900px
+    const highResWidth = STRIP_WIDTH_IN * DPI;
+    const highResHeight = STRIP_HEIGHT_IN * DPI;
 
     canvas.setWidth(highResWidth);
     canvas.setHeight(highResHeight);
 
-    // --- Memuat Gambar dan Komposisi (Tetap sama) ---
+    // --- Memuat Gambar dan Komposisi ---
     const loadImage = (url) => {
         return new Promise((resolve, reject) => {
             fabric.Image.fromURL(url, (img) => {
@@ -38,35 +37,19 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     };
 
+    /**
+     * FUNGSI KUNCI: Sekarang hanya memuat satu gambar (photostrip)
+     * sebagai background kanvas. Tidak ada lagi proses penggabungan di sini.
+     */
     const initializeEditor = async () => {
         try {
-            if (framePath) {
-                const frameImg = await loadImage(framePath);
-                canvas.setBackgroundImage(frameImg, canvas.renderAll.bind(canvas), {
-                    scaleX: canvas.getWidth() / frameImg.width,
-                    scaleY: canvas.getHeight() / frameImg.height,
-                });
-            }
-
-            const photoPromises = capturedPhotos.map(photoUrl => loadImage(photoUrl));
-            const photoImages = await Promise.all(photoPromises);
-
-            const numPhotos = photoImages.length;
-            const photoHeight = canvas.getHeight() / numPhotos;
-            const photoWidth = photoHeight * (4 / 3);
-            const xOffset = (canvas.getWidth() - photoWidth) / 2;
-
-            photoImages.forEach((img, index) => {
-                const yOffset = index * photoHeight;
-                img.set({
-                    left: xOffset,
-                    top: yOffset,
-                    scaleX: photoWidth / img.width,
-                    scaleY: photoHeight / img.height,
-                    selectable: false,
-                    evented: false,
-                });
-                canvas.add(img);
+            // Muat gambar photostrip yang sudah jadi dari server
+            const photostripImg = await loadImage(photostripUrl);
+            
+            // Atur sebagai background kanvas, diskalakan agar pas
+            canvas.setBackgroundImage(photostripImg, canvas.renderAll.bind(canvas), {
+                scaleX: canvas.getWidth() / photostripImg.width,
+                scaleY: canvas.getHeight() / photostripImg.height,
             });
             
             canvas.renderAll();
@@ -77,7 +60,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // --- Fungsionalitas Stiker (Tetap sama) ---
+    // --- Fungsionalitas Stiker ---
     const stickerItems = document.querySelectorAll('.sticker-item');
     stickerItems.forEach(item => {
         item.addEventListener('click', () => {
@@ -90,24 +73,19 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // --- Fungsionalitas Drag-to-Delete yang Diperbaiki ---
+    // --- Fungsionalitas Drag-to-Delete ---
     function isOverTrash(obj) {
         if (!obj || !trashCan) return false;
         
-        // Dapatkan posisi dan ukuran trashCan dalam koordinat viewport
         const trashRect = trashCan.getBoundingClientRect();
-        
-        // Dapatkan posisi objek Fabric.js dalam koordinat kanvas
         const objBoundingRect = obj.getBoundingRect();
-        const canvasRect = canvas.getElement().getBoundingClientRect(); // Posisi kanvas di viewport
+        const canvasRect = canvas.getElement().getBoundingClientRect();
 
-        // Konversi koordinat objek dari kanvas ke viewport
         const objViewportLeft = canvasRect.left + objBoundingRect.left;
         const objViewportTop = canvasRect.top + objBoundingRect.top;
         const objViewportRight = objViewportLeft + objBoundingRect.width;
         const objViewportBottom = objViewportTop + objBoundingRect.height;
 
-        // Cek overlap
         return objViewportRight > trashRect.left &&
                objViewportLeft < trashRect.right &&
                objViewportBottom > trashRect.top &&
@@ -116,7 +94,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     canvas.on('object:moving', (e) => {
         const obj = e.target;
-        if (!obj || obj.selectable === false) return; // Hanya stiker yang bisa dipindahkan
+        if (!obj || obj.selectable === false) return;
         
         trashCan.classList.add('visible');
 
@@ -130,10 +108,9 @@ document.addEventListener('DOMContentLoaded', () => {
         canvas.renderAll();
     });
 
-    // Deteksi hover pada stiker (di kanvas)
     canvas.on('mouse:over', (e) => {
-        if (e.target && e.target.selectable !== false) { // Pastikan itu stiker, bukan foto background
-            e.target._isHovered = true; // Tandai stiker sedang dihover
+        if (e.target && e.target.selectable !== false) {
+            e.target._isHovered = true;
             e.target.set('shadow', new fabric.Shadow({
                 color: 'rgba(102,153,255,0.5)',
                 blur: 20,
@@ -152,7 +129,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Menyembunyikan tempat sampah saat objek tidak lagi di-drag atau diubah
     canvas.on('mouse:up', (e) => {
         trashCan.classList.remove('visible', 'hover');
         if (e.target && e.target.selectable !== false) {
@@ -164,20 +140,19 @@ document.addEventListener('DOMContentLoaded', () => {
     canvas.on('object:modified', (e) => {
         const obj = e.target;
         if (obj && trashCan.classList.contains('hover')) {
-            // **Animasi Bounce-Delete**
             fabric.animate({
                 startValue: obj.get('scaleX'),
                 endValue: 0,
-                duration: 200, // Durasi animasi
-                easing: fabric.util.ease.easeOutBounce, // Efek bounce
+                duration: 200,
+                easing: fabric.util.ease.easeOutBounce,
                 onChange: (value) => {
                     obj.scale(value);
                     canvas.renderAll();
                 },
                 onComplete: () => {
                     canvas.remove(obj);
-                    canvas.discardActiveObject(); // Hapus objek aktif jika ada
-                    trashCan.classList.remove('visible', 'hover'); // Sembunyikan trash can
+                    canvas.discardActiveObject();
+                    trashCan.classList.remove('visible', 'hover');
                     canvas.renderAll();
                 }
             });
@@ -187,15 +162,15 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // --- Fungsionalitas Simpan (Tetap sama) ---
+    // --- Fungsionalitas Simpan ---
     saveBtn.addEventListener('click', async () => {
         saveBtn.disabled = true;
         saveBtn.textContent = 'Memproses...';
         try {
+            // Mengekspor seluruh kanvas (background photostrip + stiker) menjadi satu gambar final
             const dataUrl = canvas.toDataURL({
-                format: 'jpeg',
-                quality: 0.95,
-                multiplier: 1
+                format: 'png',
+                multiplier: 2 // Menghasilkan PNG kualitas tinggi
             });
             const response = await fetch(saveUrl, {
                 method: 'POST',

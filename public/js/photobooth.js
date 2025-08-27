@@ -109,15 +109,41 @@ document.addEventListener('DOMContentLoaded', () => {
         await startCountdown(3);
 
         const context = canvas.getContext('2d');
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
         
-        context.filter = selectedFilter; // Menerapkan filter
-        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+        // --- START: CROP LOGIC ---
+        // Calculate the 'visible' video frame dimensions based on object-fit: contain
+        const videoRatio = video.videoWidth / video.videoHeight;
+        const stage = document.querySelector('.main-stage');
+        const stageRatio = stage.clientWidth / stage.clientHeight;
+
+        let sWidth = video.videoWidth;
+        let sHeight = video.videoHeight;
+        let sx = 0;
+        let sy = 0;
+
+        // If stage is wider than video (letterbox on sides)
+        if (stageRatio > videoRatio) {
+            sWidth = video.videoHeight * stageRatio;
+            sx = (video.videoWidth - sWidth) / 2;
+        } else { // If stage is taller than video (letterbox on top/bottom)
+            sHeight = video.videoWidth / stageRatio;
+            sy = (video.videoHeight - sHeight) / 2;
+        }
+        
+        // The canvas should have the aspect ratio of the stage, not the raw video
+        canvas.width = sWidth;
+        canvas.height = sHeight;
+        
+        // Apply filter and draw the cropped image
+        context.filter = video.style.filter; // Use the same filter as the live preview
+        context.drawImage(video, sx, sy, sWidth, sHeight, 0, 0, canvas.width, canvas.height);
+        // --- END: CROP LOGIC ---
+
         const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
         
         const previewSlot = document.getElementById(`slot-${currentSlot}`);
-        previewSlot.innerHTML = `<img src="${dataUrl}" alt="Preview Foto ${currentSlot + 1}">`;
+        // The preview image should fill its container, object-fit will handle the rest
+        previewSlot.innerHTML = `<img src="${dataUrl}" alt="Preview Foto ${currentSlot + 1}" style="width: 100%; height: 100%; object-fit: cover;">`;
         capturedPhotos[currentSlot] = dataUrl;
         
         updateUIForConfirmation();

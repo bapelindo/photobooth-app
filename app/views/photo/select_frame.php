@@ -29,22 +29,20 @@
         }
         body.fade-out { opacity: 0; }
         .main-container {
-            display: grid;
-            grid-template-rows: auto 1fr;
+            display: flex;
+            flex-direction: column;
             width: 100%; max-width: 1200px; height: 95vh;
             background: rgba(255, 255, 255, 0.6);
             backdrop-filter: blur(12px); border-radius: 25px;
             padding: 20px; box-sizing: border-box;
             box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.2);
             border: 1px solid rgba(255, 255, 255, 0.2);
-            /* Animasi untuk container */
             opacity: 0;
             animation: contentFadeIn 0.5s ease-in 0.2s forwards;
             transition: opacity 0.5s ease-out;
         }
         .main-container.content-fade-out { opacity: 0; }
         
-        /* Semua elemen di dalam container awalnya disembunyikan */
         .main-container > * {
             opacity: 0;
             animation: innerElementFadeIn 0.5s ease-in 0.7s forwards;
@@ -57,41 +55,74 @@
         .info-panel h1 { font-family: var(--font-display); color: var(--primary-color); margin: 0; font-size: clamp(1.8rem, 4vh, 2.2rem); }
         .info-panel p { margin: 5px 0 0; color: #555; font-size: clamp(0.8rem, 2vh, 1rem); }
         .info-panel.fade-out { opacity: 0; transform: scale(0.95); }
-        .frames-grid-container { overflow: hidden; min-height: 0; }
+        
+        .frames-grid-container {
+            flex-grow: 1;
+            overflow-y: auto;
+            min-height: 0;
+            padding: 10px;
+        }
+
+        .frames-grid-container::-webkit-scrollbar {
+            width: 8px;
+        }
+        .frames-grid-container::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+        }
+        .frames-grid-container::-webkit-scrollbar-thumb {
+            background: var(--primary-color);
+            border-radius: 10px;
+        }
+        .frames-grid-container::-webkit-scrollbar-thumb:hover {
+            background: #554cff;
+        }
+
         .frames-grid {
             display: grid; 
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); 
+            grid-template-columns: repeat(auto-fill, minmax(24vh, 1fr)); 
             gap: 20px; 
-            padding: 10px;
-            height: 68vh;
-            grid-template-rows: repeat(auto-fit, minmax(240px, 1fr));
         }
+
         .frame-card {
-            background-color: var(--card-bg); border-radius: 15px;
+            background-color: var(--card-bg); 
+            border-radius: 15px;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
             cursor: pointer;
-            text-decoration: none; color: inherit;
-            border: 2px solid transparent;
-            display: flex; flex-direction: column;
+            text-decoration: none; 
+            color: inherit;
+            border: 3px solid transparent;
             overflow: hidden;
-            transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+            transition: all 0.3s ease-out;
+            aspect-ratio: 2 / 6;
         }
+
         .frame-card:hover {
-            transform: translateY(-8px) scale(1.02);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-            border-color: var(--secondary-color);
+            transform: translateY(-8px) scale(1.03);
+            box-shadow: 0 10px 30px rgba(108, 99, 255, 0.25);
+            border-color: var(--primary-color);
         }
+
+        .frame-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .frame-card h2 {
+            display: none;
+        }
+
         .frame-card.frame-fade-out { opacity: 0; transform: scale(0.95); pointer-events: none; }
+        
         .frame-card-clone {
             position: fixed;
             z-index: 1000;
-            transition: top 0.5s cubic-bezier(0.4, 0, 0.2, 1), left 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
             border-radius: 15px;
             overflow: hidden;
             box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.3);
         }
-        .frame-card img { width: 100%; height: 90%; object-fit: cover; flex-grow: 1; }
-        .frame-card h2 { font-family: var(--font-display); font-size: 1.1rem; margin: 0; padding: 2px 10px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex-shrink: 0; background-color: #f8f9fa; }
     </style>
 </head>
 <body>
@@ -103,12 +134,16 @@
         </div>
         <div class="frames-grid-container">
             <div class="frames-grid">
-                <?php foreach ($frames as $frame): ?>
-                    <a href="<?= URLROOT; ?>/photo/capture/<?= $transaction_id ?>/<?= $frame->id ?>" class="frame-card">
-                        <img src="<?= URLROOT . htmlspecialchars($frame->path); ?>" alt="<?= htmlspecialchars($frame->name); ?>">
-                        <h2><?= htmlspecialchars($frame->name); ?></h2>
-                    </a>
-                <?php endforeach; ?>
+                <?php if (empty($data['frames'])): ?>
+                    <p style="text-align: center; grid-column: 1 / -1;">Tidak ada bingkai yang tersedia untuk paket foto ini. Hubungi admin.</p>
+                <?php else: ?>
+                    <?php foreach ($data['frames'] as $frame): ?>
+                        <a href="<?= URLROOT; ?>/photo/capture/<?= $data['transaction_id'] ?>/<?= $frame->id ?>" class="frame-card">
+                            <img src="<?= URLROOT . htmlspecialchars($frame->path); ?>" alt="<?= htmlspecialchars($frame->name); ?>">
+                            <h2><?= htmlspecialchars($frame->name); ?></h2>
+                        </a>
+                    <?php endforeach; ?>
+                <?php endif; ?>
             </div>
         </div>
     </div>
@@ -119,12 +154,13 @@
             const infoPanel = document.querySelector('.info-panel');
             const body = document.body;
 
+            if (allFrames.length === 0) return;
+
             allFrames.forEach(clickedFrame => {
                 clickedFrame.addEventListener('click', function(e) {
                     e.preventDefault();
                     const destination = this.href;
 
-                    // 1. Judul dan bingkai yang tidak dipilih menghilang
                     infoPanel.classList.add('fade-out');
                     allFrames.forEach(frame => {
                         if (frame !== this) {
@@ -132,7 +168,6 @@
                         }
                     });
 
-                    // Jeda singkat sebelum bingkai pilihan bergerak
                     setTimeout(() => {
                         const clickedFrameRect = this.getBoundingClientRect();
                         const clone = this.cloneNode(true);
@@ -146,13 +181,11 @@
                         body.appendChild(clone);
                         this.style.opacity = '0';
 
-                        // 2. Bingkai yang dipilih bergerak ke tengah
                         setTimeout(() => {
                             clone.style.left = `calc(50% - ${clickedFrameRect.width / 2}px)`;
                             clone.style.top = `calc(50% - ${clickedFrameRect.height / 2}px)`;
                         }, 50);
 
-                        // 3. Setelah sampai di tengah, kecilkan & pudarkan bersama body
                         setTimeout(() => {
                             clone.style.transition = 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)';
                             clone.style.transform = 'scale(0.1)';
@@ -161,7 +194,6 @@
                             body.classList.add('fade-out');
                         }, 600); 
 
-                        // 4. Navigasi setelah animasi selesai
                         setTimeout(() => {
                             window.location.href = destination;
                         }, 1100); 

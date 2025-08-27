@@ -22,7 +22,7 @@
         }
         .photobooth-container {
             display: grid; 
-            grid-template-columns: auto 1fr; /* Changed back to auto */
+            grid-template-columns: auto 1fr;
             grid-template-rows: auto 1fr;
             gap: 20px; width: 100%; max-width: 1200px; height: 90vh;
             background: rgba(255, 255, 255, 0.5); backdrop-filter: blur(10px);
@@ -37,26 +37,51 @@
         @keyframes fadeIn { to { opacity: 1; transform: scale(1); } }
         @keyframes fadeInElements { to { opacity: 1; } }
         
-.sidebar {
-            grid-row: 1 / 3; background-color: rgba(255, 255, 255, 0.7);
-            border-radius: 20px; padding: 20px; display: flex; flex-direction: column;
-            gap: 15px; overflow: hidden;
+        .sidebar {
+            grid-row: 1 / 3; 
+            position: relative; 
+            background-color: rgba(255, 255, 255, 0.7);
+            border-radius: 15px; 
+            padding: 0;
+            overflow: hidden;
             background-image: url('<?= isset($data['selected_frame']) ? URLROOT . htmlspecialchars($data['selected_frame']->path) : '' ?>');
-            background-size: cover; background-position: center; background-repeat: no-repeat;
-            max-height: 100%; /* Ensure it doesn't exceed container height */
-            max-width: 100%;  /* Ensure it doesn't exceed container width */
-            aspect-ratio: 2 / 6; /* Maintain 2x6 inch aspect ratio */
+            background-size: 100% 100%;
+            background-position: center; 
+            background-repeat: no-repeat;
+            max-height: 100%;
+            max-width: 100%;
+            aspect-ratio: 2 / 6; 
             height: auto;
             width: auto;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
         }
+
         .preview-slot {
-            width: 100%; aspect-ratio: 4 / 3; background: rgba(224, 232, 240, 0.8);
-            border: 3px dashed #c0d1e6; border-radius: 10px; display: flex;
-            align-items: center; justify-content: center; font-size: 0.9em;
-            color: #555; overflow: hidden; transition: transform 0.2s ease;
+            position: absolute;
+            box-sizing: border-box;
+            background: rgba(224, 232, 240, 0.8);
+            border: 3px dashed #c0d1e6; 
+            border-radius: 10px; 
+            display: flex;
+            align-items: center; 
+            justify-content: center; 
+            font-size: 0.9em;
+            color: #555; 
+            overflow: hidden; 
+            transition: all 0.2s ease;
         }
-        .preview-slot img { width: 100%; height: 100%; object-fit: cover; }
-        .preview-slot.active { border-color: var(--secondary-color); transform: scale(1.05); }
+
+        .preview-slot img { 
+            width: 100%; 
+            height: 100%; 
+            object-fit: cover;
+        }
+        .preview-slot.active { 
+            border-color: var(--secondary-color); 
+            transform: scale(1.05); 
+            border-style: solid;
+            box-shadow: 0 0 15px var(--secondary-color);
+        }
 
         .top-panel {
             grid-column: 2 / 3;
@@ -68,11 +93,11 @@
             flex-grow: 1;
             text-align: center; padding: 10px;
             background-color: var(--card-bg); border-radius: 20px;
-            display: flex; /* Changed to flex */
-            flex-direction: row; /* Changed to row */
-            align-items: center; /* Vertically align them in the middle */
-            justify-content: center; /* Horizontally center them */
-            gap: 50px; /* Add a small gap between h1 and p */
+            display: flex; 
+            flex-direction: row; 
+            align-items: center; 
+            justify-content: center; 
+            gap: 50px; 
         }
         .info-panel h1, .info-panel p {
             vertical-align: top; 
@@ -89,9 +114,9 @@
             position: relative; display: flex;
             justify-content: center; align-items: center; background: #000;
             border-radius: 20px; overflow: hidden;
-            aspect-ratio: 16 / 9; /* Re-added this */
-            max-width: 100%; /* Added this */
-            max-height: 100%; /* Added this */
+            aspect-ratio: 16 / 9;
+            max-width: 100%;
+            max-height: 100%;
         }
         .controls-panel { 
             position: absolute; 
@@ -124,7 +149,7 @@
         .filter-options {
             display: none;
             position: absolute;
-            bottom: 120%; /* Position above the button */
+            bottom: 120%;
             left: 50%;
             transform: translateX(-50%);
             background-color: var(--card-bg);
@@ -133,19 +158,12 @@
             box-shadow: 0 -4px 20px rgba(0,0,0,0.2);
             z-index: 10;
             width: 200px;
-            max-height: 250px; /* Re-added max-height */
-            overflow-y: auto; /* Re-added overflow-y */
-            /* Hide scrollbar for WebKit browsers */
-            -webkit-overflow-scrolling: touch; /* For smooth scrolling on iOS */
+            max-height: 250px;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
         }
-        /* Hide scrollbar for WebKit browsers */
-        .filter-options::-webkit-scrollbar {
-            display: none;
-        }
-        /* Hide scrollbar for Firefox */
-        .filter-options {
-            scrollbar-width: none; /* Firefox */
-        }
+        .filter-options::-webkit-scrollbar { display: none; }
+        .filter-options { scrollbar-width: none; }
         .filter-option {
             padding: 12px 15px;
             cursor: pointer;
@@ -156,43 +174,54 @@
         .filter-option:hover { background-color: #f0f0f0; }
         .filter-option.active { background-color: var(--accent-color); color: var(--dark-text); }
 
-        /* Default filter button positioning for desktop (not fullscreen) */
-        .controls-panel .filter-container {
-            margin-left: auto; /* Pushes filter button to the right by default */
-        }
+        .controls-panel .filter-container { margin-left: auto; }
 
-        /* Styles for fullscreen (min-width: 1600px) */
         @media (min-height: 600px) {
-
-            .controls-panel .filter-container {
-                margin-left: 0; /* Reset margin for fullscreen */
-            }
+            .controls-panel .filter-container { margin-left: 0; }
             .info-panel {
-            flex-grow: 1;
-            text-align: center; padding: 25px;
-            background-color: var(--card-bg); border-radius: 20px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-        .info-panel h1 { font-family: var(--font-display); color: var(--primary-color); margin: 0; font-size: 2rem; }
-        .info-panel p { margin: 0px 0 0; color: #555; }
-        .info-panel #retake-count { font-weight: bold; color: var(--secondary-color); }
-        .info-panel h1, .info-panel p {
-            vertical-align: baseline; 
-            line-height: 0px;
-            margin: 0;
-        }
-
+                flex-grow: 1;
+                text-align: center; padding: 25px;
+                background-color: var(--card-bg); border-radius: 20px;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+            }
+            .info-panel h1 { font-family: var(--font-display); color: var(--primary-color); margin: 0; font-size: 2rem; }
+            .info-panel p { margin: 0px 0 0; color: #555; }
+            .info-panel #retake-count { font-weight: bold; color: var(--secondary-color); }
+            .info-panel h1, .info-panel p {
+                vertical-align: baseline; 
+                line-height: 0px;
+                margin: 0;
+            }
         }
     </style>
 </head>
 <body>
     <div class="photobooth-container">
         <aside class="sidebar capture-sidebar">
-            <?php for ($i = 0; $i < $data['package']->photo_limit; $i++): ?>
-                <div class="preview-slot" id="slot-<?= $i; ?>">Slot <?= $i + 1; ?></div>
-            <?php endfor; ?>
+            <?php 
+            $slots = [];
+            if (isset($data['selected_frame']) && !empty($data['selected_frame']->slot_coordinates)) {
+                $slots = json_decode($data['selected_frame']->slot_coordinates, true);
+            } else {
+                // Fallback for frames without coordinates
+                for ($i = 0; $i < $data['package']->photo_limit; $i++) {
+                    $slots[] = ['top' => 4.5 + ($i * 22.5), 'left' => 8, 'width' => 84, 'height' => 18]; // Default staggered layout
+                }
+            }
+
+            foreach ($slots as $i => $slot): 
+                $style = sprintf(
+                    'top: %.2f%%; left: %.2f%%; width: %.2f%%; height: %.2f%%;',
+                    $slot['top'],
+                    $slot['left'],
+                    $slot['width'],
+                    $slot['height']
+                );
+            ?>
+                <div class="preview-slot" id="slot-<?= $i; ?>" style="<?= $style; ?>">Slot <?= $i + 1; ?></div>
+            <?php endforeach; ?>
         </aside>
 
         <div class="top-panel">

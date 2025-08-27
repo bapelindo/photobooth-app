@@ -44,9 +44,8 @@
     </div>
 
     <script>
-        const capturedPhotos = <?= json_encode($data['captured_photos']); ?>;
-        const framePath = '<?= $data['frame_path'] ? URLROOT . $data['frame_path'] : '' ?>';
-        const filter = '<?= $data['filter'] ?>';
+        // Data yang dibutuhkan sekarang lebih sederhana dan konsisten
+        const photostripUrl = '<?= $data['photostrip_url']; ?>';
         const saveUrl = '<?= URLROOT; ?>/photo/ajax_save_final_photostrip';
     </script>
     <script src="<?= URLROOT; ?>/js/fabric.js"></script> 

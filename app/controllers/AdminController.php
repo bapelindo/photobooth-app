@@ -162,7 +162,7 @@ class AdminController extends Controller {
             $data = [
                 'name' => $_POST['name'],
                 'type' => $assetType,
-                'file_path' => $dbPath
+                'path' => $dbPath
             ];
             
             $assetModel = $this->model('Asset');
@@ -193,6 +193,54 @@ class AdminController extends Controller {
                 $assetModel->delete($id);
             }
             $this->redirect('admin/assets');
+        }
+    }
+
+    public function editFrame($id)
+    {
+        $assetModel = $this->model('Asset');
+        $asset = $assetModel->find($id);
+
+        if (!$asset || $asset->type !== 'frame') {
+            die('Frame asset not found.');
+        }
+
+        $data['asset'] = $asset;
+        $data['title'] = 'Edit Frame Slots';
+        $this->adminView('admin/assets/edit_frame', $data);
+    }
+
+    public function ajax_save_frame_data()
+    {
+        header('Content-Type: application/json');
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            http_response_code(405);
+            echo json_encode(['success' => false, 'message' => 'Method Not Allowed']);
+            return;
+        }
+
+        $input = json_decode(file_get_contents('php://input'), true);
+        $assetId = $input['asset_id'] ?? null;
+        $slotCount = $input['slot_count'] ?? 0;
+        $coordinates = $input['coordinates'] ?? null;
+
+        if (!$assetId || !is_array($coordinates)) {
+            http_response_code(400);
+            echo json_encode(['success' => false, 'message' => 'Invalid input.']);
+            return;
+        }
+
+        $dataToUpdate = [
+            'slot_count' => $slotCount,
+            'slot_coordinates' => json_encode($coordinates)
+        ];
+
+        $assetModel = $this->model('Asset');
+        if ($assetModel->updateFrameData($assetId, $dataToUpdate)) {
+            echo json_encode(['success' => true, 'message' => 'Frame data saved successfully.']);
+        } else {
+            http_response_code(500);
+            echo json_encode(['success' => false, 'message' => 'Failed to save frame data to database.']);
         }
     }
 

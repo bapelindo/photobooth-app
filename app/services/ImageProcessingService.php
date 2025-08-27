@@ -50,61 +50,52 @@ class ImageProcessingService
         }
     }
 
-    public function createPhotoStrip($photoPaths, $framePath, $outputPath, $filter = 'none')
+    public function createPhotoStrip($photoPaths, $framePath, $outputPath, $slotCoordinates, $filter = 'none')
     {
         try {
-            if (empty($photoPaths)) {
+            if (empty($photoPaths) || !$framePath || !file_exists($framePath) || !$slotCoordinates) {
+                // If we don't have a frame or coordinates, we can't proceed with this logic.
+                // You might want to add a fallback to the old method here if needed.
+                error_log('ImageProcessing Error: Frame path or slot coordinates are missing.');
                 return false;
             }
 
-            $firstImage = new Imagick($photoPaths[0]);
-            $photoWidth = $firstImage->getImageWidth();
-            $photoHeight = $firstImage->getImageHeight();
-            $firstImage->clear();
-            
-            $photoCount = count($photoPaths);
-            $spacing = 10;
+            $frame = new Imagick($framePath);
+            $frameWidth = $frame->getImageWidth();
+            $frameHeight = $frame->getImageHeight();
 
-            $photoStrip = new Imagick();
+            foreach ($photoPaths as $index => $photoPath) {
+                if (!isset($slotCoordinates[$index])) {
+                    continue; // Skip if there is no coordinate for this photo
+                }
 
-            if ($framePath && file_exists($framePath)) {
-                $photoStrip->readImage($framePath);
-                $stripWidth = $photoStrip->getImageWidth();
-                $stripHeight = $photoStrip->getImageHeight();
-            } else {
-                $stripWidth = $photoWidth;
-                $stripHeight = ($photoHeight * $photoCount) + ($spacing * ($photoCount - 1));
-                $photoStrip->newImage($stripWidth, $stripHeight, 'white', 'jpg');
-            }
-            
-            $paddingX = (int) ($stripWidth * 0.05);
-            $paddingY = (int) ($stripHeight * 0.05);
-            $contentWidth = (int) ($stripWidth - (2 * $paddingX));
-            $contentHeight = (int) ($stripHeight - (2 * $paddingY));
-            
-            $totalSpacing = (int) ($spacing * ($photoCount - 1));
-            $slotHeight = (int) (($contentHeight - $totalSpacing) / $photoCount);
-            $slotWidth = (int) $contentWidth;
+                $coords = $slotCoordinates[$index];
+                $photo = new Imagick($photoPath);
 
-            $yOffset = $paddingY;
-            foreach ($photoPaths as $path) {
-                $photo = new Imagick($path);
-                
-                // Menerapkan filter jika ada
+                // Apply filter if specified
                 if ($filter !== 'none') {
                     $this->applyFilter($photo, $filter);
                 }
+
+                // Calculate pixel values from percentages
+                $targetWidth = (int)($frameWidth * ($coords['width'] / 100));
+                $targetHeight = (int)($frameHeight * ($coords['height'] / 100));
+                $targetX = (int)($frameWidth * ($coords['left'] / 100));
+                $targetY = (int)($frameHeight * ($coords['top'] / 100));
+
+                // Resize the photo to fit the slot dimensions
+                $photo->resizeImage($targetWidth, $targetHeight, Imagick::FILTER_LANCZOS, 1, true);
+
+                // Composite the photo onto the frame at the specified coordinates
+                $frame->compositeImage($photo, Imagick::COMPOSITE_OVER, $targetX, $targetY);
                 
-                $photo->resizeImage($slotWidth, $slotHeight, Imagick::FILTER_LANCZOS, 1);
-                $photoStrip->compositeImage($photo, Imagick::COMPOSITE_OVER, $paddingX, (int) $yOffset);
-                $yOffset += $slotHeight + $spacing;
                 $photo->clear();
             }
 
-            $photoStrip->setImageFormat('jpeg');
-            $photoStrip->setImageCompressionQuality(95);
-            $photoStrip->writeImage($outputPath);
-            $photoStrip->clear();
+            $frame->setImageFormat('jpeg');
+            $frame->setImageCompressionQuality(95);
+            $frame->writeImage($outputPath);
+            $frame->clear();
 
             return true;
         } catch (ImagickException $e) {

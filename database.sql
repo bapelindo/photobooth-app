@@ -44,6 +44,8 @@ CREATE TABLE `assets` (
   `type` enum('frame','sticker','filter') NOT NULL,
   `path` varchar(255) NOT NULL,
   `name` varchar(100) DEFAULT NULL,
+  `slot_count` int(11) NOT NULL DEFAULT 0,
+  `slot_coordinates` TEXT NULL DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`),
   KEY `event_id` (`event_id`),

@@ -1,3 +1,10 @@
+<?php 
+    \App\Core\Session::start();
+    // LAPIS 1: MENCEGAH BROWSER MENYIMPAN CACHE
+    header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+    header("Cache-Control: post-check=0, pre-check=0", false);
+    header("Pragma: no-cache");
+?>
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -34,7 +41,6 @@
         .main-container.content-fade-out { opacity: 0; }
         @keyframes contentFadeIn { to { opacity: 1; } }
         
-        /* ... sisa CSS tidak berubah ... */
         .header-container { margin-bottom: 2vh; }
         .mascot { width: clamp(80px, 12vh, 120px); height: auto; animation: bounce 2s infinite ease-in-out; }
         @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
@@ -56,6 +62,14 @@
 </head>
 <body>
     <div class="main-container">
+
+        <?php if (\App\Core\Session::has('flash_message')): ?>
+            <div class="flash-message" style="background-color: #fff3cd; color: #856404; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #ffeeba; text-align: center;">
+                <?= \App\Core\Session::get('flash_message'); ?>
+                <?php \App\Core\Session::unset('flash_message'); ?>
+            </div>
+        <?php endif; ?>
+
         <div class="header-container">
             <img src="https://em-content.zobj.net/source/microsoft-teams/363/camera_1f4f7.png" alt="Cute Camera Mascot" class="mascot">
             <h1>Pilih Paket Kecerianmu!</h1>

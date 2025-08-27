@@ -2,6 +2,8 @@
 
 namespace App\Core;
 
+use Exception;
+
 class Controller {
     protected function model($model) {
         $model = 'App\\Models\\' . $model;
@@ -16,7 +18,7 @@ class Controller {
             
             require_once $viewFile;
         } else {
-            throw new Exception("View {$view} not found.");
+            throw new \Exception("View {$view} not found.");
         }
     }
 
@@ -32,12 +34,22 @@ class Controller {
             
             require_once '../app/views/admin/layout.php';
         } else {
-            throw new Exception("View {$view} not found.");
+            throw new \Exception("View {$view} not found.");
         }
     }
 
     protected function redirect($url) {
         header('Location: ' . \URLROOT . '/' . $url);
         exit();
+    }
+    
+    /**
+     * Menyimpan pesan flash ke sesi dan mengalihkan pengguna.
+     * @param string $url Tujuan redirect.
+     * @param string $message Pesan yang akan ditampilkan.
+     */
+    protected function flashAndRedirect($url, $message) {
+        Session::set('flash_message', $message);
+        $this->redirect($url);
     }
 }
