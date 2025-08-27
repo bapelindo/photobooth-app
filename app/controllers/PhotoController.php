@@ -67,6 +67,23 @@ class PhotoController extends Controller
         
         $assetModel = $this->model('Asset');
         $data['selected_frame'] = $frame_id ? $assetModel->find($frame_id) : null;
+
+        $frame_dimensions = [
+            'width' => 1,
+            'height' => 1
+        ];
+        if ($data['selected_frame']) {
+            $frame_path = dirname(APPROOT) . '/public' . $data['selected_frame']->path;
+            if (file_exists($frame_path)) {
+                list($width, $height) = getimagesize($frame_path);
+                if ($width && $height) {
+                    $frame_dimensions['width'] = $width;
+                    $frame_dimensions['height'] = $height;
+                }
+            }
+        }
+        $data['frame_dimensions'] = $frame_dimensions;
+
         $data['filters'] = $assetModel->getAssetsByType('filter');
         $data['transaction_id'] = $transaction_id;
         $data['frame_id'] = $frame_id;

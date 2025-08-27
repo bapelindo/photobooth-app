@@ -10,7 +10,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const keepBtn = document.getElementById('keep-btn');
     const retakePhotoBtn = document.getElementById('retake-photo-btn');
     const finishBtn = document.getElementById('finish-btn');
-    
+    const overlayGuide = document.querySelector('.overlay-guide');
+    const mainStage = document.querySelector('.main-stage');
+
     // --- MODIFIED: New Filter Elements ---
     const filterBtn = document.getElementById('filter-btn');
     const filterOptionsContainer = document.querySelector('.filter-options');
@@ -20,7 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentSlot = 0;
     const capturedPhotos = [];
     let stream = null;
-    let selectedFilter = 'none'; 
+    let selectedFilter = 'none';
 
     // --- Inisialisasi Kamera ---
     async function initCamera() {
@@ -30,7 +32,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 audio: false
             });
             video.srcObject = stream;
-            updateUIForCapture();
+            
+            video.onloadedmetadata = () => {
+                updateUIForCapture();
+            };
+
         } catch (err) {
             console.error("Error accessing camera:", err);
             infoText.textContent = "Kamera Error!";
@@ -38,10 +44,44 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // --- NEW: Update Overlay Guide ---
+    function updateOverlayGuide(slotIndex) {
+        if (!overlayGuide || typeof SLOTS_DATA === 'undefined' || !SLOTS_DATA[slotIndex] || typeof FRAME_DIMENSIONS === 'undefined') {
+            if(overlayGuide) overlayGuide.style.display = 'none';
+            return;
+        }
+        
+        overlayGuide.style.display = 'block';
+
+        const slot = SLOTS_DATA[slotIndex];
+        const frameAspectRatio = FRAME_DIMENSIONS.width / FRAME_DIMENSIONS.height;
+        const slotAspectRatio = frameAspectRatio * (slot.width / slot.height);
+
+        const stageWidth = mainStage.clientWidth;
+        const stageHeight = mainStage.clientHeight;
+        const stageAspectRatio = stageWidth / stageHeight;
+
+        let overlayWidth, overlayHeight;
+
+        if (slotAspectRatio > stageAspectRatio) {
+            overlayWidth = stageWidth;
+            overlayHeight = overlayWidth / slotAspectRatio;
+        } else {
+            overlayHeight = stageHeight;
+            overlayWidth = overlayHeight * slotAspectRatio;
+        }
+
+        overlayGuide.style.width = `${overlayWidth}px`;
+        overlayGuide.style.height = `${overlayHeight}px`;
+        overlayGuide.style.top = `${(stageHeight - overlayHeight) / 2}px`;
+        overlayGuide.style.left = `${(stageWidth - overlayWidth) / 2}px`;
+    }
+
+
     // --- Manajemen UI ---
     function updateUIForCapture() {
         if (currentSlot === 0) {
-            infoText.textContent = "Ayo, Senyum!"; // Encouraging message for the first photo
+            infoText.textContent = "Ayo, Senyum!";
         } else {
             infoText.textContent = `Foto ke-${currentSlot + 1} dari ${PHOTO_LIMIT}`;
         }
@@ -51,11 +91,13 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelectorAll('.preview-slot').forEach((slot, index) => {
             slot.classList.toggle('active', index === currentSlot);
         });
-        // Ensure filter options are hidden when returning to capture state
+        
+        updateOverlayGuide(currentSlot);
+
         if (filterOptionsContainer) {
             filterOptionsContainer.style.display = 'none';
         }
-        if (filterBtn) { // Ensure filter button is visible
+        if (filterBtn) {
             filterBtn.style.display = 'flex';
         }
     }
@@ -65,12 +107,14 @@ document.addEventListener('DOMContentLoaded', () => {
         captureBtn.style.display = 'none';
         photoControls.style.display = 'flex';
         retakePhotoBtn.disabled = RETAKES_LEFT <= 0;
-        // Hide filter container when confirmation appears
+        if(overlayGuide) overlayGuide.style.display = 'none';
+
+        // Hide filter button on confirmation
+        if (filterBtn) {
+            filterBtn.style.display = 'none';
+        }
         if (filterOptionsContainer) {
             filterOptionsContainer.style.display = 'none';
-        }
-        if (filterBtn) { // Also hide the filter button
-            filterBtn.style.display = 'none';
         }
     }
     
@@ -79,12 +123,12 @@ document.addEventListener('DOMContentLoaded', () => {
         captureBtn.style.display = 'none';
         photoControls.style.display = 'none';
         finishBtn.style.display = 'flex';
+        if(overlayGuide) overlayGuide.style.display = 'none';
         document.querySelectorAll('.preview-slot').forEach(slot => {
             slot.classList.remove('active');
         });
     }
 
-    // --- Fungsi Hitung Mundur (Tidak Berubah) ---
     function startCountdown(seconds) {
         return new Promise(resolve => {
             let count = seconds;
@@ -103,46 +147,49 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- Aksi Tombol (Tidak Berubah, kecuali takePhoto) ---
     async function takePhoto() {
         captureBtn.disabled = true;
+        if(overlayGuide) overlayGuide.style.display = 'none';
         await startCountdown(3);
 
         const context = canvas.getContext('2d');
         
-        // --- START: CROP LOGIC ---
-        // Calculate the 'visible' video frame dimensions based on object-fit: contain
         const videoRatio = video.videoWidth / video.videoHeight;
-        const stage = document.querySelector('.main-stage');
-        const stageRatio = stage.clientWidth / stage.clientHeight;
-
-        let sWidth = video.videoWidth;
-        let sHeight = video.videoHeight;
-        let sx = 0;
-        let sy = 0;
-
-        // If stage is wider than video (letterbox on sides)
-        if (stageRatio > videoRatio) {
-            sWidth = video.videoHeight * stageRatio;
-            sx = (video.videoWidth - sWidth) / 2;
-        } else { // If stage is taller than video (letterbox on top/bottom)
-            sHeight = video.videoWidth / stageRatio;
-            sy = (video.videoHeight - sHeight) / 2;
+        const slot = SLOTS_DATA[currentSlot];
+        if (!slot) {
+            console.error("Current slot data not found!");
+            captureBtn.disabled = false;
+            return;
         }
         
-        // The canvas should have the aspect ratio of the stage, not the raw video
+        const frameAspectRatio = FRAME_DIMENSIONS.width / FRAME_DIMENSIONS.height;
+        const slotAspectRatio = frameAspectRatio * (slot.width / slot.height);
+
+        let sWidth, sHeight, sx, sy;
+
+        if (slotAspectRatio > videoRatio) {
+            // Slot is wider than video, crop top/bottom
+            sHeight = video.videoWidth / slotAspectRatio;
+            sWidth = video.videoWidth;
+            sx = 0;
+            sy = (video.videoHeight - sHeight) / 2;
+        } else {
+            // Slot is taller than video, crop sides
+            sWidth = video.videoHeight * slotAspectRatio;
+            sHeight = video.videoHeight;
+            sx = (video.videoWidth - sWidth) / 2;
+            sy = 0;
+        }
+
         canvas.width = sWidth;
         canvas.height = sHeight;
         
-        // Apply filter and draw the cropped image
-        context.filter = video.style.filter; // Use the same filter as the live preview
-        context.drawImage(video, sx, sy, sWidth, sHeight, 0, 0, canvas.width, canvas.height);
-        // --- END: CROP LOGIC ---
+        context.filter = video.style.filter;
+        context.drawImage(video, sx, sy, sWidth, sHeight, 0, 0, sWidth, sHeight);
 
         const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
         
         const previewSlot = document.getElementById(`slot-${currentSlot}`);
-        // The preview image should fill its container, object-fit will handle the rest
         previewSlot.innerHTML = `<img src="${dataUrl}" alt="Preview Foto ${currentSlot + 1}" style="width: 100%; height: 100%; object-fit: cover;">`;
         capturedPhotos[currentSlot] = dataUrl;
         
@@ -210,6 +257,7 @@ document.addEventListener('DOMContentLoaded', () => {
     keepBtn.addEventListener('click', keepPhoto);
     retakePhotoBtn.addEventListener('click', retakePhoto);
     finishBtn.addEventListener('click', proceedToEditor);
+    window.addEventListener('resize', () => updateOverlayGuide(currentSlot)); // Recalculate on resize
 
     // --- MODIFIED: Event Listeners for Filter Selection ---
     if (filterBtn) {

@@ -45,15 +45,18 @@
             padding: 0;
             overflow: hidden;
             background-image: url('<?= isset($data['selected_frame']) ? URLROOT . htmlspecialchars($data['selected_frame']->path) : '' ?>');
-            background-size: 100% 100%;
+            background-size: contain; /* Changed */
             background-position: center; 
             background-repeat: no-repeat;
             max-height: 100%;
             max-width: 100%;
-            aspect-ratio: 2 / 6; 
+            /* aspect-ratio: 2 / 6; */ /* Removed */
             height: auto;
             width: auto;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            display: flex; 
+            align-items: center;
+            justify-content: center;
         }
 
         .preview-slot {
@@ -117,7 +120,20 @@
             aspect-ratio: 16 / 9;
             max-width: 100%;
             max-height: 100%;
+            box-sizing: border-box; /* Added */
         }
+        .overlay-guide {
+            position: absolute;
+            border: 3px dashed rgba(255, 255, 255, 0.8);
+            box-shadow: 0 0 20px rgba(0,0,0,0.6);
+            border-radius: 5px;
+            z-index: 2;
+            pointer-events: none;
+            display: none; /* Hidden by default */
+            transition: all 0.2s ease-in-out;
+            box-sizing: border-box; /* Added */
+        }
+
         .controls-panel { 
             position: absolute; 
             bottom: 20px; 
@@ -199,7 +215,7 @@
 </head>
 <body>
     <div class="photobooth-container">
-        <aside class="sidebar capture-sidebar">
+        <aside class="sidebar capture-sidebar" style="aspect-ratio: <?= $data['frame_dimensions']['width'] ?? 1 ?> / <?= $data['frame_dimensions']['height'] ?? 1 ?>;">
             <?php 
             $slots = [];
             if (isset($data['selected_frame']) && !empty($data['selected_frame']->slot_coordinates)) {
@@ -233,6 +249,7 @@
 
         <div class="main-stage capture-main-stage">
             <video id="live-preview" autoplay playsinline muted></video>
+            <div class="overlay-guide"></div>
             <div id="countdown"></div>
             <canvas id="capture-canvas"></canvas>
             
@@ -268,6 +285,8 @@
         const TRANSACTION_ID = '<?= $data['transaction_id']; ?>';
         const FRAME_PATH = '<?= isset($data['selected_frame']) ? $data['selected_frame']->path : "" ?>';
         const URLROOT = '<?= URLROOT; ?>';
+        const SLOTS_DATA = <?= json_encode($slots); ?>;
+        const FRAME_DIMENSIONS = <?= json_encode($data['frame_dimensions']); ?>;
     </script>
     <script src="<?= URLROOT; ?>/js/photobooth.js"></script>
 </body>
