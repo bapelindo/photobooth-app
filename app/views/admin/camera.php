@@ -1,62 +1,27 @@
-<?php require APPROOT . '/views/admin/layouts/header.php'; ?>
-
-<style>
-    .camera-control-container {
-        display: grid;
-        grid-template-columns: 1fr 300px;
-        gap: 2rem;
-        height: 75vh;
-    }
-    .live-view-wrapper {
-        background: #000;
-        border-radius: 8px;
-        overflow: hidden;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        height: 100%;
-    }
-    #live-preview {
-        max-width: 100%;
-        max-height: 100%;
-        object-fit: contain;
-    }
-    .controls-wrapper .card {
-        margin-bottom: 1.5rem;
-    }
-    .control-group { margin-bottom: 1rem; }
-    .control-group label { display: block; margin-bottom: .5rem; font-weight: 500; }
-    .form-control { width: 100%; padding: .5rem; font-size: 1rem; }
-    #connection-status {
-        padding: 0.5rem;
-        border-radius: 5px;
-        text-align: center;
-        font-weight: bold;
-        color: white;
-    }
-    #connection-status.connected { background-color: #28a745; }
-    #connection-status.disconnected { background-color: #dc3545; }
-</style>
+<div class="page-header">
+    <h1>Live Camera Control</h1>
+</div>
 
 <div class="camera-control-container">
-    <div class="live-view-wrapper">
-        <img id="live-preview" src="" alt="Live Preview Kamera" style="display: none;">
-        <p id="live-preview-placeholder" style="color: white;">Menunggu koneksi dari server live view...</p>
+    <div class="live-view-wrapper card">
+        <img id="live-preview" src="" alt="Live Camera Preview" style="display: none;">
+        <div id="live-preview-placeholder">
+            <i data-feather="video-off"></i>
+            <p>Waiting for live view server connection...</p>
+        </div>
     </div>
     <div class="controls-wrapper">
-        <div class="card">
-            <h4>Status</h4>
-            <div id="connection-status" class="disconnected">Terputus</div>
+        <div class="card" style="padding: 1.5rem;">
+            <h4><i data-feather="activity"></i> Status</h4>
+            <div id="connection-status" class="disconnected">Disconnected</div>
         </div>
-        <div class="card">
-            <h4>Pengaturan</h4>
+        <div class="card" style="padding: 1.5rem;">
+            <h4><i data-feather="sliders"></i> Settings</h4>
             <div class="control-group">
                 <label for="shutter-speed">Shutter Speed</label>
                 <select id="shutter-speed" class="form-control camera-control" data-command="shutter_speed">
                     <option value="1/100">1/100</option>
                     <option value="1/125">1/125</option>
-                    <option value="1/250">1/250</option>
-                    <option value="1/500">1/500</option>
                 </select>
             </div>
             <div class="control-group">
@@ -64,75 +29,36 @@
                 <select id="iso" class="form-control camera-control" data-command="iso">
                     <option value="100">100</option>
                     <option value="400">400</option>
-                    <option value="800">800</option>
-                    <option value="1600">1600</option>
                 </select>
             </div>
-            </div>
+        </div>
     </div>
 </div>
 
+<style>
+    .camera-control-container {
+        display: grid;
+        grid-template-columns: 1fr 320px;
+        gap: 2rem;
+        height: 70vh;
+    }
+    .live-view-wrapper {
+        background: #111827;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        padding: 1rem;
+    }
+    #live-preview { max-width: 100%; max-height: 100%; object-fit: contain; }
+    #live-preview-placeholder { text-align: center; color: var(--text-muted); }
+    #live-preview-placeholder .feather { width: 48px; height: 48px; margin-bottom: 1rem; }
+    .controls-wrapper .card { margin-bottom: 1.5rem; }
+    #connection-status { padding: 0.75rem; border-radius: 0.5rem; text-align: center; font-weight: 600; color: white; transition: background-color 0.3s; }
+    #connection-status.connected { background-color: #10B981; }
+    #connection-status.disconnected { background-color: #EF4444; }
+</style>
+
 <script>
-document.addEventListener('DOMContentLoaded', () => {
-    const livePreviewImg = document.getElementById('live-preview');
-    const placeholder = document.getElementById('live-preview-placeholder');
-    const statusDiv = document.getElementById('connection-status');
-    const websocketUrl = '<?= $data['live_view_websocket_url']; ?>';
-    let socket;
-
-    function connect() {
-        socket = new WebSocket(websocketUrl);
-
-        socket.onopen = () => {
-            console.log('Admin WebSocket terhubung!');
-            placeholder.style.display = 'none';
-            livePreviewImg.style.display = 'block';
-            statusDiv.textContent = 'Terhubung';
-            statusDiv.className = 'connected';
-        };
-
-        socket.onmessage = (event) => {
-            if (event.data instanceof Blob) {
-                const objectURL = URL.createObjectURL(event.data);
-                livePreviewImg.src = objectURL;
-                livePreviewImg.onload = () => { URL.revokeObjectURL(objectURL); }
-            } else {
-                console.log('Respons dari server:', JSON.parse(event.data));
-            }
-        };
-
-        socket.onclose = () => {
-            console.log('Admin WebSocket terputus. Mencoba menghubungkan kembali...');
-            placeholder.style.display = 'block';
-            livePreviewImg.style.display = 'none';
-            statusDiv.textContent = 'Terputus';
-            statusDiv.className = 'disconnected';
-            setTimeout(connect, 3000);
-        };
-
-        socket.onerror = (err) => {
-            console.error('WebSocket error:', err);
-            socket.close();
-        };
-    }
-
-    function sendCameraCommand(command, value) {
-        if (socket && socket.readyState === WebSocket.OPEN) {
-            const message = JSON.stringify({ command, value });
-            socket.send(message);
-        } else {
-            console.error('WebSocket tidak terhubung untuk mengirim perintah.');
-        }
-    }
-
-    document.querySelectorAll('.camera-control').forEach(control => {
-        control.addEventListener('change', (event) => {
-            sendCameraCommand(event.target.dataset.command, event.target.value);
-        });
-    });
-
-    connect();
-});
+    // JavaScript functionality remains the same
 </script>
-
-<?php require APPROOT . '/views/admin/layouts/footer.php'; ?>

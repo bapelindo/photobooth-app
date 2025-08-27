@@ -1,51 +1,193 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Panel - <?= $title ?? 'Photobooth App' ?></title>
-    <?php App\Core\Session::start(); // Pastikan sesi dimulai untuk mengakses data admin ?>
+    <?php App\Core\Session::start(); ?>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background-color: #f8f9fa; color: #333; margin: 0; }
-        .navbar { background-color: #343a40; padding: 1rem; }
-        .navbar a { color: white; text-decoration: none; font-weight: 500; }
-        .container { max-width: 960px; margin: 2rem auto; padding: 2rem; background-color: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        h1 { color: #343a40; border-bottom: 2px solid #e9ecef; padding-bottom: 0.5rem; margin-bottom: 1.5rem; }
-        table { width: 100%; border-collapse: collapse; margin-bottom: 2rem; }
-        th, td { padding: 0.75rem; text-align: left; border-bottom: 1px solid #dee2e6; }
-        th { background-color: #e9ecef; }
-        .btn { display: inline-block; font-weight: 400; color: #212529; text-align: center; vertical-align: middle; cursor: pointer; background-color: transparent; border: 1px solid transparent; padding: .375rem .75rem; font-size: 1rem; line-height: 1.5; border-radius: .25rem; text-decoration: none; transition: all 0.2s ease-in-out; }
-        .btn-primary { color: #fff; background-color: #007bff; border-color: #007bff; }
-        .btn-primary:hover { background-color: #0069d9; border-color: #0062cc; }
-        .btn-secondary { color: #fff; background-color: #6c757d; border-color: #6c757d; padding: 0.25rem 0.5rem; font-size: 0.875rem; }
-        .btn-danger { color: #fff; background-color: #dc3545; border-color: #dc3545; }
-        .action-links a, .action-links form { display: inline-block; margin-right: 5px; }
-        .form-group { margin-bottom: 1rem; }
+        :root {
+            --bg-color: #f4f7fa;
+            --sidebar-bg: #ffffff;
+            --card-bg: #ffffff;
+            --primary-color: #4F46E5;
+            --primary-hover: #4338CA;
+            --text-color: #374151;
+            --text-muted: #6B7280;
+            --border-color: #E5E7EB;
+            --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --border-radius: 0.75rem;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+        .sidebar {
+            width: 260px;
+            background-color: var(--sidebar-bg);
+            padding: 2rem 1.5rem;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid var(--border-color);
+            transition: width 0.3s ease;
+        }
+        .sidebar-header {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 2.5rem;
+        }
+        .nav-links {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            flex-grow: 1;
+        }
+        .nav-links a {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.2s ease-in-out;
+        }
+        .nav-links a:hover, .nav-links a.active {
+            background-color: #F3F4F6;
+            color: var(--primary-color);
+        }
+        .nav-links a .feather {
+            width: 20px;
+            height: 20px;
+        }
+        .user-info {
+            margin-top: auto;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+        }
+        .user-info a {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            text-decoration: none;
+            color: var(--text-muted);
+            font-weight: 500;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            transition: all 0.2s ease-in-out;
+        }
+        .user-info a:hover {
+            background-color: #FEE2E2;
+            color: #EF4444;
+        }
+        .main-content {
+            flex-grow: 1;
+            padding: 2.5rem;
+            overflow-y: auto;
+        }
+        .page-header {
+            margin-bottom: 2rem;
+        }
+        .page-header h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin: 0;
+        }
+        .card {
+            background-color: var(--card-bg);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 1rem 1.5rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+            vertical-align: middle;
+        }
+        th {
+            background-color: #F9FAFB;
+            font-weight: 600;
+            color: var(--text-muted);
+            font-size: 0.875rem;
+            text-transform: uppercase;
+        }
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 600;
+            text-align: center;
+            cursor: pointer;
+            border: none;
+            padding: 0.625rem 1.25rem;
+            font-size: 0.9rem;
+            border-radius: 0.5rem;
+            text-decoration: none;
+            transition: all 0.2s ease-in-out;
+        }
+        .btn-primary { color: #fff; background-color: var(--primary-color); }
+        .btn-primary:hover { background-color: var(--primary-hover); }
+        .btn-secondary { color: var(--text-color); background-color: #F3F4F6; border: 1px solid var(--border-color); }
+        .btn-secondary:hover { background-color: #E5E7EB; }
+        .btn-danger { color: #fff; background-color: #EF4444; }
+        .btn-danger:hover { background-color: #DC2626; }
+        .btn-sm { padding: 0.375rem 0.75rem; font-size: 0.8rem; }
+
+        .action-links { display: flex; gap: 0.5rem; }
+
+        .form-group { margin-bottom: 1.5rem; }
         .form-group label { display: block; margin-bottom: .5rem; font-weight: 500; }
-        .form-control { display: block; width: 100%; padding: .375rem .75rem; font-size: 1rem; line-height: 1.5; color: #495057; background-color: #fff; background-clip: padding-box; border: 1px solid #ced4da; border-radius: .25rem; box-sizing: border-box; }
-        .asset-preview { max-width: 80px; max-height: 80px; }
-        .navbar { display: flex; justify-content: space-between; align-items: center; }
-        .nav-links a { margin-right: 15px; }
-        .user-info { color: #adb5bd; }
-        .user-info a { margin-left: 10px; }
+        .form-control {
+            display: block; width: 100%; padding: .75rem; font-size: 1rem;
+            color: var(--text-color); background-color: #fff;
+            border: 1px solid var(--border-color); border-radius: 0.5rem;
+            box-sizing: border-box; transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
+        }
     </style>
 </head>
 <body>
-    <nav class="navbar">
-        <div class="nav-links">
-            <a href="<?= URLROOT; ?>/admin/dashboard" style="font-weight: bold; font-size: 1.2rem;">Photobooth Admin</a>
-            <a href="<?= URLROOT; ?>/admin/packages">Packages</a>
-            <a href="<?= URLROOT; ?>/admin/assets">Assets</a>
-            <a href="<?= URLROOT; ?>/admin/gallery">Gallery</a>
-            <a href="<?= URLROOT; ?>/admin/camera">Kontrol Kamera</a>
-        </div>
+    <aside class="sidebar">
+        <div class="sidebar-header">Photobooth</div>
+        <nav class="nav-links">
+            <a href="<?= URLROOT; ?>/admin/dashboard"><i data-feather="home"></i> Dashboard</a>
+            <a href="<?= URLROOT; ?>/admin/packages"><i data-feather="package"></i> Packages</a>
+            <a href="<?= URLROOT; ?>/admin/assets"><i data-feather="image"></i> Assets</a>
+            <a href="<?= URLROOT; ?>/admin/gallery"><i data-feather="grid"></i> Gallery</a>
+            <a href="<?= URLROOT; ?>/admin/camera"><i data-feather="camera"></i> Camera Control</a>
+        </nav>
         <div class="user-info">
-            <span>Welcome, <strong><?= htmlspecialchars(App\Core\Session::get('admin_username', 'Admin')) ?></strong></span>
-            <a href="<?= URLROOT; ?>/logout" class="btn btn-secondary">Logout</a>
+             <a href="<?= URLROOT; ?>/logout">
+                <i data-feather="log-out"></i>
+                <span>Logout (<?= htmlspecialchars(App\Core\Session::get('admin_username', 'Admin')) ?>)</span>
+            </a>
         </div>
-    </nav>
-    <main class="container">
+    </aside>
+
+    <main class="main-content">
         <?= $content ?? '' ?>
     </main>
+    <script>
+        feather.replace();
+    </script>
 </body>
 </html>

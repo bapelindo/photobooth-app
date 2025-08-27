@@ -182,7 +182,8 @@ document.addEventListener('DOMContentLoaded', () => {
         canvas.width = sWidth;
         canvas.height = sHeight;
         
-        context.filter = video.style.filter;
+        context.filter = 'none'; // Clear any previous filter
+        context.filter = selectedFilter; // Apply the new filter
         context.drawImage(video, sx, sy, sWidth, sHeight, 0, 0, sWidth, sHeight);
 
         const dataUrl = canvas.toDataURL('image/png');
