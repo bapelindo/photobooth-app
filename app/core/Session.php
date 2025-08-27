@@ -37,4 +37,10 @@ class Session
         self::start();
         session_destroy();
     }
+
+    public static function unset($key)
+    {
+        self::start();
+        unset($_SESSION[$key]);
+    }
 }

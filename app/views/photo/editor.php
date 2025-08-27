@@ -1,106 +1,56 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hias Fotomu!</title>
-    <link rel="stylesheet" href="<?= URLROOT; ?>/public/css/photobooth.css">
-    <style>
-        body {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-        }
-        .editor-container {
-            display: flex;
-            gap: 1.5rem;
-            width: 95%;
-            max-width: 1200px;
-            height: 90vh;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            padding: 1.5rem;
-            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
-        }
-        .editor-main {
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-        }
-        .editor-canvas-container {
-            flex-grow: 1;
-            background: #fff;
-            border-radius: 15px;
-            box-shadow: inset 0 0 10px rgba(0,0,0,0.1);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 1rem;
-        }
-        .sticker-panel {
-            width: 280px;
-            flex-shrink: 0;
-            background: var(--panel-bg);
-            border-radius: 15px;
-            padding: 1rem;
-            display: flex;
-            flex-direction: column;
-        }
-        .sticker-panel h3 {
-            color: var(--accent-color);
-            text-align: center;
-            margin-bottom: 1rem;
-        }
-        .asset-list {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            justify-content: center;
-            overflow-y: auto;
-            flex-grow: 1;
-        }
-        .sticker-item {
-            width: 80px;
-            height: 80px;
-            background: rgba(255, 255, 255, 0.9);
-        }
-        .action-buttons {
-            display: flex;
-            justify-content: center;
-        }
-    </style>
+    <title>Hias Fotomu! ✨</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="<?= URLROOT; ?>/css/editor.css">
 </head>
 <body>
-
-    <div class="editor-container">
-        <div class="sticker-panel">
-            <h3>Pilih Stiker</h3>
-            <div class="asset-list">
-                <?php foreach ($stickers as $sticker): ?>
-                    <img src="<?= URLROOT; ?>/public<?= htmlspecialchars($sticker->path); ?>" class="asset-item sticker-item" alt="<?= htmlspecialchars($sticker->name); ?>">
-                <?php endforeach; ?>
-            </div>
+    <div class="photobooth-container">
+        
+        <div class="title-panel">
+            <h1>Hias Fotomu!</h1>
         </div>
 
-        <div class="editor-main">
-            <div class="editor-canvas-container">
-                <canvas id="editor-canvas"></canvas>
+        <main class="main-stage">
+            <div class="canvas-container">
+                 <canvas id="editor-canvas"></canvas>
             </div>
-            <div class="action-buttons">
-                 <button id="save-photo-btn" class="action-button">Simpan & Selesai</button>
+            <div id="trash-can">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M3 6h18m-2 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m-6 5v6m4-6v6" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
             </div>
-        </div>
+        </main>
+
+        <aside class="sidebar">
+            <div class="sticker-panel">
+                <h3>Pilih Stiker</h3>
+                <div class="sticker-list">
+                    <?php foreach ($data['stickers'] as $sticker): ?>
+                        <img src="<?= URLROOT . htmlspecialchars($sticker->path); ?>" class="sticker-item" alt="<?= htmlspecialchars($sticker->name); ?>">
+                    <?php endforeach; ?>
+                </div>
+            </div>
+            <div class="action-panel">
+                 <button id="save-photo-btn" class="action-button">🎉 Simpan & Lanjutkan</button>
+            </div>
+        </aside>
+
     </div>
 
     <script>
-        const photoUrl = '<?= URLROOT . htmlspecialchars($photo->file_path); ?>';
+        const capturedPhotos = <?= json_encode($data['captured_photos']); ?>;
+        const framePath = '<?= $data['frame_path'] ? URLROOT . $data['frame_path'] : '' ?>';
+        const filter = '<?= $data['filter'] ?>';
+        const saveUrl = '<?= URLROOT; ?>/photo/ajax_save_final_photostrip';
     </script>
-    <script src="<?= URLROOT; ?>/public/js/fabric.js"></script> 
-    <script src="<?= URLROOT; ?>/public/js/editor.js"></script>
+    <script src="<?= URLROOT; ?>/js/fabric.js"></script> 
+    <script src="<?= URLROOT; ?>/js/editor.js"></script>
 
 </body>
 </html>

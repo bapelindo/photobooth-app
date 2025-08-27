@@ -1,0 +1,268 @@
+/* Desain Baru: Pastel Doodle v2.6 */
+html {
+    overflow: hidden;
+}
+
+:root {
+    --bg-color: #F0E7F5;
+    --panel-bg: rgba(255, 255, 255, 0.7);
+    --primary-accent: #A685E2;
+    --secondary-accent: #64C5B9;
+    --dark-text: #433D48;
+    --border-color: #d1c5d9;
+    --font-display: 'Fredoka One', cursive;
+    --font-main: 'Poppins', sans-serif;
+}
+
+body {
+    font-family: var(--font-main);
+    background-color: var(--bg-color);
+    background-image: linear-gradient(135deg, #F0E7F5 0%, #E2F0EA 100%);
+    margin: 0;
+    padding: 2vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+.photobooth-container {
+    display: grid;
+    grid-template-columns: 120px 1fr 280px;
+    grid-template-rows: 1fr;
+    gap: 25px;
+    width: 100%;
+    max-width: 1200px;
+    height: 94vh;
+    background: var(--panel-bg);
+    backdrop-filter: blur(12px);
+    padding: 5px 25px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+}
+
+.title-panel {
+    grid-column: 1 / 2;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: var(--secondary-accent);
+    border-radius: 20px;
+    border: 3px dashed white;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
+
+.title-panel h1 {
+    font-family: var(--font-display);
+    color: white;
+    font-size: 2.5rem;
+    margin: 0;
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+    text-shadow: 2px 2px 0px var(--dark-text);
+}
+
+.main-stage {
+    grid-column: 2 / 3;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #e9e2ee;
+    border-radius: 20px;
+}
+
+.canvas-container {
+    width: 100%;
+    height: 100%;
+    max-width: calc((94vh) * (2/6));
+    max-height: calc(100%);
+    aspect-ratio: 2 / 6;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    overflow: hidden;
+    position: relative;
+}
+
+.canvas-container .upper-canvas,
+.canvas-container .lower-canvas {
+    position: absolute;
+    width: 100% !important;
+    height: 100% !important;
+    left: 0;
+    top: 0;
+}
+
+.canvas-interactive-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+
+.canvas-interactive-layer .upper-canvas {
+    width: 100% !important;
+    height: 100% !important;
+    pointer-events: all;
+}
+
+.sidebar {
+    grid-column: 3 / 4;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    min-height: 0;
+}
+
+.sticker-panel, .action-panel {
+    background-color: var(--panel-bg);
+    border-radius: 20px;
+    padding: 20px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
+
+.sticker-panel {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.sticker-panel h3 {
+    font-family: var(--font-display);
+    color: var(--dark-text);
+    text-align: center;
+    font-size: 1.5rem;
+    margin: 0 0 15px 0;
+    flex-shrink: 0;
+}
+
+.sticker-list {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    align-content: flex-start;
+    gap: 15px;
+    overflow-y: auto;
+    flex-grow: 1;
+    padding: 10px;
+    border-radius: 10px;
+    background: rgba(0,0,0,0.02);
+    border: 1px solid var(--border-color);
+}
+
+/* --- PERBAIKAN: STYLING SCROLLBAR --- */
+/* Untuk Firefox */
+.sticker-list {
+  scrollbar-width: thin; /* Membuat scrollbar lebih tipis */
+  scrollbar-color: var(--primary-accent) var(--border-color); /* Warna thumb dan track */
+}
+
+/* Untuk browser WebKit (Chrome, Safari, Edge baru) */
+.sticker-list::-webkit-scrollbar {
+  width: 8px; /* Lebar scrollbar */
+}
+.sticker-list::-webkit-scrollbar-track {
+  background: rgba(0,0,0,0.05); /* Warna latar belakang track */
+  border-radius: 10px;
+}
+.sticker-list::-webkit-scrollbar-thumb {
+  background-color: var(--primary-accent); /* Warna thumb (yang digeser) */
+  border-radius: 10px; /* Sudut membulat */
+  border: 2px solid transparent; /* Jarak antara thumb dan track */
+  background-clip: content-box;
+}
+.sticker-list::-webkit-scrollbar-thumb:hover {
+  background-color: #9673d3; /* Warna saat di-hover */
+}
+
+
+.sticker-item {
+    width: 80px;
+    height: 80px;
+    object-fit: contain;
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 15px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    padding: 5px;
+    box-sizing: border-box;
+    border: 2px dashed var(--border-color);
+}
+.sticker-item:hover {
+    transform: translateY(-5px) scale(1.1) rotate(-3deg);
+    border-color: var(--primary-accent);
+    box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+}
+
+.action-panel {
+    flex-shrink: 0;
+}
+
+#save-photo-btn {
+    font-family: var(--font-display);
+    font-size: 1.2rem;
+    width: 100%;
+    padding: 15px;
+    border: none;
+    border-radius: 15px;
+    cursor: pointer;
+    color: white;
+    background-color: var(--primary-accent);
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 0px #866ab3;
+}
+#save-photo-btn:hover {
+    background-color: #9673d3;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 0px #866ab3;
+}
+#save-photo-btn:active {
+    transform: translateY(2px);
+    box-shadow: 0 2px 0px #866ab3;
+}
+#save-photo-btn:disabled {
+    background: #b5a4d1;
+    cursor: not-allowed;
+    box-shadow: 0 4px 0px #8e7cac;
+    transform: translateY(0);
+}
+
+#trash-can {
+    position: absolute;
+    bottom: 25px;
+    right: 25px;
+    width: 60px;
+    height: 60px;
+    background-color: rgba(255, 99, 132, 0.8);
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    visibility: hidden;
+    transform: scale(0.5) rotate(-30deg);
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    z-index: 10;
+}
+#trash-can.visible {
+    opacity: 1;
+    visibility: visible;
+    transform: scale(1) rotate(0deg);
+}
+#trash-can.hover {
+    animation: shakeTrash 0.3s infinite alternate;
+}
+
+@keyframes shakeTrash {
+    0% { transform: scale(1.2) rotate(10deg); }
+    100% { transform: scale(1.2) rotate(8deg); }
+}
+
+#trash-can svg {
+    width: 55%;
+    height: 55%;
+}

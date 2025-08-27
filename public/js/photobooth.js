@@ -82,7 +82,6 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelectorAll('.preview-slot').forEach(slot => {
             slot.classList.remove('active');
         });
-        stopCamera();
     }
 
     // --- Fungsi Hitung Mundur (Tidak Berubah) ---
@@ -145,13 +144,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    async function processPhotoStrip() {
-        infoText.textContent = "Memproses...";
+    async function proceedToEditor() {
+        infoText.textContent = "Menyiapkan editor...";
         finishBtn.disabled = true;
         const finalPhotos = capturedPhotos.filter(p => p);
 
         try {
-            const response = await fetch(`${URLROOT}/photo/ajax_process_photostrip`, {
+            const response = await fetch(`${URLROOT}/photo/ajax_save_captured_photos`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -163,17 +162,18 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             const result = await response.json();
-            if (!response.ok) {
+            if (!response.ok || !result.success) {
                 throw new Error(result.message || `HTTP error! Status: ${response.status}`);
             }
             
+            stopCamera();
             document.body.classList.add('fade-out');
             setTimeout(() => {
-                window.location.href = result.final_url;
+                window.location.href = result.editor_url;
             }, 400);
 
         } catch (error) {
-            console.error('Processing error:', error);
+            console.error('Error proceeding to editor:', error);
             infoText.textContent = `Error: ${error.message}`;
             finishBtn.disabled = false;
         }
@@ -183,7 +183,7 @@ document.addEventListener('DOMContentLoaded', () => {
     captureBtn.addEventListener('click', takePhoto);
     keepBtn.addEventListener('click', keepPhoto);
     retakePhotoBtn.addEventListener('click', retakePhoto);
-    finishBtn.addEventListener('click', processPhotoStrip);
+    finishBtn.addEventListener('click', proceedToEditor);
 
     // --- MODIFIED: Event Listeners for Filter Selection ---
     if (filterBtn) {

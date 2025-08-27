@@ -18,7 +18,7 @@ $router->get('packages', 'App\Controllers\PackageController@index');
 $router->get('photo/capture/{transaction_id}/{frame_id}', 'App\Controllers\PhotoController@capture');
 $router->get('photo/capture/{transaction_id}', 'App\Controllers\PhotoController@capture');
 $router->get('photo/selectFrame/{transaction_id}', 'App\Controllers\PhotoController@selectFrame');
-$router->get('photo/editor/{photo_id}', 'App\Controllers\PhotoController@editor');
+$router->get('photo/editor', 'App\Controllers\PhotoController@editor');
 $router->get('payment/process/{package_id}', 'App\Controllers\PaymentController@process');
 $router->get('payment/finish', 'App\Controllers\PaymentController@finish');
 
@@ -46,7 +46,8 @@ $router->get('admin/gallery', 'App\Controllers\AdminController@showGallery');
 
 
 // Rute POST (untuk AJAX)
-$router->post('photo/ajax_process_photostrip', 'App\Controllers\PhotoController@ajax_process_photostrip');
+$router->post('photo/ajax_save_captured_photos', 'App\Controllers\PhotoController@ajax_save_captured_photos');
+$router->post('photo/ajax_save_final_photostrip', 'App\Controllers\PhotoController@ajax_save_final_photostrip');
 $router->post('photo/ajax_save_photo', 'App\Controllers\PhotoController@ajax_save_photo');
 $router->post('photo/ajax_print_photo', 'App\Controllers\PhotoController@ajax_print_photo');
 $router->post('photo/ajax_capture_dslr', 'App\Controllers\PhotoController@ajax_capture_dslr');

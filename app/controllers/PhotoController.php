@@ -59,14 +59,21 @@ class PhotoController extends Controller
         $this->view('photo/capture', $data);
     }
 
-    public function editor($photo_id)
+    public function editor()
     {
-        $photoModel = $this->model('Photo');
-        $data['photo'] = $photoModel->find($photo_id);
+        \App\Core\Session::start();
 
-        if (!$data['photo']) {
-            die('Foto tidak ditemukan.');
+        $capturedPhotos = \App\Core\Session::get('captured_photos');
+        if (!$capturedPhotos) {
+            die('Tidak ada foto yang ditemukan di sesi. Silakan mulai dari awal.');
         }
+
+        $data['captured_photos'] = $capturedPhotos;
+        $data['frame_path'] = \App\Core\Session::get('frame_path');
+        $data['filter'] = \App\Core\Session::get('filter');
+        $data['transaction_id'] = \App\Core\Session::get('transaction_id');
+
+        // Data sesi akan dihapus setelah gambar final disimpan.
 
         $assetModel = $this->model('Asset');
         $data['stickers'] = $assetModel->getAssetsByType('sticker');
@@ -142,56 +149,59 @@ class PhotoController extends Controller
     }
 
 
-    public function ajax_process_photostrip()
+    public function ajax_save_captured_photos()
     {
         header('Content-Type: application/json');
-        
-        $tempFiles = [];
+        \App\Core\Session::start();
 
         try {
             $input = json_decode(file_get_contents('php://input'), true);
-
-            if (json_last_error() !== JSON_ERROR_NONE || !isset($input['transaction_id'], $input['photos']) || !is_array($input['photos'])) {
+            if (!isset($input['photos']) || !is_array($input['photos'])) {
                 throw new Exception("Input JSON tidak valid atau data tidak lengkap.");
             }
 
-            $transactionId = $input['transaction_id'];
-            $framePath = $input['frame_path'] ?? null;
-            $filter = $input['filter'] ?? 'none'; // Menangkap data filter
-            $photosData = $input['photos'];
-            
+            \App\Core\Session::set('captured_photos', $input['photos']);
+            \App\Core\Session::set('frame_path', $input['frame_path'] ?? null);
+            \App\Core\Session::set('filter', $input['filter'] ?? 'none');
+            \App\Core\Session::set('transaction_id', $input['transaction_id']);
+
+
+            echo json_encode(['success' => true, 'editor_url' => URLROOT . '/photo/editor']);
+
+        } catch (Throwable $e) {
+            http_response_code(500);
+            echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+        }
+    }
+
+    public function ajax_save_final_photostrip()
+    {
+        header('Content-Type: application/json');
+        \App\Core\Session::start();
+
+        try {
+            $input = json_decode(file_get_contents('php://input'), true);
+            $imageData = $input['image'];
+            $transactionId = \App\Core\Session::get('transaction_id');
+
+            if (!$imageData || !$transactionId) {
+                throw new Exception("Data gambar atau ID transaksi tidak ditemukan.");
+            }
+
             $photoDir = dirname(APPROOT) . '/public/uploads/photo/';
-            
             if (!is_dir($photoDir)) {
                 mkdir($photoDir, 0775, true);
             }
 
-            foreach ($photosData as $index => $dataUrl) {
-                $imgData = preg_replace('/^data:image\/\w+;base64,/', '', $dataUrl);
-                $decodedImage = base64_decode($imgData);
-                
-                $tempFilename = $photoDir . 'temp_' . $transactionId . '_' . uniqid() . '_' . $index . '.jpg';
-                if (file_put_contents($tempFilename, $decodedImage) === false) {
-                    throw new Exception("Gagal menyimpan file sementara. Periksa izin folder 'public/uploads/photo'.");
-                }
-                $tempFiles[] = $tempFilename;
-            }
-
             $finalFilename = 'photostrip_' . uniqid() . '.jpg';
             $finalFilepath = $photoDir . $finalFilename;
-            $fullFramePath = !empty($framePath) ? dirname(APPROOT) . '/public' . $framePath : null;
 
-            $imageService = new ImageProcessingService();
-            
-            // Meneruskan filter ke service
-            $success = $imageService->createPhotoStrip($tempFiles, $fullFramePath, $finalFilepath, $filter);
+            $imageData = str_replace('data:image/jpeg;base64,', '', $imageData);
+            $imageData = str_replace(' ', '+', $imageData);
+            $decodedImage = base64_decode($imageData);
 
-            foreach ($tempFiles as $file) {
-                if (file_exists($file)) unlink($file);
-            }
-
-            if (!$success) {
-                throw new Exception('Gagal membuat gambar photostrip via ImageMagick.');
+            if (file_put_contents($finalFilepath, $decodedImage) === false) {
+                throw new Exception("Gagal menyimpan file photostrip final.");
             }
 
             if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
@@ -208,24 +218,21 @@ class PhotoController extends Controller
             
             $new_photo_id = $photoModel->lastInsertId();
 
+            // Hapus semua data sesi yang berhubungan dengan proses ini
+            \App\Core\Session::unset('captured_photos');
+            \App\Core\Session::unset('frame_path');
+            \App\Core\Session::unset('filter');
+            \App\Core\Session::unset('transaction_id');
+
             echo json_encode([
                 'success' => true, 
-                'photo_id' => $new_photo_id, 
-                'final_url' => URLROOT . '/photo/finalize/' . $new_photo_id
+                'photo_id' => $new_photo_id,
+                'finalize_url' => URLROOT . '/photo/finalize/' . $new_photo_id
             ]);
 
         } catch (Throwable $e) {
-            foreach ($tempFiles as $file) {
-                if (file_exists($file)) unlink($file);
-            }
-            
             http_response_code(500);
-            echo json_encode([
-                'success' => false, 
-                'message' => 'Server Error: ' . $e->getMessage(), 
-                'file' => $e->getFile(), 
-                'line' => $e->getLine()
-            ]);
+            echo json_encode(['success' => false, 'message' => $e->getMessage()]);
         }
     }
 
@@ -297,12 +304,12 @@ public function ajax_print_photo()
             // --- PERBAIKAN PATH DIMULAI DI SINI ---
 
             // 1. Tentukan path dasar proyek.
-            $basePath = dirname(APPROOT, 2);
+            $basePath = dirname(APPROOT);
 
             // 2. Gabungkan path menggunakan DIRECTORY_SEPARATOR untuk konsistensi.
             //    Ubah slash dari database menjadi separator yang benar.
-            $photoPath = $basePath . DIRECTORY_SEPARATOR . 'photobooth-app\public' . str_replace('/', DIRECTORY_SEPARATOR, $photo->file_path);
-            $scriptPath = $basePath . DIRECTORY_SEPARATOR . 'photobooth-app\scripts' . DIRECTORY_SEPARATOR . 'print_photostrip.py';
+            $photoPath = $basePath . DIRECTORY_SEPARATOR . 'public' . str_replace('/', DIRECTORY_SEPARATOR, $photo->file_path);
+            $scriptPath = $basePath . DIRECTORY_SEPARATOR . 'scripts' . DIRECTORY_SEPARATOR . 'print_photostrip.py';
 
             // 3. Verifikasi path yang sudah diperbaiki.
             if (!file_exists($photoPath)) {
