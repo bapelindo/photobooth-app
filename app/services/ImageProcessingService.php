@@ -83,8 +83,8 @@ class ImageProcessingService
                 $targetX = (int)($frameWidth * ($coords['left'] / 100));
                 $targetY = (int)($frameHeight * ($coords['top'] / 100));
 
-                // Resize the photo to fit the slot dimensions
-                $photo->resizeImage($targetWidth, $targetHeight, Imagick::FILTER_LANCZOS, 1, true);
+                // Crop and resize the photo to perfectly fit the slot dimensions
+                $photo->cropThumbnailImage($targetWidth, $targetHeight);
 
                 // Composite the photo onto the frame at the specified coordinates
                 $frame->compositeImage($photo, Imagick::COMPOSITE_OVER, $targetX, $targetY);
