@@ -28,7 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
     async function initCamera() {
         try {
             stream = await navigator.mediaDevices.getUserMedia({
-                video: { width: { ideal: 1280 }, height: { ideal: 720 } },
+                video: { width: { ideal: 1920 }, height: { ideal: 1080 } },
                 audio: false
             });
             video.srcObject = stream;
@@ -168,13 +168,11 @@ document.addEventListener('DOMContentLoaded', () => {
         let sWidth, sHeight, sx, sy;
 
         if (slotAspectRatio > videoRatio) {
-            // Slot is wider than video, crop top/bottom
             sHeight = video.videoWidth / slotAspectRatio;
             sWidth = video.videoWidth;
             sx = 0;
             sy = (video.videoHeight - sHeight) / 2;
         } else {
-            // Slot is taller than video, crop sides
             sWidth = video.videoHeight * slotAspectRatio;
             sHeight = video.videoHeight;
             sx = (video.videoWidth - sWidth) / 2;
@@ -187,7 +185,7 @@ document.addEventListener('DOMContentLoaded', () => {
         context.filter = video.style.filter;
         context.drawImage(video, sx, sy, sWidth, sHeight, 0, 0, sWidth, sHeight);
 
-        const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
+        const dataUrl = canvas.toDataURL('image/png');
         
         const previewSlot = document.getElementById(`slot-${currentSlot}`);
         previewSlot.innerHTML = `<img src="${dataUrl}" alt="Preview Foto ${currentSlot + 1}" style="width: 100%; height: 100%; object-fit: cover;">`;

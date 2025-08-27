@@ -38,8 +38,7 @@ class ImageProcessingService
                 }
             }
 
-            $baseImage->setImageFormat('jpeg');
-            $baseImage->setImageCompressionQuality(90);
+            $baseImage->setImageFormat('png');
             $baseImage->writeImage($outputPath);
             $baseImage->clear();
 
@@ -92,8 +91,7 @@ class ImageProcessingService
                 $photo->clear();
             }
 
-            $frame->setImageFormat('jpeg');
-            $frame->setImageCompressionQuality(95);
+            $frame->setImageFormat('png');
             $frame->writeImage($outputPath);
             $frame->clear();
 

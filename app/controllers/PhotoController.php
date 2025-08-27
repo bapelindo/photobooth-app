@@ -156,9 +156,9 @@ class PhotoController extends Controller
             if (!is_dir($tempDir)) mkdir($tempDir, 0775, true);
 
             foreach ($input['photos'] as $key => $photoData) {
-                $photoData = str_replace('data:image/jpeg;base64,', '', $photoData);
+                $photoData = str_replace('data:image/png;base64,', '', $photoData);
                 $photoData = str_replace(' ', '+', $photoData);
-                $filePath = $tempDir . uniqid('photo_') . '.jpg';
+                $filePath = $tempDir . uniqid('photo_') . '.png';
                 file_put_contents($filePath, base64_decode($photoData));
                 $tempPhotoPaths[] = $filePath;
             }
@@ -177,7 +177,7 @@ class PhotoController extends Controller
             $framePath = $frame ? $basePath . $frame->path : null;
             $outputStripDir = $basePath . '/uploads/photo/';
             if (!is_dir($outputStripDir)) mkdir($outputStripDir, 0775, true);
-            $outputStripFilename = 'photostrip_pre_' . uniqid() . '.jpg';
+            $outputStripFilename = 'photostrip_pre_' . uniqid() . '.png';
             $outputStripFullPath = $outputStripDir . $outputStripFilename;
 
             $imageService = new ImageProcessingService();
