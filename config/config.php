@@ -47,3 +47,6 @@ define('EMAIL_FROM_ADDRESS', 'bapelhacker@gmail.com');
 
 // Nama pengirim
 define('EMAIL_FROM_NAME', 'Photobooth App');
+
+// Enable/Disable Session Refresh and Back Functionality
+define('ENABLE_SESSION_REFRESH_BACK', true);
