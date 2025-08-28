@@ -28,7 +28,7 @@ class PhotoController extends Controller
         // error_log('PhotoController::selectFrame - Condition 2 (transaction_id check): ' . ($condition2 ? 'TRUE' : 'FALSE') . ' (Session: ' . $sessionCurrentTransactionId . ', URL: ' . $transaction_id . ')');
         // error_log('PhotoController::selectFrame - Overall condition for redirect: ' . (($condition1 || $condition2) ? 'TRUE' : 'FALSE'));
 
-        if (ENABLE_SESSION_REFRESH_BACK && ($condition1 || $condition2)) {
+        if ($condition1 || $condition2) {
             $this->flashAndRedirect('packages', 'Sesi sebelumnya telah berakhir atau tidak valid. Silakan mulai lagi.');
         }
         
@@ -57,7 +57,7 @@ class PhotoController extends Controller
     {
         Session::start();
 
-                if (ENABLE_SESSION_REFRESH_BACK && (Session::get('workflow_step') !== 'frame_selected' || Session::get('current_transaction_id') != $transaction_id)) {
+        if (Session::get('workflow_step') !== 'frame_selected' || Session::get('current_transaction_id') != $transaction_id) {
             $this->flashAndRedirect('packages', 'Sesi sebelumnya telah berakhir atau tidak valid. Silakan mulai lagi.');
         }
 
