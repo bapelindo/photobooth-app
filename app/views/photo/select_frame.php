@@ -60,7 +60,7 @@
             flex-grow: 1;
             overflow-y: auto;
             min-height: 0;
-            padding: 10px;
+            padding: 20px;
         }
 
         .frames-grid-container::-webkit-scrollbar {
