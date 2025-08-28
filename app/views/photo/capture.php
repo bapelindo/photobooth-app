@@ -20,11 +20,12 @@
             min-height: 100vh; box-sizing: border-box; overflow: hidden; opacity: 0;
             animation: fadeIn 0.5s ease-in forwards;
         }
+
         .photobooth-container {
             display: grid; 
             grid-template-columns: 1fr auto;
             grid-template-rows: auto 1fr;
-            gap: 20px; width: 100%; max-width: 1200px; height: 90vh;
+            gap: 20px; width: 76%; max-width: 1200px; height: 90vh;
             background: rgba(255, 255, 255, 0.5); backdrop-filter: blur(10px);
             border-radius: 20px; padding: 20px; box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.2);
             opacity: 0; transform: scale(0.98);
@@ -207,6 +208,9 @@
                 flex-direction: column;
                 justify-content: center;
             }
+                .photobooth-container {
+                width: 100%; max-width: 1200px;
+            }
             .info-panel h1 { font-family: var(--font-display); color: var(--primary-color); margin: 0; font-size: 2rem; }
             .info-panel p { margin: 0px 0 0; color: #555; }
             .info-panel #retake-count { font-weight: bold; color: var(--secondary-color); }
@@ -220,7 +224,7 @@
 </head>
 <body>
     <div class="photobooth-container">
-        <aside class="sidebar capture-sidebar" style="aspect-ratio: <?= $data['frame_dimensions']['width'] ?? 1 ?> / <?= $data['frame_dimensions']['height'] ?? 1 ?>;">
+        <aside class="sidebar capture-sidebar" style="aspect-ratio: 2 / 6;">
             <?php 
             $slots = [];
             if (isset($data['selected_frame']) && !empty($data['selected_frame']->slot_coordinates)) {
