@@ -165,7 +165,7 @@ class AdminController extends Controller {
             $data = [
                 'name' => $_POST['name'],
                 'type' => $assetType,
-                'path' => $dbPath
+                'file_path' => $dbPath // Changed 'path' to 'file_path'
             ];
             
             $assetModel = $this->model('Asset');

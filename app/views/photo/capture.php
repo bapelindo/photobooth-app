@@ -22,7 +22,7 @@
         }
         .photobooth-container {
             display: grid; 
-            grid-template-columns: auto 1fr;
+            grid-template-columns: 1fr auto;
             grid-template-rows: auto 1fr;
             gap: 20px; width: 100%; max-width: 1200px; height: 90vh;
             background: rgba(255, 255, 255, 0.5); backdrop-filter: blur(10px);
@@ -45,12 +45,12 @@
             padding: 0;
             overflow: hidden;
             background-image: url('<?= isset($data['selected_frame']) ? URLROOT . htmlspecialchars($data['selected_frame']->path) : '' ?>');
-            background-size: contain; /* Changed */
+            background-size: cover; /* Changed */
             background-position: center; 
             background-repeat: no-repeat;
             max-height: 100%;
             max-width: 100%;
-            /* aspect-ratio: 2 / 6; */ /* Removed */
+            aspect-ratio: 2 / 6; /* Removed */
             height: auto;
             width: auto;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
@@ -78,6 +78,11 @@
             width: 100%; 
             height: 100%; 
             object-fit: cover;
+        }
+        /* New rule: When a preview-slot contains an image, remove its background and border */
+        .preview-slot:has(img) {
+            background: none;
+            border: none;
         }
         .preview-slot.active { 
             border-color: var(--secondary-color); 
