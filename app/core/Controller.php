@@ -51,7 +51,7 @@ class Controller {
         }
 
         // If workflow_step is not set, redirect to packages
-        if (!Session::get('workflow_step')) {
+        if (ENABLE_SESSION_REFRESH_BACK && !Session::get('workflow_step')) {
             error_log('Controller __construct: workflow_step not set, redirecting to packages.');
             header('Location: /photobooth-app/public/packages');
             exit();

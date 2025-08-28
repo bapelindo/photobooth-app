@@ -59,20 +59,26 @@ class PaymentController extends Controller
         $order_id = $_GET['order_id'] ?? null;
         $transaction_status = $_GET['transaction_status'] ?? null;
 
+                if (ENABLE_SESSION_REFRESH_BACK && (Session::get('workflow_step') !== 'payment_initiated' || Session::get('payment_finished_displayed'))) {
+            $this->flashAndRedirect('packages', 'Sesi pembayaran tidak valid atau telah berakhir. Silakan mulai lagi.');
+        }
+
         $transactionModel = $this->model('Transaction');
         $transaction = $transactionModel->findByOrderId($order_id);
 
-        // If transaction is already successful, redirect to prevent re-entry
-        if ($transaction && $transaction->payment_status === 'success') {
-            // Clear relevant session variables to prevent re-use of old workflow
-            Session::unset('workflow_step');
-            Session::unset('current_transaction_id');
-            Session::unset('payment_finished_displayed');
+        // If ENABLE_SESSION_REFRESH_BACK is true, and transaction is successful, redirect to prevent re-entry
+        if (ENABLE_SESSION_REFRESH_BACK) { // Added this line
+            if ($transaction && $transaction->payment_status === 'success') {
+                // Clear relevant session variables to prevent re-use of old workflow
+                Session::unset('workflow_step');
+                Session::unset('current_transaction_id');
+                Session::unset('payment_finished_displayed');
 
-            // Redirect to a safe page, e.g., home or packages
-            header('Location: /photobooth-app/public/index.php');
-            exit();
-        }
+                // Redirect to a safe page, e.g., home or packages
+                header('Location: /photobooth-app/public/index.php');
+                exit();
+            }
+        } // Added this line
 
         // Original logic for pending transactions
         if ($transaction && $transaction->payment_status === 'pending' && ($transaction_status === 'capture' || $transaction_status === 'settlement')) {

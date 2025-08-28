@@ -108,7 +108,7 @@ class PhotoController extends Controller
     {
         Session::start();
 
-        if (Session::get('workflow_step') !== 'editor_unlocked') {
+        if (ENABLE_SESSION_REFRESH_BACK && Session::get('workflow_step') !== 'editor_unlocked') {
             $this->flashAndRedirect('packages', 'Sesi sebelumnya telah berakhir atau tidak valid. Silakan mulai lagi.');
         }
         
@@ -132,12 +132,14 @@ class PhotoController extends Controller
     {
         Session::start();
         
-        if (Session::get('workflow_step') !== 'finalize_unlocked') {
+        if (ENABLE_SESSION_REFRESH_BACK && Session::get('workflow_step') !== 'finalize_unlocked') {
              $this->flashAndRedirect('packages', 'Sesi sebelumnya telah berakhir atau tidak valid. Silakan mulai lagi.');
         }
         
-        Session::unset('workflow_step');
-        Session::unset('current_transaction_id');
+        if (ENABLE_SESSION_REFRESH_BACK) { // Only unset if strict refresh/back control is enabled
+            Session::unset('workflow_step');
+            Session::unset('current_transaction_id');
+        }
         
         $photoModel = $this->model('Photo');
         $data['photo'] = $photoModel->find($photo_id);
@@ -273,7 +275,9 @@ class PhotoController extends Controller
             
             $new_photo_id = $photoModel->lastInsertId();
 
-            Session::unset('photostrip_path');
+            if (ENABLE_SESSION_REFRESH_BACK) { // Only unset if strict refresh/back control is enabled
+                Session::unset('photostrip_path');
+            }
             
             echo json_encode([
                 'success' => true, 
