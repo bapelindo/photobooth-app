@@ -27,6 +27,7 @@ class PaymentController extends Controller
 
         // Memulai sesi dan menandai langkah alur kerja
         Session::start();
+        Session::unset('payment_finished_displayed'); // Clear previous flag
         Session::set('workflow_step', 'payment_initiated');
         Session::set('current_transaction_id', $transactionId);
 
@@ -56,34 +57,41 @@ class PaymentController extends Controller
     {
         Session::start();
 
+        // Check if the payment finish page has already been displayed for this session
+        if (Session::get('payment_finished_displayed')) {
+            error_log('PaymentController::finish - Page already displayed, redirecting to next workflow step or packages.');
+            // Clear session variables related to payment finish to prevent re-entry
+            Session::unset('payment_finished_displayed');
+            // Redirect to the next step in the workflow or a safe page
+            // Assuming 'frame_selection_unlocked' is the next step
+            if (Session::get('workflow_step') === 'frame_selection_unlocked') {
+                header('Location: /photobooth-app/public/photo/select_frame'); // Or whatever the next step is
+            } else {
+                header('Location: /photobooth-app/public/packages'); // Default safe redirect
+            }
+            exit();
+        }
+
         $order_id = $_GET['order_id'] ?? null;
         $transaction_status = $_GET['transaction_status'] ?? null;
 
         $transactionModel = $this->model('Transaction');
         $transaction = $transactionModel->findByOrderId($order_id);
 
-        // If transaction is already successful, redirect to prevent re-entry
-        if ($transaction && $transaction->payment_status === 'success') {
-            // Clear relevant session variables to prevent re-use of old workflow
-            Session::unset('workflow_step');
-            Session::unset('current_transaction_id');
-            Session::unset('payment_finished_displayed');
-
-            // Redirect to a safe page, e.g., home or packages
-            header('Location: /photobooth-app/public/index.php');
-            exit();
-        }
+        error_log('PaymentController::finish - Accessed. Order ID: ' . $order_id . ', Transaction Status (GET): ' . $transaction_status);
 
         // Original logic for pending transactions
         if ($transaction && $transaction->payment_status === 'pending' && ($transaction_status === 'capture' || $transaction_status === 'settlement')) {
             $transactionModel->updateStatusByOrderId($order_id, 'success');
             $transaction->payment_status = 'success'; // Update local object for view
+            error_log('PaymentController::finish - Transaction status updated to success. Order ID: ' . $order_id);
         }
 
         // Ensure workflow step is updated if transaction is successful
         if ($transaction && $transaction->payment_status === 'success') {
             Session::set('workflow_step', 'frame_selection_unlocked');
             Session::set('current_transaction_id', $transaction->id);
+            error_log('PaymentController::finish - Workflow step set to frame_selection_unlocked. Order ID: ' . $order_id);
         }
 
         $data['transaction'] = $transaction;
@@ -91,6 +99,7 @@ class PaymentController extends Controller
 
         // Mark that the payment finish page has been displayed for this session
         Session::set('payment_finished_displayed', true);
+        error_log('PaymentController::finish - Payment finish page displayed. Order ID: ' . $order_id);
     }
 
     public function callback()
@@ -110,6 +119,8 @@ class PaymentController extends Controller
         $order_id = $notif->order_id;
         $fraud = $notif->fraud_status;
 
+        error_log('PaymentController::callback - Received callback for Order ID: ' . $order_id . ', Transaction Status: ' . $transaction . ', Payment Type: ' . $type . ', Fraud Status: ' . $fraud);
+
         $transactionModel = $this->model('Transaction');
         $currentTransaction = $transactionModel->findByOrderId($order_id);
 
@@ -119,34 +130,36 @@ class PaymentController extends Controller
                     if ($fraud == 'challenge') {
                         // TODO set transaction status on your database to 'challenge'
                         $transactionModel->updateStatusByOrderId($order_id, 'challenge');
-                        // error_log('PaymentController::callback - Order ID: ' . $order_id . ' status set to challenge');
+                        error_log('PaymentController::callback - Order ID: ' . $order_id . ' status set to challenge');
                     } else {
                         // TODO set transaction status on your database to 'success'
                         $transactionModel->updateStatusByOrderId($order_id, 'success');
-                        // error_log('PaymentController::callback - Order ID: ' . $order_id . ' status set to success (capture)');
+                        error_log('PaymentController::callback - Order ID: ' . $order_id . ' status set to success (capture)');
                     }
                 }
             } elseif ($transaction == 'settlement') {
                 // TODO set transaction status on your database to 'success'
                 $transactionModel->updateStatusByOrderId($order_id, 'success');
-                // error_log('PaymentController::callback - Order ID: ' . $order_id . ' status set to success (settlement)');
+                error_log('PaymentController::callback - Order ID: ' . $order_id . ' status set to success (settlement)');
             } elseif ($transaction == 'pending') {
                 // TODO set transaction status on your database to 'pending' / waiting payment
                 $transactionModel->updateStatusByOrderId($order_id, 'pending');
-                // error_log('PaymentController::callback - Order ID: ' . $order_id . ' status set to pending');
+                error_log('PaymentController::callback - Order ID: ' . $order_id . ' status set to pending');
             } elseif ($transaction == 'deny') {
                 // TODO set transaction status on your database to 'deny'
                 $transactionModel->updateStatusByOrderId($order_id, 'deny');
-                // error_log('PaymentController::callback - Order ID: ' . $order_id . ' status set to deny');
+                error_log('PaymentController::callback - Order ID: ' . $order_id . ' status set to deny');
             } elseif ($transaction == 'expire') {
                 // TODO set transaction status on your database to 'expire'
                 $transactionModel->updateStatusByOrderId($order_id, 'expire');
-                // error_log('PaymentController::callback - Order ID: ' . $order_id . ' status set to expire');
+                error_log('PaymentController::callback - Order ID: ' . $order_id . ' status set to expire');
             } elseif ($transaction == 'cancel') {
                 // TODO set transaction status on your database to 'cancel'
                 $transactionModel->updateStatusByOrderId($order_id, 'cancel');
-                // error_log('PaymentController::callback - Order ID: ' . $order_id . ' status set to cancel');
+                error_log('PaymentController::callback - Order ID: ' . $order_id . ' status set to cancel');
             }
+        } else {
+            error_log('PaymentController::callback - Transaction not found for Order ID: ' . $order_id);
         }
 
         http_response_code(200);

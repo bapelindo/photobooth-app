@@ -18,12 +18,19 @@ class Session
     {
         self::start();
         $_SESSION[$key] = $value;
+        if ($key === 'payment_finished_displayed') {
+            error_log('Session::set - Key: ' . $key . ', Value: ' . (is_bool($value) ? ($value ? 'true' : 'false') : $value));
+        }
     }
 
     public static function get($key, $default = null)
     {
         self::start();
-        return $_SESSION[$key] ?? $default;
+        $value = $_SESSION[$key] ?? $default;
+        if ($key === 'payment_finished_displayed') {
+            error_log('Session::get - Key: ' . $key . ', Value: ' . (is_bool($value) ? ($value ? 'true' : 'false') : $value));
+        }
+        return $value;
     }
 
     public static function has($key)
@@ -41,6 +48,9 @@ class Session
     public static function unset($key)
     {
         self::start();
+        if ($key === 'payment_finished_displayed') {
+            error_log('Session::unset - Key: ' . $key);
+        }
         unset($_SESSION[$key]);
     }
 }

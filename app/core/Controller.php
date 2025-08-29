@@ -15,7 +15,7 @@ class Controller {
             '/packages', // The packages page itself
             '/login', // Login page
             '/admin/login', // Allow admin login to be accessed without workflow_step
-            '/payment/finish', // Payment finish page (handled separately for reloads)
+            
             '/payment/process', // Allow payment process to initiate workflow
             '/photo/send_email', // Allow send_email to be accessed without workflow_step
             '/photo/ajax_print_photo' // Allow ajax_print_photo to be accessed without workflow_step
