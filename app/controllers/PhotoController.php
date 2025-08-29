@@ -14,22 +14,25 @@ class PhotoController extends Controller
     public function selectFrame($transaction_id)
     {
         Session::start();
-        // error_log('PhotoController::selectFrame - Incoming transaction_id: ' . $transaction_id);
-        // error_log('PhotoController::selectFrame - Session workflow_step: ' . Session::get('workflow_step'));
-        // error_log('PhotoController::selectFrame - Session current_transaction_id: ' . Session::get('current_transaction_id'));
+        
+        if (ENABLE_SESSION_REFRESH_BACK) {
+            // error_log('PhotoController::selectFrame - Incoming transaction_id: ' . $transaction_id);
+            // error_log('PhotoController::selectFrame - Session workflow_step: ' . Session::get('workflow_step'));
+            // error_log('PhotoController::selectFrame - Session current_transaction_id: ' . Session::get('current_transaction_id'));
 
-        $sessionWorkflowStep = Session::get('workflow_step');
-        $sessionCurrentTransactionId = Session::get('current_transaction_id');
+            $sessionWorkflowStep = Session::get('workflow_step');
+            $sessionCurrentTransactionId = Session::get('current_transaction_id');
 
-        $condition1 = ($sessionWorkflowStep !== 'frame_selection_unlocked');
-        $condition2 = ($sessionCurrentTransactionId != $transaction_id);
+            $condition1 = ($sessionWorkflowStep !== 'frame_selection_unlocked');
+            $condition2 = ($sessionCurrentTransactionId != $transaction_id);
 
-        // error_log('PhotoController::selectFrame - Condition 1 (workflow_step check): ' . ($condition1 ? 'TRUE' : 'FALSE') . ' (Session: ' . $sessionWorkflowStep . ', Expected: frame_selection_unlocked)');
-        // error_log('PhotoController::selectFrame - Condition 2 (transaction_id check): ' . ($condition2 ? 'TRUE' : 'FALSE') . ' (Session: ' . $sessionCurrentTransactionId . ', URL: ' . $transaction_id . ')');
-        // error_log('PhotoController::selectFrame - Overall condition for redirect: ' . (($condition1 || $condition2) ? 'TRUE' : 'FALSE'));
+            // error_log('PhotoController::selectFrame - Condition 1 (workflow_step check): ' . ($condition1 ? 'TRUE' : 'FALSE') . ' (Session: ' . $sessionWorkflowStep . ', Expected: frame_selection_unlocked)');
+            // error_log('PhotoController::selectFrame - Condition 2 (transaction_id check): ' . ($condition2 ? 'TRUE' : 'FALSE') . ' (Session: ' . $sessionCurrentTransactionId . ', URL: ' . $transaction_id . ')');
+            // error_log('PhotoController::selectFrame - Overall condition for redirect: ' . (($condition1 || $condition2) ? 'TRUE' : 'FALSE'));
 
-        if ($condition1 || $condition2) {
-            $this->flashAndRedirect('packages', 'Sesi sebelumnya telah berakhir atau tidak valid. Silakan mulai lagi.');
+            if ($condition1 || $condition2) {
+                $this->flashAndRedirect('packages', 'Sesi sebelumnya telah berakhir atau tidak valid. Silakan mulai lagi.');
+            }
         }
         
         Session::set('workflow_step', 'frame_selected');
@@ -57,8 +60,10 @@ class PhotoController extends Controller
     {
         Session::start();
 
-        if (Session::get('workflow_step') !== 'frame_selected' || Session::get('current_transaction_id') != $transaction_id) {
-            $this->flashAndRedirect('packages', 'Sesi sebelumnya telah berakhir atau tidak valid. Silakan mulai lagi.');
+        if (ENABLE_SESSION_REFRESH_BACK) {
+            if (Session::get('workflow_step') !== 'frame_selected' || Session::get('current_transaction_id') != $transaction_id) {
+                $this->flashAndRedirect('packages', 'Sesi sebelumnya telah berakhir atau tidak valid. Silakan mulai lagi.');
+            }
         }
 
         Session::set('selected_frame_id', $frame_id);
@@ -108,8 +113,10 @@ class PhotoController extends Controller
     {
         Session::start();
 
-        if (Session::get('workflow_step') !== 'editor_unlocked') {
-            $this->flashAndRedirect('packages', 'Sesi sebelumnya telah berakhir atau tidak valid. Silakan mulai lagi.');
+        if (ENABLE_SESSION_REFRESH_BACK) {
+            if (Session::get('workflow_step') !== 'editor_unlocked') {
+                $this->flashAndRedirect('packages', 'Sesi sebelumnya telah berakhir atau tidak valid. Silakan mulai lagi.');
+            }
         }
         
         Session::set('workflow_step', 'editing_started');
@@ -132,12 +139,15 @@ class PhotoController extends Controller
     {
         Session::start();
         
-        if (Session::get('workflow_step') !== 'finalize_unlocked') {
-             $this->flashAndRedirect('packages', 'Sesi sebelumnya telah berakhir atau tidak valid. Silakan mulai lagi.');
+        if (ENABLE_SESSION_REFRESH_BACK) {
+            if (Session::get('workflow_step') !== 'finalize_unlocked') {
+                 $this->flashAndRedirect('packages', 'Sesi sebelumnya telah berakhir atau tidak valid. Silakan mulai lagi.');
+            }
+            
+            // Only unset the session if the protection is active
+            Session::unset('workflow_step');
+            Session::unset('current_transaction_id');
         }
-        
-        Session::unset('workflow_step');
-        Session::unset('current_transaction_id');
         
         $photoModel = $this->model('Photo');
         $data['photo'] = $photoModel->find($photo_id);
@@ -151,10 +161,12 @@ class PhotoController extends Controller
         header('Content-Type: application/json');
         Session::start();
         
-        if (Session::get('workflow_step') !== 'capture_started') {
-            http_response_code(403);
-            echo json_encode(['success' => false, 'message' => 'Akses tidak sah.']);
-            return;
+        if (ENABLE_SESSION_REFRESH_BACK) {
+            if (Session::get('workflow_step') !== 'capture_started') {
+                http_response_code(403);
+                echo json_encode(['success' => false, 'message' => 'Akses tidak sah.']);
+                return;
+            }
         }
 
         try {
@@ -232,10 +244,12 @@ class PhotoController extends Controller
         header('Content-Type: application/json');
         Session::start();
 
-        if (Session::get('workflow_step') !== 'editing_started') {
-            http_response_code(403);
-            echo json_encode(['success' => false, 'message' => 'Akses tidak sah.']);
-            return;
+        if (ENABLE_SESSION_REFRESH_BACK) {
+            if (Session::get('workflow_step') !== 'editing_started') {
+                http_response_code(403);
+                echo json_encode(['success' => false, 'message' => 'Akses tidak sah.']);
+                return;
+            }
         }
         
         Session::set('workflow_step', 'finalize_unlocked');
@@ -273,7 +287,9 @@ class PhotoController extends Controller
             
             $new_photo_id = $photoModel->lastInsertId();
 
-            Session::unset('photostrip_path');
+            if (ENABLE_SESSION_REFRESH_BACK) {
+                Session::unset('photostrip_path');
+            }
             
             echo json_encode([
                 'success' => true, 

@@ -67,10 +67,12 @@ class PaymentController extends Controller
         $transactionModel = $this->model('Transaction');
         $transaction = $transactionModel->findByOrderId($order_id);
 
-        if ($transaction && $transaction->payment_status === 'success') {
-            // Already processed. Don't resume, just redirect to start.
-            $this->flashAndRedirect('packages', 'Transaksi telah selesai diproses. Silakan mulai lagi jika ingin membuat yang baru.');
-            exit();
+        if (ENABLE_SESSION_REFRESH_BACK) {
+            if ($transaction && $transaction->payment_status === 'success') {
+                // Already processed. Don't resume, just redirect to start.
+                $this->flashAndRedirect('packages', 'Transaksi telah selesai diproses. Silakan mulai lagi jika ingin membuat yang baru.');
+                exit();
+            }
         }
         
         // Process a pending transaction
@@ -85,6 +87,7 @@ class PaymentController extends Controller
         $data['transaction'] = $transaction;
         $this->view('payment/finish', $data);
     }
+
 
     public function callback()
     {
