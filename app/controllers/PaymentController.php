@@ -56,50 +56,34 @@ class PaymentController extends Controller
     public function finish()
     {
         Session::start();
-
-        // Check if the payment finish page has already been displayed for this session
-        if (Session::get('payment_finished_displayed')) {
-            error_log('PaymentController::finish - Page already displayed, redirecting to next workflow step or packages.');
-            // Clear session variables related to payment finish to prevent re-entry
-            Session::unset('payment_finished_displayed');
-            // Redirect to the next step in the workflow or a safe page
-            // Assuming 'frame_selection_unlocked' is the next step
-            if (Session::get('workflow_step') === 'frame_selection_unlocked') {
-                header('Location: /photobooth-app/public/photo/select_frame'); // Or whatever the next step is
-            } else {
-                header('Location: /photobooth-app/public/packages'); // Default safe redirect
-            }
-            exit();
-        }
-
         $order_id = $_GET['order_id'] ?? null;
         $transaction_status = $_GET['transaction_status'] ?? null;
+
+        if (!$order_id) {
+            header('Location: /photobooth-app/public/packages');
+            exit();
+        }
 
         $transactionModel = $this->model('Transaction');
         $transaction = $transactionModel->findByOrderId($order_id);
 
-        error_log('PaymentController::finish - Accessed. Order ID: ' . $order_id . ', Transaction Status (GET): ' . $transaction_status);
-
-        // Original logic for pending transactions
+        if ($transaction && $transaction->payment_status === 'success') {
+            // Already processed. Don't resume, just redirect to start.
+            $this->flashAndRedirect('packages', 'Transaksi telah selesai diproses. Silakan mulai lagi jika ingin membuat yang baru.');
+            exit();
+        }
+        
+        // Process a pending transaction
         if ($transaction && $transaction->payment_status === 'pending' && ($transaction_status === 'capture' || $transaction_status === 'settlement')) {
             $transactionModel->updateStatusByOrderId($order_id, 'success');
             $transaction->payment_status = 'success'; // Update local object for view
-            error_log('PaymentController::finish - Transaction status updated to success. Order ID: ' . $order_id);
-        }
-
-        // Ensure workflow step is updated if transaction is successful
-        if ($transaction && $transaction->payment_status === 'success') {
+            
             Session::set('workflow_step', 'frame_selection_unlocked');
             Session::set('current_transaction_id', $transaction->id);
-            error_log('PaymentController::finish - Workflow step set to frame_selection_unlocked. Order ID: ' . $order_id);
         }
 
         $data['transaction'] = $transaction;
         $this->view('payment/finish', $data);
-
-        // Mark that the payment finish page has been displayed for this session
-        Session::set('payment_finished_displayed', true);
-        error_log('PaymentController::finish - Payment finish page displayed. Order ID: ' . $order_id);
     }
 
     public function callback()
