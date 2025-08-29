@@ -95,6 +95,7 @@
             overflow: hidden;
             transition: all 0.3s ease-out;
             aspect-ratio: 2 / 6;
+            margin-top: 8px;
         }
 
         .frame-card:hover {
