@@ -15,10 +15,10 @@ define('APPROOT', dirname(dirname(__FILE__)) . '/app'); // -> .../photobooth-app
 
 // URL Root
 // Ganti 'http://localhost/photobooth-app' sesuai dengan URL proyek Anda
-define('URLROOT', 'https://a47e899f252a.ngrok-free.app/photobooth-app'); 
+define('URLROOT', 'https://e38b8ded502f.ngrok-free.app/photobooth-app'); 
 
 // Site Name
-define('SITENAME', 'Acara Photobooth');
+define('SITENAME', 'Photobooth App');
 
 // Live View WebSocket URL
 define('LIVE_VIEW_WEBSOCKET_URL', 'ws://localhost:8765');
@@ -49,4 +49,4 @@ define('EMAIL_FROM_ADDRESS', 'bapelhacker@gmail.com');
 define('EMAIL_FROM_NAME', 'Photobooth App');
 
 // Enable/Disable Session Refresh and Back Functionality
-define('ENABLE_SESSION_REFRESH_BACK', false);
+define('ENABLE_SESSION_REFRESH_BACK', true);

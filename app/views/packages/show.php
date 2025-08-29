@@ -58,17 +58,87 @@
         .select-button { display: inline-block; font-family: 'Fredoka One', cursive; font-size: clamp(1rem, 2.2vmin, 1.2rem); background-color: #FFD166; color: #333; padding: 1.5vh 3vw; border: 2px solid #333; border-radius: 50px; text-decoration: none; cursor: pointer; transition: all 0.2s ease; box-shadow: 3px 3px 0 #333; }
         .select-button:hover { transform: translate(-2px, -2px); box-shadow: 5px 5px 0 #333; }
         .select-button:active { transform: translate(3px, 3px); box-shadow: none; }
+
+        /* Popup Styles */
+        .popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            display: none; /* Hidden by default */
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .popup-content {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 25px rgba(0,0,0,0.2);
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            font-family: 'Poppins', sans-serif;
+        }
+        .popup-content p {
+            font-size: 1.1rem;
+            color: #333;
+            margin: 0 0 20px 0;
+        }
+        #close-popup-btn {
+            font-family: 'Fredoka One', cursive;
+            font-size: 1rem;
+            background-color: #FFD166;
+            color: #333;
+            padding: 10px 25px;
+            border: 2px solid #333;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        #close-popup-btn:hover {
+            background-color: #ffc84a;
+        }
     </style>
 </head>
 <body>
     <div class="main-container">
 
         <?php if (\App\Core\Session::has('flash_message')): ?>
-            <div class="flash-message" style="background-color: #fff3cd; color: #856404; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #ffeeba; text-align: center;">
-                <?= \App\Core\Session::get('flash_message'); ?>
-                <?php \App\Core\Session::unset('flash_message'); ?>
+        <div id="flash-popup" class="popup-overlay">
+            <div class="popup-content">
+                <p><?= \App\Core\Session::get('flash_message'); ?></p>
+                <button id="close-popup-btn">Tutup</button>
             </div>
+        </div>
+        <?php \App\Core\Session::unset('flash_message'); ?>
         <?php endif; ?>
+
+        <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const popup = document.getElementById('flash-popup');
+            const closeBtn = document.getElementById('close-popup-btn');
+
+            if (popup) {
+                // Show the popup
+                popup.style.display = 'flex';
+
+                // Close button functionality
+                closeBtn.addEventListener('click', () => {
+                    popup.style.display = 'none';
+                });
+
+                // Auto-hide after 5 seconds
+                setTimeout(() => {
+                    if (popup.style.display !== 'none') {
+                        popup.style.display = 'none';
+                    }
+                }, 5000);
+            }
+        });
+        </script>
 
         <div class="header-container">
             <img src="https://em-content.zobj.net/source/microsoft-teams/363/camera_1f4f7.png" alt="Cute Camera Mascot" class="mascot">
