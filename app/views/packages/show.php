@@ -46,9 +46,46 @@
         @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
         .header-container h1 { font-family: 'Fredoka One', cursive; font-size: clamp(2rem, 5.5vmin, 3.5rem); margin: 1vh 0; text-shadow: 2px 2px #FFD166; }
         .header-container p { font-size: clamp(0.8rem, 2vmin, 1rem); max-width: 600px; margin: 0 auto; }
-        .packages-container { display: flex; justify-content: center; gap: 2vw; flex-wrap: wrap; }
-        .package-card { background-color: #FFFFFF; border: 2px solid #333; border-radius: 15px; padding: 1.5vw; width: 280px; box-shadow: 6px 6px 0px #333; transition: all 0.3s ease; text-align: left; }
-        .package-card:hover { transform: translate(-3px, -3px); box-shadow: 9px 9px 0px #333; }
+        
+        .carousel-wrapper {
+            position: relative;
+            width: 100%;
+            max-width: 82vw; /* Lebar tiga kartu + gap */
+            margin: 0 auto;
+        }
+
+        .packages-container {
+            display: flex;
+            overflow-x: auto;
+            scroll-behavior: smooth;
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
+            padding: 20px;
+            clip-path: inset(0 0 0 0);
+        }
+
+        .packages-container::-webkit-scrollbar { 
+            display: none; /* Safari and Chrome */
+        }
+
+        .package-card {
+            flex: 0 0 280px;
+            margin-right: 2vw;
+            background-color: #FFFFFF; 
+            border: 2px solid #333; 
+            border-radius: 15px; 
+            padding: 1.5vw; 
+            box-shadow: 6px 6px 0px #333; 
+            transition: all 0.3s ease; 
+            text-align: left; 
+        }
+        .package-card:last-child {
+            margin-right: 0;
+        }
+
+        .package-card:hover { 
+            box-shadow: 9px 9px 0px #FFD166; 
+        }
         .package-card h2 { font-family: 'Fredoka One', cursive; font-size: clamp(1.5rem, 3.5vmin, 1.8rem); color: #6C63FF; margin: 0 0 1vh; }
         .package-card .price { font-family: 'Fredoka One', cursive; font-size: clamp(2rem, 4.5vmin, 2.5rem); color: #FF6584; margin-bottom: 2vh; }
         .package-card p { font-size: clamp(0.75rem, 1.8vmin, 0.9rem); margin-bottom: 2vh; min-height: 3vh; }
@@ -58,6 +95,34 @@
         .select-button { display: inline-block; font-family: 'Fredoka One', cursive; font-size: clamp(1rem, 2.2vmin, 1.2rem); background-color: #FFD166; color: #333; padding: 1.5vh 3vw; border: 2px solid #333; border-radius: 50px; text-decoration: none; cursor: pointer; transition: all 0.2s ease; box-shadow: 3px 3px 0 #333; }
         .select-button:hover { transform: translate(-2px, -2px); box-shadow: 5px 5px 0 #333; }
         .select-button:active { transform: translate(3px, 3px); box-shadow: none; }
+
+        .carousel-buttons {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .nav-btn {
+            background-color: #FFD166;
+            border: 2px solid #333;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            font-size: 30px;
+            font-family: 'Fredoka One', cursive;
+            color: #333;
+            cursor: pointer;
+            box-shadow: 3px 3px 0 #333;
+            transition: all 0.2s ease;
+            margin: 0 10px;
+        }
+        .nav-btn:hover { 
+            transform: scale(1.05); 
+            box-shadow: 5px 5px 0 #333;
+        }
+        .nav-btn:active { 
+            transform: scale(1.05); 
+            box-shadow: none; 
+        }
 
         /* Popup Styles */
         .popup-overlay {
@@ -122,15 +187,10 @@
             const closeBtn = document.getElementById('close-popup-btn');
 
             if (popup) {
-                // Show the popup
                 popup.style.display = 'flex';
-
-                // Close button functionality
                 closeBtn.addEventListener('click', () => {
                     popup.style.display = 'none';
                 });
-
-                // Auto-hide after 5 seconds
                 setTimeout(() => {
                     if (popup.style.display !== 'none') {
                         popup.style.display = 'none';
@@ -145,24 +205,33 @@
             <h1>Pilih Paket Kecerianmu!</h1>
             <p>Setiap foto adalah ledakan tawa yang tak terlupakan. Yuk, pilih paket yang paling seru buat kamu!</p>
         </div>
-        <div class="packages-container">
-            <?php foreach ($packages as $package): ?>
-                <div class="package-card">
-                    <h2><?= htmlspecialchars($package->name); ?></h2>
-                    <div class="price">Rp <?= number_format($package->price, 0, ',', '.'); ?></div>
-                    <p><?= htmlspecialchars($package->description); ?></p>
-                    <ul>
-                        <li><b><?= $package->photo_limit; ?>x</b> Ambil Foto</li>
-                        <li><b><?= $package->retake_limit; ?>x</b> Kesempatan Ulang</li>
-                    </ul>
-                    <a href="<?= URLROOT; ?>/payment/process/<?= $package->id ?>" class="select-button">Pilih Paket Ini!</a>
-                </div>
-            <?php endforeach; ?>
+
+        <div class="carousel-wrapper">
+            <div class="packages-container">
+                <?php foreach ($packages as $package): ?>
+                    <div class="package-card">
+                        <h2><?= htmlspecialchars($package->name); ?></h2>
+                        <div class="price">Rp <?= number_format($package->price, 0, ',', '.'); ?></div>
+                        <p><?= htmlspecialchars($package->description); ?></p>
+                        <ul>
+                            <li><b><?= $package->photo_limit; ?>x</b> Ambil Foto</li>
+                            <li><b><?= $package->retake_limit; ?>x</b> Kesempatan Ulang</li>
+                        </ul>
+                        <a href="<?= URLROOT; ?>/payment/process/<?= $package->id ?>" class="select-button">Pilih Paket Ini!</a>
+                    </div>
+                <?php endforeach; ?>
+            </div>
         </div>
+        <div class="carousel-buttons">
+            <button id="prev-btn" class="nav-btn">&lt;</button>
+            <button id="next-btn" class="nav-btn">&gt;</button>
+        </div>
+
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            // Fade out animation script
             const links = document.querySelectorAll('a.select-button');
             const contentWrapper = document.querySelector('.main-container');
 
@@ -181,6 +250,32 @@
                     }, 700);
                 });
             });
+
+            // Carousel script
+            const container = document.querySelector('.packages-container');
+            const prevBtn = document.getElementById('prev-btn');
+            const nextBtn = document.getElementById('next-btn');
+
+            if (container) {
+                const scrollAmount = container.clientWidth;
+
+                nextBtn.addEventListener('click', () => {
+                    const maxScroll = container.scrollWidth - container.clientWidth;
+                    if (container.scrollLeft >= maxScroll - 1) {
+                        container.scrollTo({ left: 0, behavior: 'smooth' });
+                    } else {
+                        container.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+                    }
+                });
+
+                prevBtn.addEventListener('click', () => {
+                    if (container.scrollLeft < 1) {
+                        container.scrollTo({ left: container.scrollWidth, behavior: 'smooth' });
+                    } else {
+                        container.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
+                    }
+                });
+            }
         });
     </script>
 </body>
