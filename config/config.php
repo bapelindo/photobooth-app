@@ -15,7 +15,7 @@ define('APPROOT', dirname(dirname(__FILE__)) . '/app'); // -> .../photobooth-app
 
 // URL Root
 // Ganti 'http://localhost/photobooth-app' sesuai dengan URL proyek Anda
-define('URLROOT', 'https://cda481b71a4c.ngrok-free.app/photobooth-app'); 
+define('URLROOT', 'https://7d4865456e99.ngrok-free.app/photobooth-app'); 
 
 // Site Name
 define('SITENAME', 'Photobooth App');
@@ -34,7 +34,7 @@ define('SMTP_HOST', 'smtp.gmail.com');
 define('SMTP_USERNAME', 'bapelhacker@gmail.com');
 
 // Kata sandi untuk login ke server SMTP (gunakan App Password jika memakai Gmail)
-define('SMTP_PASSWORD', 'igex uokb lmke vuwm');
+define('SMTP_PASSWORD', 'ljum wbxr dhfx jwij');
 
 // Tipe enkripsi (biasanya 'tls' atau 'ssl')
 define('SMTP_SECURE', 'tls');
@@ -49,4 +49,4 @@ define('EMAIL_FROM_ADDRESS', 'bapelhacker@gmail.com');
 define('EMAIL_FROM_NAME', 'Photobooth App');
 
 // Enable/Disable Session Refresh and Back Functionality
-define('ENABLE_SESSION_REFRESH_BACK', true);
+define('ENABLE_SESSION_REFRESH_BACK', false);
