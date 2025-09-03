@@ -6,16 +6,22 @@ use App\Core\Controller;
 use App\Core\Session;
 
 class AdminController extends Controller {
+
+    /**
+     * Middleware: Memastikan hanya admin yang sudah login yang bisa mengakses.
+     */
     public function __construct()
     {
-        // Middleware: Cek apakah admin sudah login
+        Session::start();
         if (!Session::has('admin_id')) {
             $this->redirect('login');
         }
     }
 
+    /**
+     * Menampilkan halaman dashboard admin.
+     */
     public function dashboard()
-
     {
         $transactionModel = $this->model('Transaction');
         $packageModel = $this->model('Package');
@@ -27,8 +33,11 @@ class AdminController extends Controller {
         $this->adminView('admin/dashboard/index', $data);
     }
 
-    // === PACKAGE MANAGEMENT ===
+    // === PACKAGE MANAGEMENT (DIREVISI) ===
 
+    /**
+     * Menampilkan daftar semua paket.
+     */
     public function listPackages()
     {
         $packageModel = $this->model('Package');
@@ -37,12 +46,19 @@ class AdminController extends Controller {
         $this->adminView('admin/packages/index', $data);
     }
 
+    /**
+     * Menampilkan form untuk membuat paket baru.
+     */
     public function createPackage()
     {
         $data['title'] = 'Create New Package';
+        // Menggunakan view 'create' untuk membuat paket baru
         $this->adminView('admin/packages/create', $data);
     }
 
+    /**
+     * Menyimpan data paket baru ke database.
+     */
     public function storePackage()
     {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
@@ -51,8 +67,10 @@ class AdminController extends Controller {
                 'description' => $_POST['description'],
                 'price' => $_POST['price'],
                 'photo_limit' => $_POST['photo_limit'],
-                'photo_slots' => $_POST['photo_limit'],
-                'retake_limit' => $_POST['retake_limit'],
+                'frame_count' => $_POST['frame_count'],
+                'session_time_limit' => $_POST['session_time_limit'],
+                'photo_shot_limit' => $_POST['photo_shot_limit'],
+                'retake_limit' => $_POST['retake_limit'] ?? 0,
             ];
 
             $packageModel = $this->model('Package');
@@ -64,6 +82,9 @@ class AdminController extends Controller {
         }
     }
 
+    /**
+     * Menampilkan form untuk mengedit paket yang ada.
+     */
     public function editPackage($id)
     {
         $packageModel = $this->model('Package');
@@ -72,12 +93,16 @@ class AdminController extends Controller {
         if ($package) {
             $data['package'] = $package;
             $data['title'] = 'Edit Package';
-            $this->adminView('admin/packages/edit', $data);
+            // REVISI: Menggunakan view 'create' yang sama untuk mengedit, dengan melewatkan data paket
+            $this->adminView('admin/packages/create', $data);
         } else {
             $this->flashAndRedirect('admin/packages', 'Paket tidak ditemukan.', 'error');
         }
     }
 
+    /**
+     * Memperbarui data paket di database.
+     */
     public function updatePackage($id)
     {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
@@ -86,8 +111,10 @@ class AdminController extends Controller {
                 'description' => $_POST['description'],
                 'price' => $_POST['price'],
                 'photo_limit' => $_POST['photo_limit'],
-                'photo_slots' => $_POST['photo_limit'],
-                'retake_limit' => $_POST['retake_limit'],
+                'frame_count' => $_POST['frame_count'],
+                'session_time_limit' => $_POST['session_time_limit'],
+                'photo_shot_limit' => $_POST['photo_shot_limit'],
+                'retake_limit' => $_POST['retake_limit'] ?? 0,
             ];
 
             $packageModel = $this->model('Package');
@@ -99,6 +126,9 @@ class AdminController extends Controller {
         }
     }
 
+    /**
+     * Menghapus paket dari database.
+     */
     public function deletePackage($id)
     {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
@@ -111,7 +141,7 @@ class AdminController extends Controller {
         }
     }
 
-    // === ASSET MANAGEMENT ===
+    // === ASSET MANAGEMENT (TETAP SAMA) ===
 
     public function listAssets()
     {
@@ -133,19 +163,11 @@ class AdminController extends Controller {
             $assetType = $_POST['type'];
             $dbPath = '';
 
-            // Handle file upload for frame/sticker, or value for filter
+            // Handle file upload untuk frame/sticker, atau value untuk filter
             if ($assetType === 'filter') {
-                $dbPath = $_POST['asset_value']; // Get CSS value from new text field
-            } else if (isset($_FILES['asset_file'])) {
+                $dbPath = $_POST['asset_value']; // Get CSS value
+            } else if (isset($_FILES['asset_file']) && $_FILES['asset_file']['error'] === UPLOAD_ERR_OK) {
                 $file = $_FILES['asset_file'];
-                if ($file['error'] !== UPLOAD_ERR_OK) {
-                    $this->flashAndRedirect('admin/assets', 'File upload error!', 'error');
-                }
-                $allowedTypes = ['image/png', 'image/jpeg', 'image/gif'];
-                if (!in_array($file['type'], $allowedTypes)) {
-                    $this->flashAndRedirect('admin/assets', 'Invalid file type. Only PNG, JPG, GIF are allowed.', 'error');
-                }
-                
                 $uploadDir = "../public/assets/{$assetType}s/";
                 if (!is_dir($uploadDir)) {
                     mkdir($uploadDir, 0777, true);
@@ -156,27 +178,26 @@ class AdminController extends Controller {
                 $dbPath = "/assets/{$assetType}s/" . $filename;
 
                 if (!move_uploaded_file($file['tmp_name'], $destination)) {
-                     $this->flashAndRedirect('admin/assets', 'Failed to save asset file.', 'error');
+                     $this->flashAndRedirect('admin/assets', 'Gagal menyimpan file asset.', 'error');
                 }
             } else {
-                $this->flashAndRedirect('admin/assets', 'No file or value provided for asset.', 'error');
+                $this->flashAndRedirect('admin/assets', 'Tidak ada file atau nilai yang diberikan untuk asset.', 'error');
             }
 
             $data = [
                 'name' => $_POST['name'],
                 'type' => $assetType,
-                'file_path' => $dbPath // Changed 'path' to 'file_path'
+                'file_path' => $dbPath
             ];
             
             $assetModel = $this->model('Asset');
             if ($assetModel->create($data)) {
                 $this->redirect('admin/assets');
             } else {
-                $this->flashAndRedirect('admin/assets', 'Failed to save asset to database.', 'error');
+                $this->flashAndRedirect('admin/assets', 'Gagal menyimpan asset ke database.', 'error');
             }
         }
     }
-
 
     public function deleteAsset($id)
     {
@@ -184,14 +205,12 @@ class AdminController extends Controller {
             $assetModel = $this->model('Asset');
             $asset = $assetModel->find($id);
 
-            if ($asset && $asset->type !== 'filter') { // Don't delete file for filters
-                // Hapus file dari server
+            if ($asset && $asset->type !== 'filter') { // Jangan hapus file untuk filter
                 $filePath = '../public' . $asset->path;
                 if (file_exists($filePath)) {
                     unlink($filePath);
                 }
             }
-            // Hapus record dari DB
             if ($asset) {
                 $assetModel->delete($id);
             }
@@ -205,7 +224,7 @@ class AdminController extends Controller {
         $asset = $assetModel->find($id);
 
         if (!$asset || $asset->type !== 'frame') {
-            $this->flashAndRedirect('admin/assets', 'Frame asset not found.', 'error');
+            $this->flashAndRedirect('admin/assets', 'Asset frame tidak ditemukan.', 'error');
         }
 
         $data['asset'] = $asset;
@@ -229,7 +248,7 @@ class AdminController extends Controller {
 
         if (!$assetId || !is_array($coordinates)) {
             http_response_code(400);
-            echo json_encode(['success' => false, 'message' => 'Invalid input.']);
+            echo json_encode(['success' => false, 'message' => 'Input tidak valid.']);
             return;
         }
 
@@ -240,15 +259,14 @@ class AdminController extends Controller {
 
         $assetModel = $this->model('Asset');
         if ($assetModel->updateFrameData($assetId, $dataToUpdate)) {
-            echo json_encode(['success' => true, 'message' => 'Frame data saved successfully.']);
+            echo json_encode(['success' => true, 'message' => 'Data frame berhasil disimpan.']);
         } else {
             http_response_code(500);
-            echo json_encode(['success' => false, 'message' => 'Failed to save frame data to database.']);
+            echo json_encode(['success' => false, 'message' => 'Gagal menyimpan data ke database.']);
         }
     }
 
-
-    // === GALLERY ===
+    // === GALLERY & CAMERA (TETAP SAMA) ===
 
     public function showGallery()
     {
@@ -261,7 +279,6 @@ class AdminController extends Controller {
     public function cameraControl()
     {
         $data['title'] = 'Live Camera Control';
-        // Kirim URL WebSocket ke view admin
         $data['live_view_websocket_url'] = LIVE_VIEW_WEBSOCKET_URL;
         $this->adminView('admin/camera', $data);
     }
@@ -273,15 +290,11 @@ class AdminController extends Controller {
             $photo = $photoModel->find($id);
 
             if ($photo) {
-                // Hapus file dari server
-                // Assuming file_path in DB is like /public/uploads/photo/filename.png
-                $filePath = dirname(APPROOT) . $photo->file_path; 
+                $filePath = dirname(APPROOT) . '/public' . $photo->file_path; 
                 
-                // Check if the file exists and is a file (not a directory) before unlinking
                 if (file_exists($filePath) && is_file($filePath)) {
                     unlink($filePath);
                 }
-                // Hapus record dari DB
                 $photoModel->delete($id);
             }
             $this->redirect('admin/gallery');

@@ -44,11 +44,13 @@ body {
     grid-area: main;
     position: relative;
     width: 100%;
-    aspect-ratio: 4 / 3;
+    height: 100%;
     background: var(--dark-bg); /* Darker background for camera */
     border-radius: 25px; /* More rounded */
     box-shadow: inset 0 0 15px rgba(0,0,0,0.5), 0 10px 30px rgba(0,0,0,0.5);
     border: 5px solid var(--accent-color); /* Accent border */
+    margin: 0;
+    padding: 0;
 }
 
 .camera-view, .result-view {

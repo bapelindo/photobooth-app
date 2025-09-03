@@ -15,7 +15,7 @@ define('APPROOT', dirname(dirname(__FILE__)) . '/app'); // -> .../photobooth-app
 
 // URL Root
 // Ganti 'http://localhost/photobooth-app' sesuai dengan URL proyek Anda
-define('URLROOT', 'https://7d4865456e99.ngrok-free.app/photobooth-app'); 
+define('URLROOT', 'https://d82cf9f576c0.ngrok-free.app/photobooth-app'); 
 
 // Site Name
 define('SITENAME', 'Photobooth App');

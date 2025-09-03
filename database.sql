@@ -55,19 +55,22 @@ CREATE TABLE `assets` (
 -- --------------------------------------------------------
 
 --
--- Struktur dari tabel `packages`
+-- Struktur dari tabel `packages` (DIREVISI)
 --
 CREATE TABLE `packages` (
   `id` INT(11) NOT NULL AUTO_INCREMENT,
   `name` VARCHAR(255) NOT NULL,
   `description` TEXT,
   `price` DECIMAL(10, 2) NOT NULL,
-  `photo_limit` INT(11) NOT NULL DEFAULT 1,
-  `photo_slots` INT(11) NOT NULL DEFAULT 4, -- Jumlah foto per sesi photostrip
-  `retake_limit` INT(11) NOT NULL DEFAULT 0,
+  `photo_limit` INT(11) NOT NULL DEFAULT 6, -- Total foto di semua photostrip (misal: 6 untuk 2 frame)
+  `frame_count` INT(11) NOT NULL DEFAULT 2, -- REVISI: Jumlah frame/photostrip yang didapat
+  `session_time_limit` INT(11) NOT NULL DEFAULT 300, -- REVISI: Batas waktu sesi dalam detik (misal: 300 untuk 5 menit)
+  `photo_shot_limit` INT(11) NOT NULL DEFAULT 20, -- REVISI: Maksimal foto yang bisa diambil
+  `retake_limit` INT(11) NOT NULL DEFAULT 0, -- Tetap ada jika ingin digunakan untuk retake per foto
   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
 
 -- --------------------------------------------------------
 
@@ -91,12 +94,13 @@ CREATE TABLE `transactions` (
 -- --------------------------------------------------------
 
 --
--- Struktur dari tabel `photos`
+-- Struktur dari tabel `photos` (DIREVISI)
 --
 CREATE TABLE `photos` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `transaction_id` int(11) NOT NULL,
   `file_path` varchar(255) NOT NULL,
+  `type` ENUM('raw', 'final') NOT NULL DEFAULT 'raw', -- REVISI: Menandai jenis foto
   `emailed_to` varchar(255) DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`),

@@ -3,299 +3,86 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Saatnya Berpose! ✨</title>
+    <title>Saatnya Sesi Foto!</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <style>
-        html { overflow: hidden; }
+        html, body { overflow: hidden; }
         :root {
             --primary-color: #6C63FF; --secondary-color: #FF6584; --accent-color: #FFD166;
-            --card-bg: #FFFFFF; --dark-text: #333; --font-display: 'Fredoka One', cursive;
-            --font-main: 'Poppins', sans-serif;
+            --card-bg: #FFFFFF; --dark-text: #333; --font-display: 'Fredoka One', cursive; --font-main: 'Poppins', sans-serif;
         }
-        body {
-            font-family: var(--font-main); background: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%);
-            margin: 0; padding: 5px; display: flex; justify-content: center; align-items: center;
-            min-height: 100vh; box-sizing: border-box; overflow: hidden; opacity: 0;
-            animation: fadeIn 0.5s ease-in forwards;
-        }
-
-        .photobooth-container {
-            display: grid; 
-            grid-template-columns: 1fr auto;
-            grid-template-rows: auto 1fr;
-            gap: 20px; width: 76%; max-width: 1200px; height: 90vh;
-            background: rgba(255, 255, 255, 0.5); backdrop-filter: blur(10px);
-            border-radius: 20px; padding: 20px; box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.2);
-            opacity: 0; transform: scale(0.98);
-            animation: fadeIn 0.5s ease-out forwards;
-        }
-        .capture-sidebar, .top-panel, .capture-main-stage {
-            opacity: 0;
-            animation: fadeInElements 1s ease-out 1s forwards; 
-        }
-        @keyframes fadeIn { to { opacity: 1; transform: scale(1); } }
-        @keyframes fadeInElements { to { opacity: 1; } }
-        
-        .sidebar {
-            grid-row: 1 / 3; 
-            position: relative; 
-            background-color: rgba(255, 255, 255, 0.7);
-            border-radius: 15px; 
-            padding: 0;
-            overflow: hidden;
-            background-image: url('<?= isset($data['selected_frame']) ? URLROOT . htmlspecialchars($data['selected_frame']->path) : '' ?>');
-            background-size: cover; /* Changed */
-            background-position: center; 
-            background-repeat: no-repeat;
-            max-height: 100%;
-            max-width: 100%;
-            aspect-ratio: 2 / 6; /* Removed */
-            height: auto;
-            width: auto;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            display: flex; 
-            align-items: center;
-            justify-content: center;
-        }
-
-        .preview-slot {
-            position: absolute;
-            box-sizing: border-box;
-            background: rgba(224, 232, 240, 0.8);
-            border: 3px dashed #c0d1e6; 
-            border-radius: 10px; 
-            display: flex;
-            align-items: center; 
-            justify-content: center; 
-            font-size: 0.9em;
-            color: #555; 
-            overflow: hidden; 
-            transition: all 0.2s ease;
-        }
-
-        .preview-slot img { 
-            width: 100%; 
-            height: 100%; 
-            object-fit: cover;
-        }
-        /* New rule: When a preview-slot contains an image, remove its background and border */
-        .preview-slot:has(img) {
-            background: none;
-            border: none;
-        }
-        .preview-slot.active { 
-            border-color: var(--secondary-color); 
-            transform: scale(1.05); 
-            border-style: solid;
-            box-shadow: 0 0 15px var(--secondary-color);
-        }
-
-        .top-panel {
-            grid-column: 2 / 3;
-            display: flex;
-            gap: 20px;
-            align-items: stretch;
-        }
-                .info-panel {
-            flex-grow: 1;
-            text-align: center; padding: 10px;
-            background-color: var(--card-bg); border-radius: 20px;
-            display: flex; 
-            flex-direction: row; 
-            align-items: center; 
-            justify-content: center; 
-            gap: 50px; 
-        }
-        .info-panel h1, .info-panel p {
-            vertical-align: top; 
-            line-height: 20px;
-            margin: 0;
-        }
-        .info-panel h1 { font-family: var(--font-display); color: var(--primary-color); font-size: 1.5rem; }
-        .info-panel p { color: #555; }
-        .info-panel #retake-count { font-weight: bold; color: var(--secondary-color); }
-
-        .main-stage {
-            grid-column: 2 / 3; 
-            grid-row: 2 / 3;
-            position: relative; display: flex;
-            justify-content: center; align-items: center; background: #000;
-            border-radius: 20px; overflow: hidden;
-            aspect-ratio: 16 / 9;
-            max-width: 100%;
-            max-height: 100%;
-            box-sizing: border-box; /* Added */
-        }
-        .overlay-guide {
-            position: absolute;
-            border: 3px dashed rgba(255, 255, 255, 0.8);
-            box-shadow: 0 0 20px rgba(0,0,0,0.6);
-            border-radius: 5px;
-            z-index: 2;
-            pointer-events: none;
-            display: none; /* Hidden by default */
-            transition: all 0.2s ease-in-out;
-            box-sizing: border-box; /* Added */
-        }
-
-        .controls-panel { 
-            position: absolute; 
-            bottom: 20px; 
-            left: 50%; 
-            transform: translateX(-50%); 
-            display: flex; 
-            align-items: center;
-            gap: 15px; 
-            padding: 10px; 
-            background: rgba(0, 0, 0, 0.4); 
-            border-radius: 50px; 
-            z-index: 5; 
-        }
-        .action-button { font-family: var(--font-display); font-size: 1rem; padding: 10px 20px; border: none; border-radius: 50px; cursor: pointer; color: var(--dark-text); transition: all 0.3s ease; display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
-        .action-button:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0,0,0,0.3); }
-        #capture-btn { background-color: var(--accent-color); }
+        body { font-family: var(--font-main); background: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%); margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; box-sizing: border-box; }
+        .photobooth-container { display: grid; grid-template-columns: 1fr 300px; grid-template-rows: auto 1fr; gap: 20px; width: 100%; max-width: 1200px; height: 90vh; background: rgba(255, 255, 255, 0.5); backdrop-filter: blur(10px); border-radius: 20px; padding: 20px; box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.2); }
+        .top-panel { grid-column: 1 / 3; display: flex; justify-content: space-around; align-items: center; background-color: var(--card-bg); border-radius: 20px; padding: 10px; margin-bottom: 10px; }
+        .info-box { text-align: center; }
+        .info-box h2 { font-family: var(--font-display); color: var(--primary-color); margin: 0; font-size: 1.2rem; }
+        .info-box p { font-size: 1.5rem; font-weight: 700; margin: 5px 0 0; }
+        /* REVISI: Pastikan main-stage bisa menampung elemen di dalamnya */
+        .main-stage { grid-column: 1 / 2; grid-row: 2 / 3; position: relative; display: flex; justify-content: center; align-items: center; background: #000; border-radius: 20px; overflow: hidden; }
+        .side-panel { grid-column: 2 / 3; grid-row: 2 / 3; display: flex; flex-direction: column; gap: 15px; }
+        .controls-panel, .photo-review-panel { background: var(--card-bg); border-radius: 20px; padding: 20px; text-align: center; }
+        .photo-review-panel { flex-grow: 1; display: flex; flex-direction: column; }
+        .photo-review-panel h3 { margin-top: 0; font-family: var(--font-display); }
+        .review-area { width: 100%; height: 200px; background: #eee; border-radius: 10px; margin: 15px 0; position: relative; display: flex; justify-content: center; align-items: center; }
+        #review-photo { max-width: 100%; max-height: 100%; object-fit: contain; }
+        .review-buttons { display: flex; gap: 10px; justify-content: center; }
+        /* REVISI: Gunakan object-fit contain agar rasio video terjaga */
+        #live-preview { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
+        #safe-zone { position: absolute; border: 3px dashed rgba(255, 255, 255, 0.8); box-shadow: 0 0 20px rgba(0,0,0,0.6); border-radius: 5px; z-index: 2; pointer-events: none; transition: all 0.2s ease-in-out; }
+        #countdown { position: absolute; font-family: var(--font-display); font-size: 200px; color: var(--accent-color); text-shadow: 5px 5px 10px rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 10; }
+        .action-button { font-family: var(--font-display); font-size: 1.2rem; padding: 15px 30px; border: none; border-radius: 50px; cursor: pointer; color: var(--dark-text); transition: all 0.3s ease; }
+        #capture-btn { background-color: var(--accent-color); width: 100%; }
+        #finish-session-btn { background-color: var(--primary-color); color: white; margin-top: auto; display: none; }
+        .review-buttons .action-button { font-size: 1rem; padding: 10px 20px; }
         #keep-btn { background-color: #28a745; color: white; }
-        #retake-photo-btn { background-color: #ffc107; }
-        #finish-btn { background-color: var(--primary-color); color: white; }
-        .action-button:disabled { background-color: #ccc; cursor: not-allowed; transform: none; }
-        #live-preview { width: 100%; height: 100%; object-fit: contain; transform: scaleX(-1); transition: filter 0.3s ease-out; }
-        #capture-canvas { display: none; }
-        #countdown { position: absolute; font-family: var(--font-display); font-size: 200px; color: var(--accent-color); text-shadow: 5px 5px 10px rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 10; animation: countdown-pop 1s infinite; }
-        @keyframes countdown-pop { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
-        body.fade-out { opacity: 0; transition: opacity 0.4s ease-out; }
-
-        .filter-container { position: relative; }
-        #filter-btn { background-color: var(--primary-color); color: white; }
-        .filter-options {
-            display: none;
-            position: absolute;
-            bottom: 120%;
-            left: 50%;
-            transform: translateX(-50%);
-            background-color: var(--card-bg);
-            border-radius: 15px;
-            padding: 10px;
-            box-shadow: 0 -4px 20px rgba(0,0,0,0.2);
-            z-index: 10;
-            width: 200px;
-            max-height: 250px;
-            overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
-        }
-        .filter-options::-webkit-scrollbar { display: none; }
-        .filter-options { scrollbar-width: none; }
-        .filter-option {
-            padding: 12px 15px;
-            cursor: pointer;
-            transition: background-color 0.2s ease;
-            border-radius: 10px;
-            font-weight: 600;
-        }
-        .filter-option:hover { background-color: #f0f0f0; }
-        .filter-option.active { background-color: var(--accent-color); color: var(--dark-text); }
-
-        .controls-panel .filter-container { margin-left: auto; }
-
-        @media (min-height: 600px) {
-            .controls-panel .filter-container { margin-left: 0; }
-            .info-panel {
-                flex-grow: 1;
-                text-align: center; padding: 25px;
-                background-color: var(--card-bg); border-radius: 20px;
-                display: flex;
-                flex-direction: column;
-                justify-content: center;
-            }
-                .photobooth-container {
-                width: 100%; max-width: 1200px;
-            }
-            .info-panel h1 { font-family: var(--font-display); color: var(--primary-color); margin: 0; font-size: 2rem; }
-            .info-panel p { margin: 0px 0 0; color: #555; }
-            .info-panel #retake-count { font-weight: bold; color: var(--secondary-color); }
-            .info-panel h1, .info-panel p {
-                vertical-align: baseline; 
-                line-height: 0px;
-                margin: 0;
-            }
-        }
+        #discard-btn { background-color: #ffc107; }
     </style>
 </head>
 <body>
     <div class="photobooth-container">
-        <aside class="sidebar capture-sidebar" style="aspect-ratio: 2 / 6;">
-            <?php 
-            $slots = [];
-            if (isset($data['selected_frame']) && !empty($data['selected_frame']->slot_coordinates)) {
-                $slots = json_decode($data['selected_frame']->slot_coordinates, true);
-            } else {
-                // Fallback for frames without coordinates
-                for ($i = 0; $i < $data['package']->photo_limit; $i++) {
-                    $slots[] = ['top' => 4.5 + ($i * 22.5), 'left' => 8, 'width' => 84, 'height' => 18]; // Default staggered layout
-                }
-            }
-
-            foreach ($slots as $i => $slot): 
-                $style = sprintf(
-                    'top: %.2f%%; left: %.2f%%; width: %.2f%%; height: %.2f%%;',
-                    $slot['top'],
-                    $slot['left'],
-                    $slot['width'],
-                    $slot['height']
-                );
-            ?>
-                <div class="preview-slot" id="slot-<?= $i; ?>" style="<?= $style; ?>">Slot <?= $i + 1; ?></div>
-            <?php endforeach; ?>
-        </aside>
-
         <div class="top-panel">
-            <div class="info-panel">
-                <h1 id="info-text"></h1>
-                <p> Sisa Kesempatan Ulang: <span id="retake-count"><?= $data['retakes_left']; ?></span> ❤️</p>
+            <div class="info-box">
+                <h2>Sisa Waktu</h2>
+                <p id="timer"><?= $package->session_time_limit < 0 ? '∞' : gmdate("i:s", $package->session_time_limit) ?></p>
+            </div>
+            <div class="info-box">
+                <h2>Sisa Foto</h2>
+                <p id="shot-counter"><?= $package->photo_shot_limit ?></p>
             </div>
         </div>
 
-        <div class="main-stage capture-main-stage">
+        <div class="main-stage">
             <video id="live-preview" autoplay playsinline muted></video>
-            <div class="overlay-guide"></div>
+            <div id="safe-zone"></div>
             <div id="countdown"></div>
-            <canvas id="capture-canvas"></canvas>
-            
+            <canvas id="capture-canvas" style="display: none;"></canvas>
+        </div>
+
+        <div class="side-panel">
             <div class="controls-panel">
                 <button id="capture-btn" class="action-button">📸 Ambil Foto</button>
-                
-                <?php if (!empty($data['filters'])): ?>
-                <div class="filter-container">
-                    <button id="filter-btn" class="action-button">🎨 Pilih Filter</button>
-                    <div class="filter-options">
-                        <div class="filter-option active" data-filter="none">Normal</div>
-                        <?php foreach($data['filters'] as $filter): ?>
-                            <div class="filter-option" data-filter="<?= htmlspecialchars($filter->path); ?>">
-                                <?= htmlspecialchars($filter->name); ?>
-                            </div>
-                        <?php endforeach; ?>
-                    </div>
-                </div>
-                <?php endif; ?>
-
-                <div id="photo-controls" style="display: none;">
-                    <button id="keep-btn" class="action-button">👍 Simpan</button>
-                    <button id="retake-photo-btn" class="action-button">🔄 Ulang</button>
-                </div>
-                <button id="finish-btn" class="action-button" style="display: none;">🎉 Proses & Selesai!</button>
             </div>
+            <div class="photo-review-panel" style="display: none;">
+                <h3>Tinjau Foto</h3>
+                <div class="review-area">
+                    <img id="review-photo" src="" alt="Captured Photo Preview">
+                </div>
+                <div class="review-buttons">
+                    <button id="discard-btn" class="action-button">Hapus</button>
+                    <button id="keep-btn" class="action-button">Simpan</button>
+                </div>
+            </div>
+            <button id="finish-session-btn" class="action-button">Selesai & Lanjut Edit</button>
         </div>
     </div>
 
     <script>
-        const PHOTO_LIMIT = <?= $data['package']->photo_limit; ?>;
-        let RETAKES_LEFT = <?= $data['retakes_left']; ?>;
+        const PACKAGE_DATA = <?= json_encode($package); ?>;
         const TRANSACTION_ID = '<?= $data['transaction_id']; ?>';
-        const FRAME_PATH = '<?= isset($data['selected_frame']) ? $data['selected_frame']->path : "" ?>';
+        const ALL_SLOTS_DATA = <?= json_encode($data['all_slots_data']); ?>;
         const URLROOT = '<?= URLROOT; ?>';
-        const SLOTS_DATA = <?= json_encode($slots); ?>;
-        const FRAME_DIMENSIONS = <?= json_encode($data['frame_dimensions']); ?>;
     </script>
     <script src="<?= URLROOT; ?>/js/photobooth.js"></script>
 </body>

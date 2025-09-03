@@ -29,24 +29,28 @@ class Package
 
     public function create($data)
     {
-        $this->db->query("INSERT INTO packages (name, description, price, photo_limit, photo_slots, retake_limit) VALUES (:name, :description, :price, :photo_limit, :photo_slots, :retake_limit)");
+        $this->db->query("INSERT INTO packages (name, description, price, photo_limit, frame_count, session_time_limit, photo_shot_limit, retake_limit) VALUES (:name, :description, :price, :photo_limit, :frame_count, :session_time_limit, :photo_shot_limit, :retake_limit)");
         $this->db->bind(':name', $data['name']);
         $this->db->bind(':description', $data['description']);
         $this->db->bind(':price', $data['price']);
         $this->db->bind(':photo_limit', $data['photo_limit']);
-        $this->db->bind(':photo_slots', $data['photo_slots']);
+        $this->db->bind(':frame_count', $data['frame_count']);
+        $this->db->bind(':session_time_limit', $data['session_time_limit']);
+        $this->db->bind(':photo_shot_limit', $data['photo_shot_limit']);
         $this->db->bind(':retake_limit', $data['retake_limit']);
         return $this->db->execute();
     }
 
     public function update($id, $data)
     {
-        $this->db->query("UPDATE packages SET name = :name, description = :description, price = :price, photo_limit = :photo_limit, photo_slots = :photo_slots, retake_limit = :retake_limit WHERE id = :id");
+        $this->db->query("UPDATE packages SET name = :name, description = :description, price = :price, photo_limit = :photo_limit, frame_count = :frame_count, session_time_limit = :session_time_limit, photo_shot_limit = :photo_shot_limit, retake_limit = :retake_limit WHERE id = :id");
         $this->db->bind(':name', $data['name']);
         $this->db->bind(':description', $data['description']);
         $this->db->bind(':price', $data['price']);
         $this->db->bind(':photo_limit', $data['photo_limit']);
-        $this->db->bind(':photo_slots', $data['photo_slots']);
+        $this->db->bind(':frame_count', $data['frame_count']);
+        $this->db->bind(':session_time_limit', $data['session_time_limit']);
+        $this->db->bind(':photo_shot_limit', $data['photo_shot_limit']);
         $this->db->bind(':retake_limit', $data['retake_limit']);
         $this->db->bind(':id', $id);
         return $this->db->execute();
