@@ -172,8 +172,12 @@
             <a href="<?= URLROOT; ?>/admin/dashboard"><i data-feather="home"></i> Dashboard</a>
             <a href="<?= URLROOT; ?>/admin/packages"><i data-feather="package"></i> Packages</a>
             <a href="<?= URLROOT; ?>/admin/assets"><i data-feather="image"></i> Assets</a>
-            <a href="<?= URLROOT; ?>/admin/gallery"><i data-feather="grid"></i> Gallery</a>
+            <a href="<?= URLROOT; ?>/admin/sessions"><i data-feather="play"></i> Photo Sessions</a>
+            <a href="<?= URLROOT; ?>/admin/photostrips"><i data-feather="layers"></i> Photostrips</a>
+            <a href="<?= URLROOT; ?>/admin/gallery"><i data-feather="grid"></i> Legacy Gallery</a>
+            <a href="<?= URLROOT; ?>/admin/reports"><i data-feather="bar-chart-2"></i> Reports</a>
             <a href="<?= URLROOT; ?>/admin/camera"><i data-feather="camera"></i> Camera Control</a>
+            <a href="<?= URLROOT; ?>/admin/settings"><i data-feather="settings"></i> Settings</a>
         </nav>
         <div class="user-info">
              <a href="<?= URLROOT; ?>/logout">
@@ -188,6 +192,21 @@
     </main>
     <script>
         feather.replace();
+        
+        // Set active navigation state
+        document.addEventListener('DOMContentLoaded', function() {
+            const currentPath = window.location.pathname;
+            const navLinks = document.querySelectorAll('.nav-links a');
+            
+            navLinks.forEach(link => {
+                const href = link.getAttribute('href');
+                const relativePath = href.replace('<?= URLROOT; ?>', '');
+                
+                if (currentPath === relativePath || currentPath.startsWith(relativePath + '/')) {
+                    link.classList.add('active');
+                }
+            });
+        });
     </script>
 </body>
 </html>

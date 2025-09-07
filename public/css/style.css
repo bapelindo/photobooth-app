@@ -15,6 +15,11 @@
     padding: 0;
 }
 
+html {
+    height: 100%;
+    overflow: hidden;
+}
+
 body {
     font-family: var(--font-family);
     background-color: var(--background-color);
@@ -23,22 +28,29 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 100vh;
-    padding: 1rem;
+    height: 100vh;
+    width: 100vw;
+    padding: 15px;
+    box-sizing: border-box;
+    overflow: hidden;
 }
 
 .container {
     width: 100%;
-    max-width: 1200px;
+    height: calc(100vh - 30px);
     background: var(--white-color);
     border-radius: 16px;
     box-shadow: 0 10px 30px rgba(0,0,0,0.1);
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
 }
 
 .main-content {
     padding: 2rem 3rem;
     text-align: center;
+    flex: 1;
+    overflow-y: auto;
 }
 
 .content-box {

@@ -25,12 +25,29 @@ $router->get('home/thankyou', 'App\Controllers\HomeController@thankyou');
 // Rute GET
 $router->get('packages', 'App\Controllers\PackageController@index');
 $router->get('photo/select_frame/{transaction_id}', 'App\Controllers\PhotoController@selectFrame');
-$router->get('photo/capture/{transaction_id}/{frame_id}', 'App\Controllers\PhotoController@capture');
-$router->get('photo/editor', 'App\Controllers\PhotoController@editor');
-$router->get('photo/finalize/{photo_id}', 'App\Controllers\PhotoController@finalize');
-$router->post('photo/ajax_save_captured_photos', 'App\Controllers\PhotoController@ajax_save_captured_photos');
-$router->post('photo/ajax_save_final_photostrip', 'App\Controllers\PhotoController@ajax_save_final_photostrip');
+$router->post('photo/submit-frame-selection', 'App\Controllers\PhotoController@submitFrameSelection');
+$router->get('photo/session/{session_id}', 'App\Controllers\PhotoController@photoSession');
+$router->post('photo/save-session-photo', 'App\Controllers\PhotoController@saveSessionPhoto');
+$router->post('photo/deleteSessionPhoto', 'App\Controllers\PhotoController@deleteSessionPhoto');
+$router->post('photo/complete-session', 'App\Controllers\PhotoController@completeSession');
+$router->get('photo/layout/{session_id}', 'App\Controllers\PhotoController@layoutEditor');
+$router->post('photo/save-layouts', 'App\Controllers\PhotoController@saveLayouts');
+$router->get('photo/decoration/{session_id}', 'App\Controllers\PhotoController@decorationEditor');
+$router->post('photo/save-decorations', 'App\Controllers\PhotoController@saveDecorations');
+$router->get('photo/finalize/{session_id}', 'App\Controllers\PhotoController@finalizeSession');
+$router->post('photo/print-photostrip', 'App\Controllers\PhotoController@printPhotostrip');
+$router->post('photo/send-session-email', 'App\Controllers\PhotoController@sendSessionEmail');
+$router->get('photo/check-print-status/{session_id}', 'App\Controllers\PhotoController@checkPrintStatus');
+// Removed legacy capture route - using new session workflow
+// Removed legacy editor route - using new session workflow
+// Removed duplicate route - using finalizeSession instead
+// Removed legacy ajax_save_captured_photos route - using new session workflow
+// Removed legacy ajax_save_final_photostrip route - using new session workflow
 $router->get('payment/process/{package_id}', 'App\Controllers\PaymentController@process');
+$router->get('payment/get-snap-token/{package_id}', 'App\Controllers\PaymentController@getSnapToken');
+$router->get('payment/get-transaction-by-order/{order_id}', 'App\Controllers\PaymentController@getTransactionByOrder');
+$router->get('payment/test-endpoint', 'App\Controllers\PaymentController@testEndpoint');
+$router->get('payment/test-midtrans', 'App\Controllers\PaymentController@testMidtrans');
 $router->get('payment/finish', 'App\Controllers\PaymentController@finish');
 
 // Rute POST (untuk callback dari Payment Gateway)
@@ -61,13 +78,24 @@ $router->post('admin/assets/ajax_save_frame_data', 'App\Controllers\AdminControl
 $router->get('admin/gallery', 'App\Controllers\AdminController@showGallery');
 $router->post('admin/gallery/delete/{id}', 'App\Controllers\AdminController@deletePhoto');
 
+// New admin routes for enhanced workflow
+$router->get('admin/sessions', 'App\Controllers\AdminController@listSessions');
+$router->get('admin/sessions/view/{session_id}', 'App\Controllers\AdminController@viewSession');
+$router->post('admin/sessions/delete/{session_id}', 'App\Controllers\AdminController@deleteSession');
+$router->get('admin/photostrips', 'App\Controllers\AdminController@listPhotostrips');
+$router->get('admin/photostrips/view/{photostrip_id}', 'App\Controllers\AdminController@viewPhotostrip');
+$router->post('admin/photostrips/regenerate/{photostrip_id}', 'App\Controllers\AdminController@regeneratePhotostrip');
+$router->get('admin/reports', 'App\Controllers\AdminController@reports');
+$router->get('admin/settings', 'App\Controllers\AdminController@settings');
+$router->post('admin/settings/update', 'App\Controllers\AdminController@updateSettings');
+
 
 // Rute POST (untuk AJAX)
 $router->post('photo/ajax_save_photo', 'App\\Controllers\\PhotoController@ajax_save_photo');
-$router->post('photo/ajax_print_photo', 'App\\Controllers\\PhotoController@ajax_print_photo');
+// Removed legacy ajax_print_photo route - using printPhotostrip for new session workflow
 $router->post('photo/ajax_capture_dslr', 'App\\Controllers\\PhotoController@ajax_capture_dslr');
-$router->post('photo/send_email', 'App\\Controllers\\PhotoController@send_email');
+// Removed legacy send_email route - using sendSessionEmail for new session workflow
 
-$router->get('photo/selectFrame/{transaction_id}', 'App\Controllers\PhotoController@selectFrame');
+// Removed duplicate route - already defined as select_frame above
 
 $router->dispatch();

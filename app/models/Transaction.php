@@ -83,4 +83,29 @@ class Transaction
 
         return (object) $summary;
     }
+
+    public function getRevenueByDate($date)
+    {
+        $this->db->query("SELECT SUM(amount) as revenue FROM transactions WHERE payment_status = 'success' AND DATE(created_at) = :date");
+        $this->db->bind(':date', $date);
+        $result = $this->db->single();
+        return $result ? $result->revenue : 0;
+    }
+
+    public function getRevenueTrends($days = 30)
+    {
+        $this->db->query("
+            SELECT 
+                DATE(created_at) as date,
+                SUM(CASE WHEN payment_status = 'success' THEN amount ELSE 0 END) as revenue,
+                COUNT(CASE WHEN payment_status = 'success' THEN 1 END) as successful_transactions,
+                COUNT(*) as total_transactions
+            FROM transactions 
+            WHERE created_at >= DATE_SUB(NOW(), INTERVAL :days DAY)
+            GROUP BY DATE(created_at)
+            ORDER BY date DESC
+        ");
+        $this->db->bind(':days', $days);
+        return $this->db->resultSet();
+    }
 }

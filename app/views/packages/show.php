@@ -14,6 +14,11 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Midtrans Snap.js -->
+    <?php 
+        $paymentConfig = require '../config/payment.php';
+    ?>
+    <script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="<?= $paymentConfig['client_key'] ?>"></script>
 
     <style>
         html, body { height: 100%; margin: 0; overflow: hidden; }
@@ -92,7 +97,7 @@
         .package-card ul { list-style: none; padding: 0; margin: 0 0 2vh; }
         .package-card ul li { margin-bottom: 1vh; font-weight: 600; font-size: clamp(0.75rem, 1.8vmin, 0.9rem); }
         .package-card ul li::before { content: '⭐'; margin-right: 10px; }
-        .select-button { display: inline-block; font-family: 'Fredoka One', cursive; font-size: clamp(1rem, 2.2vmin, 1.2rem); background-color: #FFD166; color: #333; padding: 1.5vh 3vw; border: 2px solid #333; border-radius: 50px; text-decoration: none; cursor: pointer; transition: all 0.2s ease; box-shadow: 3px 3px 0 #333; }
+        .select-button { display: inline-block; font-family: 'Fredoka One', cursive; font-size: clamp(1rem, 2.2vmin, 1.2rem); background-color: #FFD166; color: #333; padding: 1.5vh 3vw; border: 2px solid #333; border-radius: 50px; text-decoration: none; cursor: pointer; transition: all 0.2s ease; box-shadow: 3px 3px 0 #333; width: auto; }
         .select-button:hover { transform: translate(-2px, -2px); box-shadow: 5px 5px 0 #333; }
         .select-button:active { transform: translate(3px, 3px); box-shadow: none; }
 
@@ -166,6 +171,38 @@
         #close-popup-btn:hover {
             background-color: #ffc84a;
         }
+
+        /* Loading overlay */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+        .loading-spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 4px solid #FFD166;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .loading-text {
+            color: white;
+            font-family: 'Fredoka One', cursive;
+            font-size: 1.2rem;
+            margin-top: 20px;
+        }
     </style>
 </head>
 <body>
@@ -180,6 +217,14 @@
         </div>
         <?php \App\Core\Session::unset('flash_message'); ?>
         <?php endif; ?>
+
+        <!-- Loading overlay -->
+        <div id="loading-overlay" class="loading-overlay">
+            <div style="text-align: center;">
+                <div class="loading-spinner"></div>
+                <div class="loading-text">Memuat pembayaran...</div>
+            </div>
+        </div>
 
         <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -214,10 +259,12 @@
                         <div class="price">Rp <?= number_format($package->price, 0, ',', '.'); ?></div>
                         <p><?= htmlspecialchars($package->description); ?></p>
                         <ul>
-                            <li><b><?= $package->photo_limit; ?>x</b> Ambil Foto</li>
-                            <li><b><?= $package->retake_limit; ?>x</b> Kesempatan Ulang</li>
+                            <li><b><?= $package->photo_limit ?? 2; ?> Cetak</b> Photostrip</li>
+                            <li><b><?= $package->frame_limit ?? 2; ?> Pilihan</b> Desain Frame</li>
+                            <li><b><?= floor(($package->session_duration ?? 300) / 60); ?> Menit</b> Durasi Sesi Foto</li>
+                            <li><b>Simpan hingga <?= $package->max_save_photos ?? 20; ?></b> foto terbaik</li>
                         </ul>
-                        <a href="<?= URLROOT; ?>/payment/process/<?= $package->id ?>" class="select-button">Pilih Paket Ini!</a>
+                        <button onclick="payWithSnap(<?= $package->id ?>, '<?= htmlspecialchars($package->name) ?>', <?= $package->price ?>)" class="select-button">Pilih Paket Ini!</button>
                     </div>
                 <?php endforeach; ?>
             </div>
@@ -230,26 +277,92 @@
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            // Fade out animation script
-            const links = document.querySelectorAll('a.select-button');
-            const contentWrapper = document.querySelector('.main-container');
+        // Midtrans Snap payment function
+        function payWithSnap(packageId, packageName, packagePrice) {
+            const loadingOverlay = document.getElementById('loading-overlay');
+            loadingOverlay.style.display = 'flex';
 
-            links.forEach(link => {
-                link.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    const destination = this.href;
-                    if (contentWrapper) {
-                        contentWrapper.classList.add('content-fade-out');
+            // Get snap token from server
+            fetch('<?= URLROOT ?>/payment/get-snap-token/' + packageId, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => {
+                console.log('Raw response status:', response.status);
+                console.log('Raw response headers:', response.headers);
+                return response.text().then(text => {
+                    console.log('Raw response text:', text);
+                    try {
+                        return JSON.parse(text);
+                    } catch (e) {
+                        console.error('Failed to parse JSON:', e);
+                        console.error('Response text:', text);
+                        throw new Error('Invalid JSON response: ' + text.substring(0, 100) + '...');
                     }
-                    setTimeout(() => {
-                        document.body.classList.add('fade-out');
-                    }, 300);
-                    setTimeout(() => {
-                        window.location.href = destination;
-                    }, 700);
                 });
+            })
+            .then(data => {
+                loadingOverlay.style.display = 'none';
+                
+                console.log('Payment response:', data);
+                
+                if (data.success && data.snap_token) {
+                    console.log('Snap token received:', data.snap_token);
+                    console.log('Token length:', data.snap_token.length);
+                    console.log('Token format check:', /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(data.snap_token));
+                    
+                    // Use Midtrans Snap
+                    try {
+                        snap.pay(data.snap_token, {
+                            onSuccess: function(result) {
+                                console.log('Payment success:', result);
+                                // Redirect to frame selection with transaction ID
+                                // We'll need to get the transaction ID from the payment result
+                                fetch('<?= URLROOT ?>/payment/get-transaction-by-order/' + result.order_id)
+                                    .then(response => response.json())
+                                    .then(transactionData => {
+                                        if (transactionData.success) {
+                                            window.location.href = '<?= URLROOT ?>/photo/select_frame/' + transactionData.transaction_id;
+                                        } else {
+                                            window.location.href = '<?= URLROOT ?>/packages';
+                                        }
+                                    })
+                                    .catch(() => {
+                                        window.location.href = '<?= URLROOT ?>/packages';
+                                    });
+                            },
+                            onPending: function(result) {
+                                console.log('Payment pending:', result);
+                                alert('Pembayaran sedang diproses. Silakan selesaikan pembayaran Anda.');
+                            },
+                            onError: function(result) {
+                                console.log('Payment error:', result);
+                                alert('Terjadi kesalahan saat pembayaran. Silakan coba lagi.');
+                            },
+                            onClose: function() {
+                                console.log('Payment popup closed');
+                            }
+                        });
+                    } catch (snapError) {
+                        console.error('Snap.pay error:', snapError);
+                        alert('Error initializing payment: ' + snapError.message);
+                    }
+                } else {
+                    alert('Gagal memuat pembayaran: ' + (data.error || 'Terjadi kesalahan'));
+                }
+            })
+            .catch(error => {
+                loadingOverlay.style.display = 'none';
+                console.error('Error:', error);
+                alert('Terjadi kesalahan saat memuat pembayaran');
             });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Note: Payment buttons now use onclick payWithSnap() directly
+            // No need for fade animation on payment buttons since they open popup
 
             // Carousel script
             const container = document.querySelector('.packages-container');

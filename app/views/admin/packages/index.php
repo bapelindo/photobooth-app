@@ -11,8 +11,11 @@
             <tr>
                 <th>Name</th>
                 <th>Price</th>
-                <th>Photo Limit</th>
-                <th>Retake Limit</th>
+                <th>Prints</th>
+                <th>Photos/Strip</th>
+                <th>Frame Limit</th>
+                <th>Duration</th>
+                <th>Max Save</th>
                 <th>Actions</th>
             </tr>
         </thead>
@@ -21,8 +24,11 @@
             <tr>
                 <td><strong><?= htmlspecialchars($package->name) ?></strong></td>
                 <td>Rp <?= number_format($package->price, 0, ',', '.') ?></td>
-                <td><?= htmlspecialchars($package->photo_limit) ?></td>
-                <td><?= htmlspecialchars($package->retake_limit) ?></td>
+                <td><?= htmlspecialchars($package->photo_limit ?? 2) ?></td>
+                <td><?= htmlspecialchars($package->photo_slots ?? 4) ?></td>
+                <td><?= htmlspecialchars($package->frame_limit ?? 1) ?></td>
+                <td><?= htmlspecialchars($package->session_duration ?? 300) ?>s</td>
+                <td><?= htmlspecialchars($package->max_save_photos ?? 20) ?></td>
                 <td class="action-links">
                     <a href="<?= URLROOT; ?>/admin/packages/edit/<?= $package->id ?>" class="btn btn-secondary btn-sm"><i data-feather="edit-2"></i> Edit</a>
                     <form action="<?= URLROOT; ?>/admin/packages/delete/<?= $package->id ?>" method="POST" onsubmit="return confirm('Are you sure?');" style="display:inline;">

@@ -61,7 +61,7 @@
             <div class="speech-bubble success">
                 <h1>Hore, Berhasil!</h1>
                 <p>Pembayaranmu sudah kami terima. Aku sudah tidak sabar untuk memotretmu. Yuk, kita mulai!</p>
-                <a href="<?= URLROOT; ?>/photo/selectFrame/<?= $transaction->id ?>" class="action-button btn-success">Mulai Foto! 📸</a>
+                <a href="<?= URLROOT; ?>/photo/select_frame/<?= $transaction->id ?>" class="action-button btn-success">Mulai Foto! 📸</a>
             </div>
         <?php elseif ($transaction && $transaction->payment_status === 'pending'): ?>
             <div class="speech-bubble pending">

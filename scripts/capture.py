@@ -14,7 +14,7 @@ def capture_photo(output_dir):
         
         # Buat nama file unik berdasarkan timestamp
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-        filename = f"photobooth_{timestamp}.jpg"
+        filename = f"photobooth_{timestamp}.png"
         filepath = os.path.join(output_dir, filename)
 
         # Jalankan gphoto2 untuk mengambil gambar dan mengunduhnya

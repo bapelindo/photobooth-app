@@ -28,7 +28,7 @@ class CameraService
         $command = escapeshellcmd("$pythonPath $scriptPath $outputDir");
         $output = shell_exec("$command 2>&1"); 
 
-        if (strpos(strtolower($output), 'error') !== false || !str_ends_with(trim($output), '.jpg')) {
+        if (strpos(strtolower($output), 'error') !== false || !str_ends_with(trim($output), '.png')) {
             throw new Exception("Gagal mengambil foto. Respons kamera: " . $output);
         }
 

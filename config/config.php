@@ -15,7 +15,7 @@ define('APPROOT', dirname(dirname(__FILE__)) . '/app'); // -> .../photobooth-app
 
 // URL Root
 // Ganti 'http://localhost/photobooth-app' sesuai dengan URL proyek Anda
-define('URLROOT', 'https://7d4865456e99.ngrok-free.app/photobooth-app'); 
+define('URLROOT', 'http://localhost/photobooth-app/public'); 
 
 // Site Name
 define('SITENAME', 'Photobooth App');
@@ -50,3 +50,32 @@ define('EMAIL_FROM_NAME', 'Photobooth App');
 
 // Enable/Disable Session Refresh and Back Functionality
 define('ENABLE_SESSION_REFRESH_BACK', false);
+
+// --- PHOTOBOOTH SESSION SETTINGS ---
+// Default session duration in seconds
+define('DEFAULT_SESSION_DURATION', 300);
+
+// Default maximum saved photos per session
+define('DEFAULT_MAX_SAVE_PHOTOS', 20);
+
+// Default frame limit per package
+define('DEFAULT_FRAME_LIMIT', 2);
+
+// Enable/Disable auto-print after session completion
+define('AUTO_PRINT_ENABLED', true);
+
+// Print queue processing interval (seconds)
+define('PRINT_QUEUE_INTERVAL', 30);
+
+// Maximum file size for photo uploads (bytes)
+define('MAX_PHOTO_FILE_SIZE', 10485760); // 10MB
+
+// Supported image formats
+define('SUPPORTED_IMAGE_FORMATS', ['jpg', 'jpeg', 'png', 'gif']);
+
+// Photo quality settings (1-100, higher = better quality)
+define('PHOTO_QUALITY', 100);
+
+// Thumbnail size for gallery displays
+define('THUMBNAIL_WIDTH', 150);
+define('THUMBNAIL_HEIGHT', 150);

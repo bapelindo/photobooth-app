@@ -124,6 +124,74 @@
             overflow: hidden;
             box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.3);
         }
+
+        .selection-status {
+            font-weight: 600;
+            color: var(--primary-color);
+            font-size: 1.2rem;
+            margin-top: 10px;
+        }
+
+        .frame-card {
+            position: relative;
+        }
+
+        .frame-card.selected {
+            border-color: var(--secondary-color);
+            transform: scale(0.95);
+            box-shadow: 0 0 0 3px rgba(255, 101, 132, 0.3);
+        }
+
+        .selection-indicator {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: var(--secondary-color);
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 16px;
+            opacity: 0;
+            transform: scale(0);
+            transition: all 0.3s ease;
+        }
+
+        .frame-card.selected .selection-indicator {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .continue-panel {
+            text-align: center;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            margin-top: 15px;
+            flex-shrink: 0;
+        }
+
+        .continue-btn {
+            font-family: var(--font-display);
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(108, 99, 255, 0.3);
+        }
+
+        .continue-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(108, 99, 255, 0.4);
+        }
     </style>
 </head>
 <body>
@@ -131,75 +199,96 @@
     <div class="main-container">
         <div class="info-panel">
             <h1>Pilih Bingkai Ajaibmu!</h1>
-            <p>Klik bingkai favoritmu untuk memulai sesi foto yang tak terlupakan.</p>
+            <p>Pilih <strong><?= $data['frame_limit'] ?></strong> bingkai favorit untuk photostrip yang menakjubkan.</p>
+            <div class="selection-status">
+                <span id="selection-count">0</span> / <?= $data['frame_limit'] ?> dipilih
+            </div>
         </div>
         <div class="frames-grid-container">
             <div class="frames-grid">
                 <?php if (empty($data['frames'])): ?>
                     <p style="text-align: center; grid-column: 1 / -1;">Tidak ada bingkai yang tersedia untuk paket foto ini. Hubungi admin.</p>
                 <?php else: ?>
-                    <?php foreach ($data['frames'] as $frame): ?>
-                        <a href="<?= URLROOT; ?>/photo/capture/<?= $data['transaction_id'] ?>/<?= $frame->id ?>" class="frame-card">
-                            <img src="<?= URLROOT . htmlspecialchars($frame->path); ?>" alt="<?= htmlspecialchars($frame->name); ?>">
-                            <h2><?= htmlspecialchars($frame->name); ?></h2>
-                        </a>
-                    <?php endforeach; ?>
+                    <form id="frame-selection-form" method="POST" action="<?= URLROOT; ?>/photo/submit-frame-selection" style="display: contents;">
+                        <input type="hidden" name="transaction_id" value="<?= $data['transaction_id'] ?>">
+                        <?php foreach ($data['frames'] as $frame): ?>
+                            <div class="frame-card" data-frame-id="<?= $frame->id ?>">
+                                <input type="checkbox" name="selected_frames[]" value="<?= $frame->id ?>" style="display: none;">
+                                <img src="<?= URLROOT . htmlspecialchars($frame->path); ?>" alt="<?= htmlspecialchars($frame->name); ?>">
+                                <div class="selection-indicator">✓</div>
+                                <h2><?= htmlspecialchars($frame->name); ?></h2>
+                            </div>
+                        <?php endforeach; ?>
+                    </form>
                 <?php endif; ?>
+            </div>
+        </div>
+        
+        <div class="continue-panel" id="continue-panel" style="display: none;">
+            <button type="submit" form="frame-selection-form" class="continue-btn">Lanjutkan ke Sesi Foto</button>
+        </div>
             </div>
         </div>
     </div>
     
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const allFrames = document.querySelectorAll('a.frame-card');
-            const infoPanel = document.querySelector('.info-panel');
-            const body = document.body;
+            const frameCards = document.querySelectorAll('.frame-card');
+            const selectionCount = document.getElementById('selection-count');
+            const continuePanel = document.getElementById('continue-panel');
+            const frameLimit = <?= $data['frame_limit'] ?>;
+            let selectedFrames = [];
 
-            if (allFrames.length === 0) return;
-
-            allFrames.forEach(clickedFrame => {
-                clickedFrame.addEventListener('click', function(e) {
+            frameCards.forEach(frameCard => {
+                frameCard.addEventListener('click', function(e) {
                     e.preventDefault();
-                    const destination = this.href;
-
-                    infoPanel.classList.add('fade-out');
-                    allFrames.forEach(frame => {
-                        if (frame !== this) {
-                            frame.classList.add('frame-fade-out');
+                    
+                    const frameId = this.dataset.frameId;
+                    const checkbox = this.querySelector('input[type="checkbox"]');
+                    
+                    if (this.classList.contains('selected')) {
+                        // Deselect frame
+                        this.classList.remove('selected');
+                        checkbox.checked = false;
+                        selectedFrames = selectedFrames.filter(id => id !== frameId);
+                    } else {
+                        // Select frame if limit not reached
+                        if (selectedFrames.length < frameLimit) {
+                            this.classList.add('selected');
+                            checkbox.checked = true;
+                            selectedFrames.push(frameId);
                         }
-                    });
+                    }
 
-                    setTimeout(() => {
-                        const clickedFrameRect = this.getBoundingClientRect();
-                        const clone = this.cloneNode(true);
-                        
-                        clone.classList.add('frame-card-clone');
-                        clone.style.top = `${clickedFrameRect.top}px`;
-                        clone.style.left = `${clickedFrameRect.left}px`;
-                        clone.style.width = `${clickedFrameRect.width}px`;
-                        clone.style.height = `${clickedFrameRect.height}px`;
-
-                        body.appendChild(clone);
-                        this.style.opacity = '0';
-
-                        setTimeout(() => {
-                            clone.style.left = `calc(50% - ${clickedFrameRect.width / 2}px)`;
-                            clone.style.top = `calc(50% - ${clickedFrameRect.height / 2}px)`;
-                        }, 50);
-
-                        setTimeout(() => {
-                            clone.style.transition = 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)';
-                            clone.style.transform = 'scale(0.1)';
-                            clone.style.opacity = '0';
-                            
-                            body.classList.add('fade-out');
-                        }, 600); 
-
-                        setTimeout(() => {
-                            window.location.href = destination;
-                        }, 1100); 
-                    }, 300); 
+                    // Update selection count
+                    selectionCount.textContent = selectedFrames.length;
+                    
+                    // Show/hide continue button
+                    if (selectedFrames.length === frameLimit) {
+                        continuePanel.style.display = 'block';
+                        continuePanel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    } else {
+                        continuePanel.style.display = 'none';
+                    }
                 });
+            });
+
+            // Form submission with animation
+            const form = document.getElementById('frame-selection-form');
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                if (selectedFrames.length !== frameLimit) {
+                    alert(`Silakan pilih ${frameLimit} frame untuk melanjutkan.`);
+                    return;
+                }
+
+                // Add fade out animation
+                document.body.classList.add('fade-out');
+                
+                setTimeout(() => {
+                    this.submit();
+                }, 500);
             });
         });
     </script>

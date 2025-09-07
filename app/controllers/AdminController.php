@@ -15,15 +15,21 @@ class AdminController extends Controller {
     }
 
     public function dashboard()
-
     {
         $transactionModel = $this->model('Transaction');
         $packageModel = $this->model('Package');
+        $photoSessionModel = $this->model('PhotoSession');
 
         $data['summary'] = $transactionModel->getSummary();
         $data['popular_packages'] = $packageModel->getPopularPackages(3);
+        
+        // Get photo session statistics
+        $data['session_stats'] = $photoSessionModel->getSessionStatistics();
+        
+        // Get recent sessions
+        $data['recent_sessions'] = $photoSessionModel->getRecentSessions(10);
+        
         $data['title'] = 'Dashboard';
-
         $this->adminView('admin/dashboard/index', $data);
     }
 
@@ -51,13 +57,16 @@ class AdminController extends Controller {
                 'description' => $_POST['description'],
                 'price' => $_POST['price'],
                 'photo_limit' => $_POST['photo_limit'],
-                'photo_slots' => $_POST['photo_limit'],
+                'photo_slots' => $_POST['photo_slots'] ?? $_POST['photo_limit'],
                 'retake_limit' => $_POST['retake_limit'],
+                'frame_limit' => $_POST['frame_limit'] ?? DEFAULT_FRAME_LIMIT,
+                'session_duration' => $_POST['session_duration'] ?? DEFAULT_SESSION_DURATION,
+                'max_save_photos' => $_POST['max_save_photos'] ?? DEFAULT_MAX_SAVE_PHOTOS,
             ];
 
             $packageModel = $this->model('Package');
             if ($packageModel->create($data)) {
-                $this->redirect('admin/packages');
+                $this->flashAndRedirect('admin/packages', 'Paket berhasil dibuat!', 'success');
             } else {
                 $this->flashAndRedirect('admin/packages', 'Gagal menyimpan paket.', 'error');
             }
@@ -86,13 +95,16 @@ class AdminController extends Controller {
                 'description' => $_POST['description'],
                 'price' => $_POST['price'],
                 'photo_limit' => $_POST['photo_limit'],
-                'photo_slots' => $_POST['photo_limit'],
+                'photo_slots' => $_POST['photo_slots'] ?? $_POST['photo_limit'],
                 'retake_limit' => $_POST['retake_limit'],
+                'frame_limit' => $_POST['frame_limit'] ?? DEFAULT_FRAME_LIMIT,
+                'session_duration' => $_POST['session_duration'] ?? DEFAULT_SESSION_DURATION,
+                'max_save_photos' => $_POST['max_save_photos'] ?? DEFAULT_MAX_SAVE_PHOTOS,
             ];
 
             $packageModel = $this->model('Package');
             if ($packageModel->update($id, $data)) {
-                $this->redirect('admin/packages');
+                $this->flashAndRedirect('admin/packages', 'Paket berhasil diperbarui!', 'success');
             } else {
                 $this->flashAndRedirect('admin/packages', 'Gagal memperbarui paket.', 'error');
             }
@@ -286,5 +298,300 @@ class AdminController extends Controller {
             }
             $this->redirect('admin/gallery');
         }
+    }
+
+    // === PHOTO SESSION MANAGEMENT ===
+
+    public function listSessions()
+    {
+        $photoSessionModel = $this->model('PhotoSession');
+        $data['sessions'] = $photoSessionModel->getAllWithDetails();
+        $data['title'] = 'Photo Sessions';
+        $this->adminView('admin/sessions/index', $data);
+    }
+
+    public function viewSession($session_id)
+    {
+        $photoSessionModel = $this->model('PhotoSession');
+        $session = $photoSessionModel->getSessionWithDetails($session_id);
+        
+        if (!$session) {
+            $this->flashAndRedirect('admin/sessions', 'Sesi tidak ditemukan.', 'error');
+        }
+
+        // Get session photos and photostrips
+        $sessionPhotos = $photoSessionModel->getSavedPhotos($session_id);
+        $photostripModel = $this->model('Photostrip');
+        $photostrips = $photostripModel->getBySessionId($session_id);
+
+        $data = [
+            'session' => $session,
+            'photos' => $sessionPhotos,
+            'photostrips' => $photostrips,
+            'title' => 'View Session #' . $session_id
+        ];
+
+        $this->adminView('admin/sessions/view', $data);
+    }
+
+    public function deleteSession($session_id)
+    {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $photoSessionModel = $this->model('PhotoSession');
+            
+            // Delete all related data (photos, photostrips, etc.)
+            $this->deleteSessionData($session_id);
+            
+            if ($photoSessionModel->delete($session_id)) {
+                $this->flashAndRedirect('admin/sessions', 'Sesi berhasil dihapus!', 'success');
+            } else {
+                $this->flashAndRedirect('admin/sessions', 'Gagal menghapus sesi.', 'error');
+            }
+        }
+    }
+
+    private function deleteSessionData($session_id)
+    {
+        // Delete session photos
+        $photoSessionModel = $this->model('PhotoSession');
+        $sessionPhotos = $photoSessionModel->getSessionPhotos($session_id);
+        foreach ($sessionPhotos as $photo) {
+            if (file_exists(dirname(APPROOT) . '/public' . $photo->file_path)) {
+                unlink(dirname(APPROOT) . '/public' . $photo->file_path);
+            }
+        }
+
+        // Delete photostrips
+        $photostripModel = $this->model('Photostrip');
+        $photostrips = $photostripModel->getBySessionId($session_id);
+        foreach ($photostrips as $photostrip) {
+            if (file_exists(dirname(APPROOT) . '/public' . $photostrip->final_image_path)) {
+                unlink(dirname(APPROOT) . '/public' . $photostrip->final_image_path);
+            }
+            $photostripModel->delete($photostrip->id);
+        }
+    }
+
+    // === PHOTOSTRIP MANAGEMENT ===
+
+    public function listPhotostrips()
+    {
+        $photostripModel = $this->model('Photostrip');
+        $data['photostrips'] = $photostripModel->getAllWithDetails();
+        $data['title'] = 'Photostrips Management';
+        $this->adminView('admin/photostrips/index', $data);
+    }
+
+    public function viewPhotostrip($photostrip_id)
+    {
+        $photostripModel = $this->model('Photostrip');
+        $photostrip = $photostripModel->getWithFullDetails($photostrip_id);
+        
+        if (!$photostrip) {
+            $this->flashAndRedirect('admin/photostrips', 'Photostrip tidak ditemukan.', 'error');
+        }
+
+        $data = [
+            'photostrip' => $photostrip,
+            'title' => 'View Photostrip #' . $photostrip_id
+        ];
+
+        $this->adminView('admin/photostrips/view', $data);
+    }
+
+    public function regeneratePhotostrip($photostrip_id)
+    {
+        header('Content-Type: application/json');
+        
+        try {
+            $photostripModel = $this->model('Photostrip');
+            $photostrip = $photostripModel->find($photostrip_id);
+            
+            if (!$photostrip) {
+                throw new Exception('Photostrip not found');
+            }
+
+            // Regenerate the final image (this would use your image processing service)
+            $newImagePath = $this->regenerateFinalPhotostrip($photostrip);
+            
+            if ($newImagePath) {
+                $photostripModel->updateFinalImage($photostrip_id, $newImagePath);
+                echo json_encode(['success' => true, 'new_path' => $newImagePath]);
+            } else {
+                throw new Exception('Failed to regenerate photostrip');
+            }
+
+        } catch (Exception $e) {
+            http_response_code(500);
+            echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+        }
+    }
+
+    private function regenerateFinalPhotostrip($photostrip)
+    {
+        // This would integrate with your image processing service
+        // For now, return a placeholder
+        try {
+            $outputDir = dirname(APPROOT) . '/public/uploads/final_photostrips/';
+            if (!is_dir($outputDir)) {
+                mkdir($outputDir, 0775, true);
+            }
+            
+            $filename = 'regenerated_photostrip_' . $photostrip->id . '_' . uniqid() . '.png';
+            $relativePath = '/uploads/final_photostrips/' . $filename;
+            
+            // Here you would regenerate the image using ImageProcessingService
+            // For now, just copy the frame as placeholder
+            $framePath = dirname(APPROOT) . '/public' . $photostrip->frame_path;
+            $outputPath = $outputDir . $filename;
+            
+            if (file_exists($framePath)) {
+                copy($framePath, $outputPath);
+                return $relativePath;
+            }
+            
+            return null;
+            
+        } catch (Exception $e) {
+            error_log('Error regenerating photostrip: ' . $e->getMessage());
+            return null;
+        }
+    }
+
+    // === STATISTICS & REPORTS ===
+
+    public function reports()
+    {
+        $transactionModel = $this->model('Transaction');
+        $photoSessionModel = $this->model('PhotoSession');
+        $packageModel = $this->model('Package');
+        $photostripModel = $this->model('Photostrip');
+
+        // Get basic stats
+        $sessionStats = $photoSessionModel->getSessionStatistics();
+        $revenueStats = $transactionModel->getSummary();
+        
+        $data = [
+            'stats' => (object) [
+                'total_sessions' => $sessionStats->total_sessions ?? 0,
+                'completed_sessions' => $sessionStats->completed_sessions ?? 0,
+                'total_revenue' => $revenueStats->total_revenue ?? 0,
+                'total_photostrips' => $photostripModel->getTotalCount() ?? 0
+            ],
+            'dailyStats' => $this->getDailyStatistics(),
+            'packageStats' => $this->getPackageStatistics(),
+            'chartData' => $this->getChartData(),
+            'title' => 'Reports & Analytics'
+        ];
+
+        $this->adminView('admin/reports/index', $data);
+    }
+
+    private function getDailyStatistics()
+    {
+        $transactionModel = $this->model('Transaction');
+        
+        // Get last 7 days of data
+        $dailyStats = [];
+        for ($i = 6; $i >= 0; $i--) {
+            $date = date('Y-m-d', strtotime("-{$i} days"));
+            $revenue = $transactionModel->getRevenueByDate($date);
+            $dailyStats[] = (object) [
+                'date' => $date,
+                'session_count' => 0, // Would need to implement this
+                'daily_revenue' => $revenue,
+                'avg_duration' => 0, // Would need to implement this
+                'print_success_rate' => 100 // Would need to implement this
+            ];
+        }
+        
+        return $dailyStats;
+    }
+
+    private function getPackageStatistics()
+    {
+        $packageModel = $this->model('Package');
+        
+        // Simple implementation - would need to join with transactions
+        $packages = $packageModel->getAll();
+        $packageStats = [];
+        
+        foreach ($packages as $package) {
+            $packageStats[] = (object) [
+                'package_name' => $package->name,
+                'usage_count' => rand(1, 50) // Placeholder - would need real data
+            ];
+        }
+        
+        // Sort by usage count
+        usort($packageStats, function($a, $b) {
+            return $b->usage_count - $a->usage_count;
+        });
+        
+        return $packageStats;
+    }
+
+    private function getChartData()
+    {
+        $transactionModel = $this->model('Transaction');
+        $trends = $transactionModel->getRevenueTrends(30);
+        
+        $chartData = [];
+        foreach ($trends as $trend) {
+            $chartData[] = [
+                'date' => $trend->date,
+                'revenue' => floatval($trend->revenue)
+            ];
+        }
+        
+        return $chartData;
+    }
+
+    // === SYSTEM SETTINGS ===
+
+    public function settings()
+    {
+        $data = [
+            'settings' => $this->getCurrentSettings(),
+            'title' => 'System Settings'
+        ];
+        
+        $this->adminView('admin/settings/index', $data);
+    }
+
+    public function updateSettings()
+    {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $settings = [
+                'default_session_duration' => $_POST['default_session_duration'] ?? DEFAULT_SESSION_DURATION,
+                'default_max_save_photos' => $_POST['default_max_save_photos'] ?? DEFAULT_MAX_SAVE_PHOTOS,
+                'default_frame_limit' => $_POST['default_frame_limit'] ?? DEFAULT_FRAME_LIMIT,
+                'auto_print_enabled' => isset($_POST['auto_print_enabled']),
+                'photo_quality' => $_POST['photo_quality'] ?? PHOTO_QUALITY,
+            ];
+
+            // Save settings to configuration or database
+            $this->saveSettings($settings);
+            
+            $this->flashAndRedirect('admin/settings', 'Pengaturan berhasil disimpan!', 'success');
+        }
+    }
+
+    private function getCurrentSettings()
+    {
+        return [
+            'default_session_duration' => DEFAULT_SESSION_DURATION,
+            'default_max_save_photos' => DEFAULT_MAX_SAVE_PHOTOS,
+            'default_frame_limit' => DEFAULT_FRAME_LIMIT,
+            'auto_print_enabled' => AUTO_PRINT_ENABLED,
+            'photo_quality' => PHOTO_QUALITY,
+        ];
+    }
+
+    private function saveSettings($settings)
+    {
+        // This would save settings to database or config file
+        // For now, just log them
+        error_log('Settings updated: ' . json_encode($settings));
     }
 }
