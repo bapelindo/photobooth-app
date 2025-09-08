@@ -61,6 +61,14 @@ class Transaction
         return $this->db->execute();
     }
 
+    public function updateStatus($id, $status)
+    {
+        $this->db->query("UPDATE transactions SET payment_status = :status WHERE id = :id");
+        $this->db->bind(':status', $status);
+        $this->db->bind(':id', $id);
+        return $this->db->execute();
+    }
+
     public function getSummary()
     {
         $summary = [];

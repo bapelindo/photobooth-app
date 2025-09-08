@@ -10,6 +10,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>Pilih Paket Kecerianmu!</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -277,8 +280,25 @@
     </div>
 
     <script>
+        // Prevent duplicate requests
+        let isPaymentInProgress = false;
+        
+        // Clear browser cache on page load
+        window.addEventListener('pageshow', function(event) {
+            if (event.persisted) {
+                // Page is restored from cache, reload it
+                window.location.reload(true);
+            }
+        });
+
         // Midtrans Snap payment function
         function payWithSnap(packageId, packageName, packagePrice) {
+            // Prevent duplicate payment requests
+            if (isPaymentInProgress) {
+                console.log('Payment already in progress, ignoring request');
+                return;
+            }
+            isPaymentInProgress = true;
             const loadingOverlay = document.getElementById('loading-overlay');
             loadingOverlay.style.display = 'flex';
 
@@ -324,37 +344,43 @@
                                     .then(response => response.json())
                                     .then(transactionData => {
                                         if (transactionData.success) {
-                                            window.location.href = '<?= URLROOT ?>/photo/select_frame/' + transactionData.transaction_id;
+                                            window.location.replace('<?= URLROOT ?>/payment/finish/' + transactionData.transaction_id);
                                         } else {
-                                            window.location.href = '<?= URLROOT ?>/packages';
+                                            window.location.replace('<?= URLROOT ?>/packages');
                                         }
                                     })
                                     .catch(() => {
-                                        window.location.href = '<?= URLROOT ?>/packages';
+                                        window.location.replace('<?= URLROOT ?>/packages');
                                     });
                             },
                             onPending: function(result) {
                                 console.log('Payment pending:', result);
+                                isPaymentInProgress = false;
                                 alert('Pembayaran sedang diproses. Silakan selesaikan pembayaran Anda.');
                             },
                             onError: function(result) {
                                 console.log('Payment error:', result);
+                                isPaymentInProgress = false;
                                 alert('Terjadi kesalahan saat pembayaran. Silakan coba lagi.');
                             },
                             onClose: function() {
                                 console.log('Payment popup closed');
+                                isPaymentInProgress = false;
                             }
                         });
                     } catch (snapError) {
                         console.error('Snap.pay error:', snapError);
+                        isPaymentInProgress = false;
                         alert('Error initializing payment: ' + snapError.message);
                     }
                 } else {
+                    isPaymentInProgress = false;
                     alert('Gagal memuat pembayaran: ' + (data.error || 'Terjadi kesalahan'));
                 }
             })
             .catch(error => {
                 loadingOverlay.style.display = 'none';
+                isPaymentInProgress = false;
                 console.error('Error:', error);
                 alert('Terjadi kesalahan saat memuat pembayaran');
             });

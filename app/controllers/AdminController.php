@@ -405,7 +405,7 @@ class AdminController extends Controller {
         
         try {
             $photostripModel = $this->model('Photostrip');
-            $photostrip = $photostripModel->find($photostrip_id);
+            $photostrip = $photostripModel->getWithFullDetails($photostrip_id);
             
             if (!$photostrip) {
                 throw new Exception('Photostrip not found');
@@ -429,8 +429,6 @@ class AdminController extends Controller {
 
     private function regenerateFinalPhotostrip($photostrip)
     {
-        // This would integrate with your image processing service
-        // For now, return a placeholder
         try {
             $outputDir = dirname(APPROOT) . '/public/uploads/final_photostrips/';
             if (!is_dir($outputDir)) {
@@ -439,14 +437,38 @@ class AdminController extends Controller {
             
             $filename = 'regenerated_photostrip_' . $photostrip->id . '_' . uniqid() . '.png';
             $relativePath = '/uploads/final_photostrips/' . $filename;
-            
-            // Here you would regenerate the image using ImageProcessingService
-            // For now, just copy the frame as placeholder
-            $framePath = dirname(APPROOT) . '/public' . $photostrip->frame_path;
             $outputPath = $outputDir . $filename;
             
-            if (file_exists($framePath)) {
-                copy($framePath, $outputPath);
+            // Use ImageProcessingService to properly regenerate the photostrip
+            $imageProcessingService = new \App\Services\ImageProcessingService();
+            
+            // Get frame path
+            $framePath = dirname(APPROOT) . '/public' . $photostrip->frame_path;
+            if (!file_exists($framePath)) {
+                throw new Exception('Frame file not found: ' . $framePath);
+            }
+            
+            // Get layout data and slot coordinates
+            $layoutData = json_decode($photostrip->layout_data ?: '[]', true) ?: [];
+            $slotCoordinates = json_decode($photostrip->slot_coordinates ?: '[]', true) ?: [];
+            
+            // Get session photos
+            $photoModel = $this->model('Photo');
+            $photos = $photoModel->getBySession($photostrip->session_id);
+            
+            // Prepare photo paths array
+            $photoPaths = [];
+            foreach ($photos as $photo) {
+                $fullPath = dirname(APPROOT) . '/public' . $photo->photo_path;
+                if (file_exists($fullPath)) {
+                    $photoPaths[] = $fullPath;
+                }
+            }
+            
+            // Generate photostrip using ImageProcessingService
+            $result = $imageProcessingService->createPhotoStrip($framePath, $photoPaths, $slotCoordinates, $outputPath);
+            
+            if ($result) {
                 return $relativePath;
             }
             
@@ -455,6 +477,47 @@ class AdminController extends Controller {
         } catch (Exception $e) {
             error_log('Error regenerating photostrip: ' . $e->getMessage());
             return null;
+        }
+    }
+
+    // === EMAIL QUEUE MANAGEMENT ===
+
+    public function emailQueue()
+    {
+        $emailQueueService = new \App\Services\EmailQueueService();
+        $stats = $emailQueueService->getQueueStats();
+        
+        $emailQueueModel = new \App\Models\EmailQueue();
+        $pendingEmails = $emailQueueModel->getPending(20); // Show latest 20
+        
+        $data = [
+            'title' => 'Email Queue Management',
+            'stats' => $stats,
+            'pending_emails' => $pendingEmails
+        ];
+        
+        $this->adminView('admin/email_queue/index', $data);
+    }
+
+    public function processEmailQueue()
+    {
+        header('Content-Type: application/json');
+        
+        try {
+            $emailQueueService = new \App\Services\EmailQueueService();
+            $processed = $emailQueueService->processPendingEmails(10);
+            
+            echo json_encode([
+                'success' => true, 
+                'processed' => $processed,
+                'message' => "Processed $processed emails"
+            ]);
+        } catch (Exception $e) {
+            http_response_code(500);
+            echo json_encode([
+                'success' => false, 
+                'message' => $e->getMessage()
+            ]);
         }
     }
 

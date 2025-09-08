@@ -31,6 +31,7 @@ $router->post('photo/save-session-photo', 'App\Controllers\PhotoController@saveS
 $router->post('photo/deleteSessionPhoto', 'App\Controllers\PhotoController@deleteSessionPhoto');
 $router->post('photo/complete-session', 'App\Controllers\PhotoController@completeSession');
 $router->get('photo/layout/{session_id}', 'App\Controllers\PhotoController@layoutEditor');
+$router->get('photo/get-session-photos/{session_id}', 'App\Controllers\PhotoController@getSessionPhotos');
 $router->post('photo/save-layouts', 'App\Controllers\PhotoController@saveLayouts');
 $router->get('photo/decoration/{session_id}', 'App\Controllers\PhotoController@decorationEditor');
 $router->post('photo/save-decorations', 'App\Controllers\PhotoController@saveDecorations');
@@ -48,6 +49,7 @@ $router->get('payment/get-snap-token/{package_id}', 'App\Controllers\PaymentCont
 $router->get('payment/get-transaction-by-order/{order_id}', 'App\Controllers\PaymentController@getTransactionByOrder');
 $router->get('payment/test-endpoint', 'App\Controllers\PaymentController@testEndpoint');
 $router->get('payment/test-midtrans', 'App\Controllers\PaymentController@testMidtrans');
+$router->get('payment/finish/{transaction_id}', 'App\Controllers\PaymentController@finish');
 $router->get('payment/finish', 'App\Controllers\PaymentController@finish');
 
 // Rute POST (untuk callback dari Payment Gateway)
@@ -85,6 +87,10 @@ $router->post('admin/sessions/delete/{session_id}', 'App\Controllers\AdminContro
 $router->get('admin/photostrips', 'App\Controllers\AdminController@listPhotostrips');
 $router->get('admin/photostrips/view/{photostrip_id}', 'App\Controllers\AdminController@viewPhotostrip');
 $router->post('admin/photostrips/regenerate/{photostrip_id}', 'App\Controllers\AdminController@regeneratePhotostrip');
+
+// Email queue monitoring
+$router->get('admin/email-queue', 'App\Controllers\AdminController@emailQueue');
+$router->post('admin/email-queue/process', 'App\Controllers\AdminController@processEmailQueue');
 $router->get('admin/reports', 'App\Controllers\AdminController@reports');
 $router->get('admin/settings', 'App\Controllers\AdminController@settings');
 $router->post('admin/settings/update', 'App\Controllers\AdminController@updateSettings');

@@ -65,10 +65,40 @@
     </div>
 
     <div>
-        <?php if (!empty($photostrip->final_image_path) && file_exists($photostrip->final_image_path)): ?>
+        <?php 
+        $finalImageExists = false;
+        $finalImageUrl = '';
+        
+        if (!empty($photostrip->final_image_path)) {
+            $fullPath = dirname(APPROOT) . '/public' . $photostrip->final_image_path;
+            if (file_exists($fullPath)) {
+                $finalImageExists = true;
+                $finalImageUrl = URLROOT . $photostrip->final_image_path;
+            }
+        }
+        ?>
+        
+        <?php if ($finalImageExists): ?>
             <div class="card" style="padding: 1rem;">
                 <h3 style="margin-top: 0;">Final Photostrip</h3>
-                <img src="<?= URLROOT; ?>/<?= htmlspecialchars($photostrip->final_image_path) ?>" alt="Final Photostrip" style="width: 100%; border-radius: 0.5rem; box-shadow: var(--shadow);">
+                <img src="<?= $finalImageUrl ?>" alt="Final Photostrip" style="width: 100%; border-radius: 0.5rem; box-shadow: var(--shadow);">
+                <div style="margin-top: 1rem; font-size: 0.875rem; color: var(--text-muted);">
+                    Path: <?= htmlspecialchars($photostrip->final_image_path) ?>
+                </div>
+            </div>
+        <?php else: ?>
+            <div class="card" style="padding: 1rem; text-align: center; color: var(--text-muted);">
+                <h3 style="margin-top: 0;">Final Photostrip</h3>
+                <div style="padding: 2rem;">
+                    <p>No final photostrip generated yet.</p>
+                    <?php if (!empty($photostrip->final_image_path)): ?>
+                        <p style="font-size: 0.875rem;">Expected path: <?= htmlspecialchars($photostrip->final_image_path) ?></p>
+                        <p style="font-size: 0.875rem;">Full path: <?= dirname(APPROOT) . '/public' . $photostrip->final_image_path ?></p>
+                    <?php endif; ?>
+                    <button onclick="regeneratePhotostrip(<?= $photostrip->id ?>)" class="btn btn-primary">
+                        Generate Now
+                    </button>
+                </div>
             </div>
         <?php endif; ?>
     </div>
@@ -101,3 +131,43 @@
     .badge-warning { background-color: #fef3c7; color: #d97706; }
     .badge-secondary { background-color: #f3f4f6; color: #6b7280; }
 </style>
+
+<script>
+function regeneratePhotostrip(photostripId) {
+    const btn = event.target;
+    const originalText = btn.innerHTML;
+    btn.innerHTML = 'Generating...';
+    btn.disabled = true;
+    
+    fetch('<?= URLROOT ?>/admin/photostrips/regenerate/' + photostripId, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Reload the page to show the new image
+            window.location.reload();
+        } else {
+            alert('Error regenerating photostrip: ' + (data.message || 'Unknown error'));
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error regenerating photostrip: ' + error.message);
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    });
+}
+
+// Handle form submission for existing regenerate button
+document.querySelector('form[action*="regenerate"]').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const photostripId = <?= $photostrip->id ?>;
+    regeneratePhotostrip(photostripId);
+});
+</script>

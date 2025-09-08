@@ -472,7 +472,38 @@
                 console.error('Error initializing layout editor:', error);
                 alert('Error initializing layout editor: ' + error.message);
             }
+            
+            // Refresh photo gallery to show newest photos
+            refreshPhotoGallery();
         });
+
+        function refreshPhotoGallery() {
+            // This ensures we're showing the most recent photos by reloading the page data
+            const photoSource = document.getElementById('photo-source');
+            if (photoSource) {
+                // Update used status based on current state
+                updatePhotoUsedStatus();
+            }
+        }
+
+        function updatePhotoUsedStatus() {
+            // Remove all 'used' classes first
+            document.querySelectorAll('.draggable-photo.used').forEach(el => el.classList.remove('used'));
+            
+            // Re-apply 'used' status based on current frame data
+            frameData.forEach(frame => {
+                if (frame.images) {
+                    Object.values(frame.images).forEach(imgData => {
+                        if (imgData && imgData.photoId) {
+                            const photoElement = document.querySelector(`.draggable-photo[data-photo-id="${imgData.photoId}"]`);
+                            if (photoElement) {
+                                photoElement.classList.add('used');
+                            }
+                        }
+                    });
+                }
+            });
+        }
 
         function initializeMainCanvas() {
             const container = document.getElementById('photostrip-container');
@@ -693,8 +724,8 @@
                         fabric.Image.fromURL(imageData.src, (img) => {
                             const slot = currentFrame.slotObjects[slotIndex];
                             img.set({
-                                left: slot.left,
-                                top: slot.top,
+                                left: imageData.left || slot.left,
+                                top: imageData.top || slot.top,
                                 scaleX: imageData.scaleX,
                                 scaleY: imageData.scaleY,
                                 clipPath: new fabric.Rect({
@@ -703,8 +734,41 @@
                                     width: slot.width,
                                     height: slot.height,
                                     absolutePositioned: true
-                                })
+                                }),
+                                selectable: true,
+                                hasControls: false,
+                                hasBorders: true,
+                                moveCursor: 'move',
+                                hoverCursor: 'move',
+                                lockScalingX: true,
+                                lockScalingY: true,
+                                lockRotation: true
                             });
+                            
+                            // Add panning constraints for restored image
+                            img.on('moving', function() {
+                                const slotWidth = slot.width;
+                                const slotHeight = slot.height;
+                                const rightBound = slot.left;
+                                const leftBound = slot.left - (this.getScaledWidth() - slotWidth);
+                                const bottomBound = slot.top;
+                                const topBound = slot.top - (this.getScaledHeight() - slotHeight);
+
+                                if (this.left > rightBound) this.left = rightBound;
+                                if (this.left < leftBound) this.left = leftBound;
+                                if (this.top > bottomBound) this.top = bottomBound;
+                                if (this.top < topBound) this.top = topBound;
+                            });
+
+                            // Save position when restored photo stops moving
+                            img.on('modified', function() {
+                                // Update position in frame data
+                                if (currentFrame.images[slotIndex]) {
+                                    currentFrame.images[slotIndex].left = this.left;
+                                    currentFrame.images[slotIndex].top = this.top;
+                                }
+                            });
+                            
                             mainCanvas.add(img);
                             // Restore the fabricImage reference
                             imageData.fabricImage = img;
@@ -876,19 +940,13 @@
                     src: photoSrc,
                     photoPath: newPhotoPath,
                     scaleX: scale,
-                    scaleY: scale
+                    scaleY: scale,
+                    left: photoImg.left,
+                    top: photoImg.top
                 };
                 
                 // Update 'used' status in gallery based on latest state
-                frameData.forEach(frame => {
-                    if (frame.images) {
-                        Object.values(frame.images).forEach(imgData => {
-                            if (imgData) {
-                                document.querySelector(`.draggable-photo[data-photo-id="${imgData.photoId}"]`)?.classList.add('used');
-                            }
-                        });
-                    }
-                });
+                updatePhotoUsedStatus();
 
                 checkIfDone();
 
@@ -903,6 +961,15 @@
                     if (this.left < leftBound) this.left = leftBound;
                     if (this.top > bottomBound) this.top = bottomBound;
                     if (this.top < topBound) this.top = topBound;
+                });
+
+                // Save position when photo stops moving
+                photoImg.on('modified', function() {
+                    // Update position in frame data
+                    if (currentFrame.images[slotIndex]) {
+                        currentFrame.images[slotIndex].left = this.left;
+                        currentFrame.images[slotIndex].top = this.top;
+                    }
                 });
 
                 canvas.setActiveObject(photoImg);

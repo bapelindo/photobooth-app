@@ -72,7 +72,14 @@ class PhotoSession
 
     public function getSavedPhotos($session_id)
     {
-        $this->db->query("SELECT * FROM photo_session_photos WHERE session_id = :session_id AND is_saved = 1 ORDER BY taken_at ASC");
+        // Get distinct saved photos by file_path to avoid duplicates
+        $this->db->query("
+            SELECT id, session_id, file_path, taken_at, is_saved 
+            FROM photo_session_photos 
+            WHERE session_id = :session_id AND is_saved = 1 
+            GROUP BY file_path 
+            ORDER BY taken_at ASC
+        ");
         $this->db->bind(':session_id', $session_id);
         return $this->db->resultSet();
     }

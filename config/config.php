@@ -9,6 +9,7 @@
 // install phpmailer
 // install composer
 // ngrok http 80
+// php scripts/email_worker.php
 
 // App Root
 define('APPROOT', dirname(dirname(__FILE__)) . '/app'); // -> .../photobooth-app/app

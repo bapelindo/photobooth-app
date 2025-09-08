@@ -277,19 +277,30 @@ class PaymentController extends Controller
         }
     }
 
-    public function finish()
+    public function finish($transaction_id = null)
     {
         Session::start();
+        
+        // Support both transaction_id parameter and order_id from GET
         $order_id = $_GET['order_id'] ?? null;
         $transaction_status = $_GET['transaction_status'] ?? null;
 
-        if (!$order_id) {
+        $transactionModel = $this->model('Transaction');
+        
+        // If transaction_id is provided as parameter, use it
+        if ($transaction_id) {
+            $transaction = $transactionModel->find($transaction_id);
+            if ($transaction && $transaction->payment_status !== 'success') {
+                // Mark as success if coming from successful payment redirect
+                $transactionModel->updateStatus($transaction->id, 'success');
+                $transaction->payment_status = 'success';
+            }
+        } elseif ($order_id) {
+            $transaction = $transactionModel->findByOrderId($order_id);
+        } else {
             header('Location: /photobooth-app/public/packages');
             exit();
         }
-
-        $transactionModel = $this->model('Transaction');
-        $transaction = $transactionModel->findByOrderId($order_id);
 
         if (ENABLE_SESSION_REFRESH_BACK) {
             if ($transaction && $transaction->payment_status === 'success') {
@@ -301,7 +312,12 @@ class PaymentController extends Controller
         
         // Process a pending transaction
         if ($transaction && $transaction->payment_status === 'pending' && ($transaction_status === 'capture' || $transaction_status === 'settlement')) {
-            $transactionModel->updateStatusByOrderId($order_id, 'success');
+            if ($order_id) {
+                $transactionModel->updateStatusByOrderId($order_id, 'success');
+            } else {
+                // If using transaction_id directly, update by ID
+                $transactionModel->updateStatus($transaction->id, 'success');
+            }
             $transaction->payment_status = 'success'; // Update local object for view
             
             Session::set('workflow_step', 'frame_selection_unlocked');

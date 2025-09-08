@@ -128,4 +128,32 @@ class Photostrip
         return $result ? $result->count : 0;
     }
 
+    public function findBySessionAndFrame($session_id, $frame_id)
+    {
+        $this->db->query("SELECT * FROM photostrips WHERE session_id = :session_id AND frame_id = :frame_id");
+        $this->db->bind(':session_id', $session_id);
+        $this->db->bind(':frame_id', $frame_id);
+        return $this->db->single();
+    }
+
+    public function update($id, $data)
+    {
+        $fields = [];
+        $params = [':id' => $id];
+        
+        foreach ($data as $key => $value) {
+            $fields[] = "$key = :$key";
+            $params[":$key"] = $value;
+        }
+        
+        $sql = "UPDATE photostrips SET " . implode(', ', $fields) . " WHERE id = :id";
+        $this->db->query($sql);
+        
+        foreach ($params as $param => $value) {
+            $this->db->bind($param, $value);
+        }
+        
+        return $this->db->execute();
+    }
+
 }

@@ -26,12 +26,11 @@
 
         .session-container {
             display: grid;
-            grid-template-rows: auto 1fr auto;
+            grid-template-rows: auto 1fr;
             grid-template-columns: 2fr 1fr;
-            gap: 15px;
-            min-height: 100vh;
-            height: calc(100vh - 30px);
-            padding: 15px;
+            gap: 10px;
+            height: 100vh;
+            padding: 10px;
             box-sizing: border-box;
         }
 
@@ -39,7 +38,7 @@
             grid-column: 1 / -1;
             background: rgba(255, 255, 255, 0.95);
             border-radius: 15px;
-            padding: 15px 25px;
+            padding: 10px 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -103,10 +102,13 @@
         .safe-zone {
             flex-grow: 1;
             position: relative;
-            border: 3px dashed var(--primary-color);
             border-radius: 10px;
             margin-bottom: 15px;
             overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #000;
         }
 
         .safe-zone-overlay {
@@ -130,7 +132,6 @@
             background: transparent;
             border: 2px dashed rgba(108, 99, 255, 0.8);
             border-radius: 8px;
-            box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.3);
         }
 
         .safe-zone-label {
@@ -166,8 +167,9 @@
         #camera-feed {
             width: 100%;
             height: 100%;
-            object-fit: cover;
+            object-fit: contain;
             border-radius: 7px;
+            background: #000;
         }
 
         .photo-preview {
@@ -318,12 +320,19 @@
 
         .photo-gallery {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            grid-template-columns: repeat(4, 1fr);
             gap: 10px;
             flex: 1;
             overflow-y: auto;
+            overflow-x: hidden;
             min-height: 0;
             max-height: 400px;
+            padding: 10px;
+            scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch;
+            align-items: start;
+            justify-items: center;
+            grid-auto-rows: min-content;
         }
         
         .photo-gallery::-webkit-scrollbar {
@@ -340,29 +349,21 @@
             border-radius: 3px;
         }
 
-        .gallery-filters {
-            display: flex;
-            gap: 5px;
-            margin-bottom: 15px;
-            flex-shrink: 0;
+
+        /* Responsive grid for different screen sizes */
+        @media (max-width: 400px) {
+            .photo-gallery {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 8px;
+                padding: 6px;
+            }
+            
+            .gallery-photo {
+                max-width: 80px;
+                max-height: 80px;
+            }
         }
 
-        .filter-btn {
-            padding: 6px 12px;
-            border: 1px solid var(--primary-color);
-            background: transparent;
-            color: var(--primary-color);
-            border-radius: 15px;
-            font-size: 0.75rem;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .filter-btn.active,
-        .filter-btn:hover {
-            background: var(--primary-color);
-            color: white;
-        }
 
         .filter-controls {
             background: rgba(255, 255, 255, 0.95);
@@ -397,18 +398,22 @@
             position: relative;
             cursor: pointer;
             border: 2px solid transparent;
-            transition: all 0.3s ease;
+            transition: border-color 0.2s ease;
+            max-width: 85px;
+            max-height: 85px;
+            width: 100%;
+            height: auto;
         }
 
         .gallery-photo:hover {
             border-color: var(--primary-color);
-            transform: scale(1.05);
         }
 
         .gallery-photo img {
             width: 100%;
             height: 100%;
             object-fit: cover;
+            display: block;
         }
 
         .photo-timestamp {
@@ -557,25 +562,18 @@
             background: rgba(108, 99, 255, 0.7);
         }
 
-        .controls-panel {
-            grid-column: 1 / -1;
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 15px;
-            padding: 20px;
-            text-align: center;
-        }
 
         .finish-session-btn {
             background: linear-gradient(135deg, var(--success-color), var(--primary-color));
             color: white;
             border: none;
-            padding: 15px 40px;
+            padding: 12px 20px;
             font-family: 'Fredoka One', cursive;
-            font-size: 1.2rem;
+            font-size: 1rem;
             border-radius: 25px;
             cursor: pointer;
             transition: all 0.3s ease;
-            display: none;
+            white-space: nowrap;
         }
 
         .finish-session-btn:hover {
@@ -668,6 +666,9 @@
                             <option value="blur">Blur</option>
                         </select>
                     </div>
+                    <button class="finish-session-btn" id="finish-session-btn" onclick="finishSession()">
+                        ✨ Selesai & Lanjut
+                    </button>
                 </div>
             </div>
         </div>
@@ -675,11 +676,6 @@
         <div class="sidebar">
             <div class="gallery-panel">
                 <h3 id="gallery-title">📸 Galeri Foto Sesi (0/<?= $data['max_save_photos'] ?>)</h3>
-                <div class="gallery-filters">
-                    <button class="filter-btn active" onclick="filterPhotos('all')">Semua</button>
-                    <button class="filter-btn" onclick="filterPhotos('saved')">Tersimpan</button>
-                    <button class="filter-btn" onclick="filterPhotos('recent')">Terbaru</button>
-                </div>
                 <div class="photo-gallery" id="photo-gallery">
                     <!-- Saved photos will appear here -->
                 </div>
@@ -699,11 +695,6 @@
             </div>
         </div>
 
-        <div class="controls-panel">
-            <button class="finish-session-btn" id="finish-session-btn" onclick="finishSession()">
-                ✨ Selesai & Lanjut ke Editor Layout
-            </button>
-        </div>
     </div>
 
     <div class="session-expired" id="session-expired">
@@ -737,6 +728,29 @@
         const photoGallery = document.getElementById('photo-gallery');
         const finishBtn = document.getElementById('finish-session-btn');
         
+        // Adjust camera container to match video aspect ratio
+        function adjustCameraContainer() {
+            const safeZone = document.querySelector('.safe-zone');
+            const cameraFeed = document.getElementById('camera-feed');
+            
+            if (!cameraFeed.videoWidth || !cameraFeed.videoHeight) {
+                // Retry after a short delay if video dimensions aren't available yet
+                setTimeout(adjustCameraContainer, 100);
+                return;
+            }
+            
+            const videoAspectRatio = cameraFeed.videoWidth / cameraFeed.videoHeight;
+            const containerWidth = safeZone.parentElement.clientWidth - 40; // Account for padding
+            const containerHeight = containerWidth / videoAspectRatio;
+            
+            // Set the safe zone to match the video aspect ratio
+            safeZone.style.width = containerWidth + 'px';
+            safeZone.style.height = containerHeight + 'px';
+            safeZone.style.maxHeight = 'none'; // Remove any height constraints
+            
+            console.log(`Camera container adjusted: ${containerWidth}x${containerHeight} (ratio: ${videoAspectRatio.toFixed(2)})`);
+        }
+
         // Initialize camera
         async function initCamera() {
             try {
@@ -749,6 +763,8 @@
                 cameraFeed.onloadedmetadata = () => {
                     cameraFeed.play().then(() => {
                         console.log('Camera started successfully');
+                        // Adjust container to match camera aspect ratio
+                        adjustCameraContainer();
                         // Delay safe zone calculation to ensure proper dimensions
                         setTimeout(() => {
                             calculateSafeZone();
@@ -896,7 +912,6 @@
                 <img src="${imageUrl}" alt="Session Photo" onerror="this.alt='Failed to load image'; this.style.background='#f0f0f0'; this.style.color='#999';">
                 <div class="photo-timestamp">${new Date().toLocaleTimeString()}</div>
                 <div class="photo-actions">
-                    <button class="photo-action-btn save-btn" onclick="markPhotoSaved(this)" title="Sudah Tersimpan">💾</button>
                     <button class="photo-action-btn delete-btn" onclick="deleteFromGallery(this, ${photo.id})" title="Hapus">🗑️</button>
                 </div>
             `;
@@ -1258,17 +1273,6 @@
         }
 
         // Gallery photo action functions
-        function markPhotoSaved(btn) {
-            // Already saved, show feedback
-            btn.style.background = 'rgba(76, 175, 80, 1)';
-            btn.textContent = '✓';
-            btn.disabled = true;
-            setTimeout(() => {
-                btn.style.background = 'rgba(76, 175, 80, 0.8)';
-                btn.textContent = '💾';
-                btn.disabled = false;
-            }, 1000);
-        }
 
         function deleteFromGallery(btn, photoId) {
             if (confirm('Hapus foto ini dari galeri?')) {
@@ -1326,11 +1330,13 @@
         function handleResize() {
             clearTimeout(window.resizeTimer);
             window.resizeTimer = setTimeout(() => {
-                console.log('Window resized, recalculating safe zone');
+                console.log('Window resized, adjusting camera and recalculating safe zone');
+                adjustCameraContainer();
                 calculateSafeZone();
             }, 300);
         }
         
+
         // Initialize everything
         document.addEventListener('DOMContentLoaded', () => {
             initCamera();
@@ -1338,6 +1344,7 @@
             
             // Add resize listener
             window.addEventListener('resize', handleResize);
+            
             
             // Initial safe zone calculation (fallback if camera doesn't trigger)
             setTimeout(() => {

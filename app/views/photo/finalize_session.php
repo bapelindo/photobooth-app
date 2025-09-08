@@ -413,6 +413,23 @@
 
         <div class="photostrips-panel">
             <h3>📸 Photostrip Anda (<?= count($data['photostrips']) ?>)</h3>
+            
+            <?php if (isset($data['debug_info'])): ?>
+                <div style="background: #f0f0f0; padding: 10px; margin: 10px 0; border-radius: 5px; font-size: 0.8rem;">
+                    <strong>Debug Info:</strong><br>
+                    Frame Limit: <?= $data['debug_info']['frame_limit'] ?? 'N/A' ?><br>
+                    Total Photostrips Found: <?= $data['debug_info']['total_photostrips_found'] ?? 'N/A' ?><br>
+                    Final Photostrips Shown: <?= $data['debug_info']['final_photostrips_shown'] ?? 'N/A' ?><br>
+                    Session Photos Count: <?= $data['debug_info']['session_photos_count'] ?? 'N/A' ?><br>
+                    <?php if (isset($data['debug_info']['regeneration_log'])): ?>
+                        <strong>Regeneration Log:</strong><br>
+                        <?php foreach ($data['debug_info']['regeneration_log'] as $log): ?>
+                            - <?= htmlspecialchars($log) ?><br>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </div>
+            <?php endif; ?>
+            
             <div class="photostrips-grid">
                 <?php foreach ($data['photostrips'] as $photostrip): ?>
                     <div class="photostrip-card">
@@ -421,8 +438,13 @@
                                  alt="<?= $photostrip->frame_name ?>" 
                                  class="photostrip-preview">
                         <?php else: ?>
-                            <div class="photostrip-preview" style="background: #f0f0f0; display: flex; align-items: center; justify-content: center; color: #666; font-size: 0.8rem;">
+                            <div class="photostrip-preview" style="background: #f0f0f0; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #666; font-size: 0.8rem; padding: 10px;">
                                 <span>Preview tidak tersedia</span>
+                                <small style="margin-top: 5px;">
+                                    ID: <?= $photostrip->id ?><br>
+                                    Final Path: <?= $photostrip->final_image_path ?? 'NULL' ?><br>
+                                    Layout Data: <?= !empty($photostrip->layout_data) ? 'Ada' : 'Kosong' ?>
+                                </small>
                             </div>
                         <?php endif; ?>
                         

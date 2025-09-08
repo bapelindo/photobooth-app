@@ -176,6 +176,7 @@
             <a href="<?= URLROOT; ?>/admin/photostrips"><i data-feather="layers"></i> Photostrips</a>
             <a href="<?= URLROOT; ?>/admin/gallery"><i data-feather="grid"></i> Legacy Gallery</a>
             <a href="<?= URLROOT; ?>/admin/reports"><i data-feather="bar-chart-2"></i> Reports</a>
+            <a href="<?= URLROOT; ?>/admin/email-queue"><i data-feather="mail"></i> Email Queue</a>
             <a href="<?= URLROOT; ?>/admin/camera"><i data-feather="camera"></i> Camera Control</a>
             <a href="<?= URLROOT; ?>/admin/settings"><i data-feather="settings"></i> Settings</a>
         </nav>
