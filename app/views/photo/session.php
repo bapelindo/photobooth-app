@@ -13,15 +13,19 @@
             --secondary-color: #FF6584;
             --success-color: #4CAF50;
             --warning-color: #FF9800;
-            --bg-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --accent-color: #FFD166;
+            --bg-gradient: linear-gradient(135deg, #c2e9fb 0%, #fed6e3 100%);
         }
 
-        html, body {
+        body {
             height: 100vh;
             margin: 0;
             overflow: hidden;
             font-family: 'Poppins', sans-serif;
             background: var(--bg-gradient);
+            padding: 20px;
+            display: flex;
+            justify-content: center; align-items: center;box-sizing: border-box;
         }
 
         .session-container {
@@ -29,9 +33,13 @@
             grid-template-rows: auto 1fr;
             grid-template-columns: 2fr 1fr;
             gap: 10px;
-            height: 100vh;
-            padding: 10px;
+            width: 100%;
+            height: 95vh;
+            padding: 20px;
             box-sizing: border-box;
+            background: rgba(255, 255, 255, 0.5); backdrop-filter: blur(10px);
+            border-radius: 20px; padding: 20px; box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.05);
+            
         }
 
         .header-panel {
@@ -93,9 +101,10 @@
         .camera-section {
             background: rgba(255, 255, 255, 0.95);
             border-radius: 15px;
-            padding: 20px;
             position: relative;
             display: flex;
+            padding: 5;
+            align-items: center;
             flex-direction: column;
         }
 
@@ -103,7 +112,7 @@
             flex-grow: 1;
             position: relative;
             border-radius: 10px;
-            margin-bottom: 15px;
+            margin: 10px;
             overflow: hidden;
             display: flex;
             align-items: center;
@@ -165,8 +174,8 @@
         }
 
         #camera-feed {
-            width: 100%;
-            height: 100%;
+            width: 59vw;
+            height: 58.8vh;
             object-fit: contain;
             border-radius: 7px;
             background: #000;
@@ -196,12 +205,6 @@
         .preview-actions {
             margin-top: 20px;
             display: flex;
-            gap: 15px;
-        }
-
-        .camera-controls {
-            display: flex;
-            justify-content: center;
             gap: 15px;
         }
 
@@ -260,16 +263,17 @@
         }
 
         .btn-capture {
-            background: var(--success-color);
+            background: var(--accent-color);
             color: white;
             font-size: 1.2rem;
             padding: 15px 40px;
-            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+            var(--accent-color);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2); 
         }
 
         .btn-capture:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(76, 175, 80, 0.4);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
         }
 
         .btn-save {
@@ -307,7 +311,6 @@
             background: rgba(255, 255, 255, 0.95);
             border-radius: 15px;
             padding: 20px;
-            margin-bottom: 15px;
             min-height: 0;
         }
 
@@ -470,13 +473,14 @@
 
         /* Ensure capture button stays visible */
         .camera-controls {
-            position: sticky;
-            bottom: 0;
-            background: var(--bg-gradient);
-            padding: 10px 0;
-            z-index: 10;
+            position: relative;
+            display: flex;
+            flex-direction: column; 
+            bottom: 6px;
+            background: rgba(108, 99, 255, 0.1);
+            padding: 10px;
+            border-radius: 20px;
         }
-
         .safe-zone-guidelines {
             position: absolute;
             top: 0;
@@ -564,7 +568,7 @@
 
 
         .finish-session-btn {
-            background: linear-gradient(135deg, var(--success-color), var(--primary-color));
+            background-color: var(--primary-color);
             color: white;
             border: none;
             padding: 12px 20px;
@@ -578,8 +582,7 @@
 
         .finish-session-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(76, 175, 80, 0.4);
-        }
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3); }
 
         .session-expired {
             position: fixed;

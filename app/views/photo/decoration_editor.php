@@ -16,15 +16,17 @@
             --bg-gradient: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
         }
 
-        html, body {
+        body {
             height: 100vh;
-            width: 100vw;
             margin: 0;
-            padding: 0;
+            padding: 20px;
             overflow: hidden;
             font-family: 'Poppins', sans-serif;
             background: var(--bg-gradient);
             user-select: none;
+            
+            display: flex;
+            justify-content: center; align-items: center;box-sizing: border-box;
         }
 
         .decoration-container {
@@ -32,10 +34,13 @@
             grid-template-columns: 200px 150px 1fr 200px;
             grid-template-rows: auto 0.6fr 0.4fr;
             gap: 10px;
-            height: 100vh;
-            width: 100vw;
-            padding: 10px;
+            height: 95vh;
+            width: 100%;
+            padding: 20px;
             box-sizing: border-box;
+            
+            background: rgba(255, 255, 255, 0.5); backdrop-filter: blur(10px);
+            border-radius: 20px; padding: 20px; box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.05);
         }
 
         .header-panel {
@@ -311,7 +316,7 @@
 
         .tool-group {
             background: rgba(108, 99, 255, 0.1);
-            border-radius: 10px;
+            border-radius: 0px;
             padding: 15px;
         }
 
@@ -540,8 +545,6 @@
         </div>
 
         <div class="tools-panel">
-            <h3>🛠️ Alat</h3>
-            
             <div class="tool-group">
                 <h4>Aksi Stiker</h4>
                 <button class="tool-btn" onclick="duplicateSelected()">📋 Duplikasi</button>
@@ -557,9 +560,8 @@
             </div>
             
             <div class="tool-group">
-                <h4>Kontrol</h4>
                 <button class="btn btn-finish" id="finish-btn" onclick="finishDecorations()" style="width: 100%; margin: 0; padding: 12px; font-size: 0.9rem;">
-                    ✨ Selesai & Cetak!
+                    ✨ Cetak!
                 </button>
             </div>
         </div>

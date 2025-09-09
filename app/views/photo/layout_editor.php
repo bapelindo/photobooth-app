@@ -14,27 +14,32 @@
             --secondary-color: #FF6584;
             --success-color: #4CAF50;
             --warning-color: #FF9800;
-            --bg-gradient: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            --bg-gradient: linear-gradient(135deg, #fed6e3 0%, #ffecd2 100%);
         }
 
-        html, body {
-            min-height: 100vh;
-            height: calc(100vh - 30px);
+        body {
+            height: 100vh;
             margin: 0;
             overflow: hidden;
             font-family: 'Poppins', sans-serif;
             background: var(--bg-gradient);
+            padding: 20px;
+            display: flex;
+            justify-content: center; align-items: center;box-sizing: border-box;
         }
 
         .layout-container {
             display: grid;
             grid-template-columns: 300px 1fr;
             grid-template-rows: auto 1fr; /* Removed 'auto' for controls-panel */
-            gap: 15px;
-            min-height: 100vh;
-            height: calc(100vh - 30px);
-            padding: 15px;
+            gap: 10px;
+            height: 95vh;
+            width: 100%;
+            padding: 20px;
             box-sizing: border-box;
+            background: rgba(255, 255, 255, 0.5); backdrop-filter: blur(10px);
+            border-radius: 20px; padding: 20px; box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.05);
+            
         }
 
         .header-panel {

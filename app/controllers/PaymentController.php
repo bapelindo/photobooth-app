@@ -281,6 +281,11 @@ class PaymentController extends Controller
     {
         Session::start();
         
+        if (ENABLE_SESSION_REFRESH_BACK && Session::get('payment_finished_displayed')) {
+            $this->flashAndRedirect('packages', 'Transaksi telah selesai diproses. Silakan mulai lagi jika ingin membuat yang baru.');
+            exit();
+        }
+
         // Support both transaction_id parameter and order_id from GET
         $order_id = $_GET['order_id'] ?? null;
         $transaction_status = $_GET['transaction_status'] ?? null;
@@ -301,14 +306,6 @@ class PaymentController extends Controller
             header('Location: /photobooth-app/public/packages');
             exit();
         }
-
-        if (ENABLE_SESSION_REFRESH_BACK) {
-            if ($transaction && $transaction->payment_status === 'success') {
-                // Already processed. Don't resume, just redirect to start.
-                $this->flashAndRedirect('packages', 'Transaksi telah selesai diproses. Silakan mulai lagi jika ingin membuat yang baru.');
-                exit();
-            }
-        }
         
         // Process a pending transaction
         if ($transaction && $transaction->payment_status === 'pending' && ($transaction_status === 'capture' || $transaction_status === 'settlement')) {
@@ -322,6 +319,10 @@ class PaymentController extends Controller
             
             Session::set('workflow_step', 'frame_selection_unlocked');
             Session::set('current_transaction_id', $transaction->id);
+        }
+
+        if ($transaction && $transaction->payment_status === 'success') {
+            Session::set('payment_finished_displayed', true);
         }
 
         $data['transaction'] = $transaction;

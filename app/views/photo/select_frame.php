@@ -31,7 +31,7 @@
         .main-container {
             display: flex;
             flex-direction: column;
-            width: 100%; max-width: 1200px; height: 95vh;
+            width: 100%; height: 95vh;
             background: rgba(255, 255, 255, 0.6);
             backdrop-filter: blur(12px); border-radius: 25px;
             padding: 20px; box-sizing: border-box;
@@ -40,6 +40,7 @@
             opacity: 0;
             animation: contentFadeIn 0.5s ease-in 0.2s forwards;
             transition: opacity 0.5s ease-out;
+            position: relative;
         }
         .main-container.content-fade-out { opacity: 0; }
         
@@ -64,7 +65,7 @@
         }
 
         .frames-grid-container::-webkit-scrollbar {
-            width: 8px;
+            height: 8px;
         }
         .frames-grid-container::-webkit-scrollbar-track {
             background: rgba(0, 0, 0, 0.1);
@@ -80,8 +81,9 @@
 
         .frames-grid {
             display: grid; 
-            grid-template-columns: repeat(auto-fill, minmax(24vh, 1fr)); 
-            gap: 20px; 
+            grid-template-columns: repeat(auto-fill, minmax(20vh, 1fr));
+            gap: 30px; 
+            height: 100%;
         }
 
         .frame-card {
@@ -95,11 +97,11 @@
             overflow: hidden;
             transition: all 0.3s ease-out;
             aspect-ratio: 2 / 6;
-            margin-top: 8px;
+            height: 99%;
         }
 
         .frame-card:hover {
-            transform: translateY(-8px) scale(1.03);
+            transform: translateY(0px) scale(1.03);
             box-shadow: 0 10px 30px rgba(108, 99, 255, 0.25);
             border-color: var(--primary-color);
         }
@@ -166,31 +168,49 @@
             transform: scale(1);
         }
 
-        .continue-panel {
-            text-align: center;
-            padding: 20px;
-            background: rgba(255, 255, 255, 0.9);
-            border-radius: 15px;
-            margin-top: 15px;
-            flex-shrink: 0;
-        }
-
         .continue-btn {
+            position: fixed;
+            bottom: 40px;
+            left: 50%;
+            z-index: 1000;
             font-family: var(--font-display);
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            background: var(--primary-color);
             color: white;
             border: none;
-            padding: 15px 40px;
-            font-size: 1.2rem;
+            padding: 16px 32px;
+            font-size: 1.25rem;
             border-radius: 50px;
             cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(108, 99, 255, 0.3);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            
+            /* Base state: hidden */
+            opacity: 0;
+            transform: translateX(-50%) scale(0.5);
+            pointer-events: none;
+            
+            /* Animation */
+            transition: opacity 0.3s ease-out, transform 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+        }
+
+        .continue-btn.is-visible {
+            /* Visible state */
+            opacity: 1;
+            transform: translateX(-50%) scale(1);
+            pointer-events: auto;
         }
 
         .continue-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(108, 99, 255, 0.4);
+            background: var(--secondary-color);
+        }
+
+        .continue-btn .icon {
+            width: 24px;
+            height: 24px;
+            stroke-width: 2.5;
         }
     </style>
 </head>
@@ -206,12 +226,12 @@
         </div>
         <div class="frames-grid-container">
             <div class="frames-grid">
-                <?php if (empty($data['frames'])): ?>
+                <?php if (empty($data['frames'])) : ?>
                     <p style="text-align: center; grid-column: 1 / -1;">Tidak ada bingkai yang tersedia untuk paket foto ini. Hubungi admin.</p>
-                <?php else: ?>
+                <?php else : ?>
                     <form id="frame-selection-form" method="POST" action="<?= URLROOT; ?>/photo/submit-frame-selection" style="display: contents;">
                         <input type="hidden" name="transaction_id" value="<?= $data['transaction_id'] ?>">
-                        <?php foreach ($data['frames'] as $frame): ?>
+                        <?php foreach ($data['frames'] as $frame) : ?>
                             <div class="frame-card" data-frame-id="<?= $frame->id ?>">
                                 <input type="checkbox" name="selected_frames[]" value="<?= $frame->id ?>" style="display: none;">
                                 <img src="<?= URLROOT . htmlspecialchars($frame->path); ?>" alt="<?= htmlspecialchars($frame->name); ?>">
@@ -224,20 +244,32 @@
             </div>
         </div>
         
-        <div class="continue-panel" id="continue-panel" style="display: none;">
-            <button type="submit" form="frame-selection-form" class="continue-btn">Lanjutkan ke Sesi Foto</button>
-        </div>
-            </div>
-        </div>
+        <button type="submit" form="frame-selection-form" class="continue-btn" id="continue-btn">
+            <svg class="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+            <span>Lanjutkan ke Sesi Foto</span>
+        </button>
     </div>
     
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const frameCards = document.querySelectorAll('.frame-card');
             const selectionCount = document.getElementById('selection-count');
-            const continuePanel = document.getElementById('continue-panel');
+            const continueBtn = document.getElementById('continue-btn');
             const frameLimit = <?= $data['frame_limit'] ?>;
             let selectedFrames = [];
+            let isButtonVisible = false;
+
+            function showContinueButton() {
+                if (isButtonVisible) return;
+                isButtonVisible = true;
+                continueBtn.classList.add('is-visible');
+            }
+
+            function hideContinueButton() {
+                if (!isButtonVisible) return;
+                isButtonVisible = false;
+                continueBtn.classList.remove('is-visible');
+            }
 
             frameCards.forEach(frameCard => {
                 frameCard.addEventListener('click', function(e) {
@@ -247,12 +279,10 @@
                     const checkbox = this.querySelector('input[type="checkbox"]');
                     
                     if (this.classList.contains('selected')) {
-                        // Deselect frame
                         this.classList.remove('selected');
                         checkbox.checked = false;
                         selectedFrames = selectedFrames.filter(id => id !== frameId);
                     } else {
-                        // Select frame if limit not reached
                         if (selectedFrames.length < frameLimit) {
                             this.classList.add('selected');
                             checkbox.checked = true;
@@ -260,20 +290,16 @@
                         }
                     }
 
-                    // Update selection count
                     selectionCount.textContent = selectedFrames.length;
                     
-                    // Show/hide continue button
                     if (selectedFrames.length === frameLimit) {
-                        continuePanel.style.display = 'block';
-                        continuePanel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                        showContinueButton();
                     } else {
-                        continuePanel.style.display = 'none';
+                        hideContinueButton();
                     }
                 });
             });
 
-            // Form submission with animation
             const form = document.getElementById('frame-selection-form');
             form.addEventListener('submit', function(e) {
                 e.preventDefault();
@@ -283,12 +309,12 @@
                     return;
                 }
 
-                // Add fade out animation
+on
                 document.body.classList.add('fade-out');
                 
                 setTimeout(() => {
-                    this.submit();
-                }, 500);
+                    this.submit(                }, 500);
+);
             });
         });
     </script>
