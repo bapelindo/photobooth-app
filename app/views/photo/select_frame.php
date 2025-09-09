@@ -308,13 +308,11 @@
                     alert(`Silakan pilih ${frameLimit} frame untuk melanjutkan.`);
                     return;
                 }
-
-on
                 document.body.classList.add('fade-out');
                 
                 setTimeout(() => {
-                    this.submit(                }, 500);
-);
+                    this.submit();
+                }, 500);
             });
         });
     </script>

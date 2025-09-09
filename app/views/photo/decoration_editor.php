@@ -134,7 +134,7 @@
             grid-column: 3;
             background: rgba(255, 255, 255, 0.95);
             border-radius: 10px;
-            padding: 20px;
+            padding: 5px;
             backdrop-filter: blur(10px);
             display: flex;
             flex-direction: column;
@@ -190,9 +190,8 @@
             position: relative;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
             /* 2:6 inch ratio = 1:3 */
-            width: min(250px, 25vw);
+            height: calc(95vh - 180px); /* Adjust to fit workspace */
             aspect-ratio: 1 / 3;
-            max-height: calc(100vh - 150px);
         }
 
         .canvas-inner {
@@ -637,13 +636,17 @@
         }
 
         function addStickerToCanvas(stickerPath, stickerId) {
+            const decorationLayer = document.getElementById(`decoration-${currentPhotostripId}`);
+            const canvasWidth = decorationLayer.offsetWidth;
+            const canvasHeight = decorationLayer.offsetHeight;
+
             stickerCounter++;
             const sticker = {
                 id: `sticker-${stickerCounter}`,
                 stickerPath: stickerPath,
                 stickerAssetId: stickerId,
-                x: Math.random() * 150 + 50,
-                y: Math.random() * 400 + 100,
+                x: Math.random() * (canvasWidth > 60 ? canvasWidth - 60 : 0),
+                y: Math.random() * (canvasHeight > 60 ? canvasHeight - 60 : 0),
                 width: 60,
                 height: 60,
                 rotation: 0,
@@ -702,11 +705,12 @@
             isDragging = true;
             const stickerId = e.currentTarget.id;
             const stickerElement = e.currentTarget;
+            const decorationLayer = stickerElement.parentElement;
             
             selectSticker(stickerId);
             
             const rect = stickerElement.getBoundingClientRect();
-            const parentRect = stickerElement.parentElement.getBoundingClientRect();
+            const parentRect = decorationLayer.getBoundingClientRect();
             const offsetX = e.clientX - rect.left;
             const offsetY = e.clientY - rect.top;
             
@@ -716,8 +720,8 @@
                 const newX = e.clientX - parentRect.left - offsetX;
                 const newY = e.clientY - parentRect.top - offsetY;
                 
-                stickerElement.style.left = Math.max(0, Math.min(300 - stickerElement.offsetWidth, newX)) + 'px';
-                stickerElement.style.top = Math.max(0, Math.min(600 - stickerElement.offsetHeight, newY)) + 'px';
+                stickerElement.style.left = Math.max(0, Math.min(decorationLayer.offsetWidth - stickerElement.offsetWidth, newX)) + 'px';
+                stickerElement.style.top = Math.max(0, Math.min(decorationLayer.offsetHeight - stickerElement.offsetHeight, newY)) + 'px';
                 
                 // Update sticker data
                 const sticker = decorations[currentPhotostripId].find(s => s.id === stickerId);
@@ -979,8 +983,9 @@
                 const element = document.getElementById(selectedSticker);
                 const sticker = decorations[currentPhotostripId].find(s => s.id === selectedSticker);
                 if (element && sticker) {
-                    sticker.x = Math.max(0, Math.min(300 - sticker.width, sticker.x + deltaX));
-                    sticker.y = Math.max(0, Math.min(600 - sticker.height, sticker.y + deltaY));
+                    const decorationLayer = element.parentElement;
+                    sticker.x = Math.max(0, Math.min(decorationLayer.offsetWidth - sticker.width, sticker.x + deltaX));
+                    sticker.y = Math.max(0, Math.min(decorationLayer.offsetHeight - sticker.height, sticker.y + deltaY));
                     element.style.left = sticker.x + 'px';
                     element.style.top = sticker.y + 'px';
                 }

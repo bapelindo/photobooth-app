@@ -13,7 +13,7 @@
             --secondary-color: #FF6584;
             --success-color: #4CAF50;
             --warning-color: #FF9800;
-            --bg-gradient: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            --bg-gradient: linear-gradient(135deg, #fcb69f 0%, #fa709a 100%);
         }
 
         body {
