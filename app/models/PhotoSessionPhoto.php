@@ -138,4 +138,45 @@ class PhotoSessionPhoto
             return false;
         }
     }
+
+    public function clearSessionPhotos($session_id)
+    {
+        try {
+            // First get all photos for this session to delete files
+            $this->db->query("SELECT file_path FROM photo_session_photos WHERE session_id = :session_id");
+            $this->db->bind(':session_id', $session_id);
+            $photos = $this->db->resultSet();
+            
+            // Delete physical files
+            $deletedFiles = 0;
+            foreach ($photos as $photo) {
+                $fullPath = dirname(APPROOT) . '/public' . $photo->file_path;
+                if (file_exists($fullPath)) {
+                    if (@unlink($fullPath)) {
+                        $deletedFiles++;
+                    }
+                }
+            }
+            
+            // Delete database records
+            $this->db->query("DELETE FROM photo_session_photos WHERE session_id = :session_id");
+            $this->db->bind(':session_id', $session_id);
+            $success = $this->db->execute();
+            
+            return [
+                'success' => $success,
+                'deleted_records' => count($photos),
+                'deleted_files' => $deletedFiles
+            ];
+            
+        } catch (Exception $e) {
+            error_log('Error clearing session photos: ' . $e->getMessage());
+            return [
+                'success' => false,
+                'error' => $e->getMessage(),
+                'deleted_records' => 0,
+                'deleted_files' => 0
+            ];
+        }
+    }
 }

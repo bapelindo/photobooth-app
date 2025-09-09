@@ -19,6 +19,8 @@ class AdminController extends Controller {
         $transactionModel = $this->model('Transaction');
         $packageModel = $this->model('Package');
         $photoSessionModel = $this->model('PhotoSession');
+        $emailQueueModel = $this->model('EmailQueue');
+        $printQueueModel = $this->model('PrintQueue');
 
         $data['summary'] = $transactionModel->getSummary();
         $data['popular_packages'] = $packageModel->getPopularPackages(3);
@@ -28,6 +30,10 @@ class AdminController extends Controller {
         
         // Get recent sessions
         $data['recent_sessions'] = $photoSessionModel->getRecentSessions(10);
+        
+        // Get queue statistics
+        $data['email_queue_stats'] = $emailQueueModel->getStats();
+        $data['print_queue_stats'] = $printQueueModel->getStats();
         
         $data['title'] = 'Dashboard';
         $this->adminView('admin/dashboard/index', $data);
@@ -121,6 +127,37 @@ class AdminController extends Controller {
                 $this->flashAndRedirect('admin/packages', 'Gagal menghapus paket.', 'error');
             }
         }
+    }
+
+    // === QUEUE MANAGEMENT ===
+    
+    public function queueManagement()
+    {
+        $emailQueueModel = $this->model('EmailQueue');
+        $printQueueModel = $this->model('PrintQueue');
+        
+        // Get queue jobs with pagination
+        $data['email_jobs'] = $emailQueueModel->getPendingJobs(20);
+        $data['print_jobs'] = $printQueueModel->getPendingJobs(20);
+        $data['email_stats'] = $emailQueueModel->getStats();
+        $data['print_stats'] = $printQueueModel->getStats();
+        
+        $data['title'] = 'Queue Management';
+        $this->adminView('admin/queue/index', $data);
+    }
+    
+    public function queueStats()
+    {
+        header('Content-Type: application/json');
+        
+        $emailQueueModel = $this->model('EmailQueue');
+        $printQueueModel = $this->model('PrintQueue');
+        
+        echo json_encode([
+            'email_stats' => $emailQueueModel->getStats(),
+            'print_stats' => $printQueueModel->getStats(),
+            'timestamp' => time()
+        ]);
     }
 
     // === ASSET MANAGEMENT ===

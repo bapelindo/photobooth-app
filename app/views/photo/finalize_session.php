@@ -418,21 +418,6 @@
         <div class="photostrips-panel">
             <h3>📸 Photostrip Anda (<?= count($data['photostrips']) ?>)</h3>
             
-            <?php if (isset($data['debug_info'])): ?>
-                <div style="background: #f0f0f0; padding: 10px; margin: 10px 0; border-radius: 5px; font-size: 0.8rem;">
-                    <strong>Debug Info:</strong><br>
-                    Frame Limit: <?= $data['debug_info']['frame_limit'] ?? 'N/A' ?><br>
-                    Total Photostrips Found: <?= $data['debug_info']['total_photostrips_found'] ?? 'N/A' ?><br>
-                    Final Photostrips Shown: <?= $data['debug_info']['final_photostrips_shown'] ?? 'N/A' ?><br>
-                    Session Photos Count: <?= $data['debug_info']['session_photos_count'] ?? 'N/A' ?><br>
-                    <?php if (isset($data['debug_info']['regeneration_log'])): ?>
-                        <strong>Regeneration Log:</strong><br>
-                        <?php foreach ($data['debug_info']['regeneration_log'] as $log): ?>
-                            - <?= htmlspecialchars($log) ?><br>
-                        <?php endforeach; ?>
-                    <?php endif; ?>
-                </div>
-            <?php endif; ?>
             
             <div class="photostrips-grid">
                 <?php foreach ($data['photostrips'] as $photostrip): ?>
@@ -552,16 +537,13 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    button.textContent = '✓ Tercetak';
-                    status.textContent = '✓ Sudah Dicetak';
-                    status.className = 'print-status printed';
-                    printedCount++;
-                    updatePrintAllButton();
-                    showMessage('Photostrip berhasil dicetak!', 'success');
+                    button.textContent = '⏳ Queue Print';
+                    button.disabled = true;
+                    showMessage('Photostrip telah dijadwalkan untuk dicetak! Proses pencetakan sedang berjalan.', 'success');
                 } else {
                     button.disabled = false;
                     button.textContent = '🖨️ Cetak';
-                    showMessage('Gagal mencetak photostrip: ' + data.message, 'error');
+                    showMessage('Gagal menambahkan ke queue print: ' + data.message, 'error');
                 }
             })
             .catch(error => {
@@ -648,10 +630,10 @@
                     sendButton.textContent = '📧 Kirim Email';
                     
                     if (data.success) {
-                        showMessage('Email berhasil dikirim ke ' + email + '!', 'success');
+                        showMessage('Email telah dijadwalkan untuk dikirim! Proses pengiriman sedang berjalan di background.', 'success');
                         document.getElementById('email-form').reset();
                     } else {
-                        showMessage('Gagal mengirim email: ' + data.message, 'error');
+                        showMessage('Gagal menambahkan email ke queue: ' + data.message, 'error');
                     }
                 }, 1000);
             })

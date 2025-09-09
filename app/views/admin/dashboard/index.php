@@ -41,6 +41,75 @@
     </div>
 </div>
 
+<!-- Queue Statistics -->
+<div class="section-container card" style="margin-top: 2rem;">
+    <div class="section-header">
+        <h2 class="section-title">Queue System Status</h2>
+        <a href="/photobooth-app/public/admin/queue" class="btn btn-primary">Manage Queues</a>
+    </div>
+    
+    <div class="dashboard-grid" style="grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));">
+        <!-- Email Queue Stats -->
+        <div class="stat-card">
+            <div class="card-icon" style="background-color: #E0F2FE;">
+                <i data-feather="mail" style="color: #0284C7;"></i>
+            </div>
+            <div class="card-content">
+                <h3 class="card-title">Email Queue</h3>
+                <p class="card-value"><?= $email_queue_stats->pending ?? 0 ?> pending</p>
+                <small class="card-subtitle">
+                    <?= $email_queue_stats->completed ?? 0 ?> completed • 
+                    <?= $email_queue_stats->failed ?? 0 ?> failed
+                </small>
+            </div>
+        </div>
+        
+        <!-- Print Queue Stats -->
+        <div class="stat-card">
+            <div class="card-icon" style="background-color: #F3E8FF;">
+                <i data-feather="printer" style="color: #7C3AED;"></i>
+            </div>
+            <div class="card-content">
+                <h3 class="card-title">Print Queue</h3>
+                <p class="card-value"><?= $print_queue_stats->pending ?? 0 ?> pending</p>
+                <small class="card-subtitle">
+                    <?= $print_queue_stats->completed ?? 0 ?> completed • 
+                    <?= $print_queue_stats->failed ?? 0 ?> failed
+                </small>
+            </div>
+        </div>
+        
+        <!-- Photo Sessions Today -->
+        <div class="stat-card">
+            <div class="card-icon" style="background-color: #FEF7CD;">
+                <i data-feather="camera" style="color: #CA8A04;"></i>
+            </div>
+            <div class="card-content">
+                <h3 class="card-title">Sessions Today</h3>
+                <p class="card-value"><?= $session_stats->sessions_today ?? 0 ?></p>
+                <small class="card-subtitle">
+                    <?= $session_stats->completed_sessions ?? 0 ?> completed • 
+                    <?= $session_stats->avg_photos_per_session ?? 0 ?> avg photos
+                </small>
+            </div>
+        </div>
+        
+        <!-- System Status -->
+        <div class="stat-card">
+            <div class="card-icon" style="background-color: #DCFCE7;">
+                <i data-feather="activity" style="color: #16A34A;"></i>
+            </div>
+            <div class="card-content">
+                <h3 class="card-title">System Status</h3>
+                <p class="card-value" id="system-status">
+                    <span class="status-dot" style="background: #16A34A;"></span> Active
+                </p>
+                <small class="card-subtitle" id="last-updated">Updated just now</small>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="section-container card">
     <div class="section-header">
         <h2 class="section-title">Most Popular Packages</h2>
@@ -62,6 +131,96 @@
         </tbody>
     </table>
 </div>
+
+<style>
+.status-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 6px;
+}
+
+.card-subtitle {
+    color: #6B7280;
+    font-size: 0.875rem;
+    margin-top: 4px;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+</style>
+
+<script>
+// Auto-refresh queue statistics every 30 seconds
+function refreshQueueStats() {
+    fetch('/photobooth-app/public/admin/queue-stats')
+        .then(response => response.json())
+        .then(data => {
+            // Update email queue stats
+            const emailCard = document.querySelector('.stat-card:has([data-feather="mail"])');
+            if (emailCard) {
+                const emailValue = emailCard.querySelector('.card-value');
+                const emailSubtitle = emailCard.querySelector('.card-subtitle');
+                
+                emailValue.textContent = `${data.email_stats.pending || 0} pending`;
+                emailSubtitle.textContent = `${data.email_stats.completed || 0} completed • ${data.email_stats.failed || 0} failed`;
+            }
+            
+            // Update print queue stats
+            const printCard = document.querySelector('.stat-card:has([data-feather="printer"])');
+            if (printCard) {
+                const printValue = printCard.querySelector('.card-value');
+                const printSubtitle = printCard.querySelector('.card-subtitle');
+                
+                printValue.textContent = `${data.print_stats.pending || 0} pending`;
+                printSubtitle.textContent = `${data.print_stats.completed || 0} completed • ${data.print_stats.failed || 0} failed`;
+            }
+            
+            // Update last updated time
+            const lastUpdated = document.getElementById('last-updated');
+            if (lastUpdated) {
+                lastUpdated.textContent = 'Updated just now';
+            }
+            
+            // Update system status based on queue health
+            const systemStatus = document.getElementById('system-status');
+            const statusDot = systemStatus?.querySelector('.status-dot');
+            
+            const totalPending = (data.email_stats.pending || 0) + (data.print_stats.pending || 0);
+            const totalFailed = (data.email_stats.failed || 0) + (data.print_stats.failed || 0);
+            
+            if (totalFailed > 5) {
+                statusDot.style.background = '#EF4444'; // Red
+                systemStatus.innerHTML = '<span class="status-dot" style="background: #EF4444;"></span> Issues';
+            } else if (totalPending > 10) {
+                statusDot.style.background = '#F59E0B'; // Yellow
+                systemStatus.innerHTML = '<span class="status-dot" style="background: #F59E0B;"></span> Busy';
+            } else {
+                statusDot.style.background = '#16A34A'; // Green
+                systemStatus.innerHTML = '<span class="status-dot" style="background: #16A34A;"></span> Active';
+            }
+        })
+        .catch(error => {
+            console.error('Failed to refresh queue stats:', error);
+            const lastUpdated = document.getElementById('last-updated');
+            if (lastUpdated) {
+                lastUpdated.textContent = 'Update failed';
+                lastUpdated.style.color = '#EF4444';
+            }
+        });
+}
+
+// Start auto-refresh
+setInterval(refreshQueueStats, 30000); // Every 30 seconds
+
+// Initial call to update immediately
+refreshQueueStats();
+</script>
 
 <style>
     .dashboard-grid {

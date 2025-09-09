@@ -84,12 +84,55 @@ class PhotoController extends Controller
     {
         Session::start();
 
+        // Session refresh/back protection
+        if (ENABLE_SESSION_REFRESH_BACK) {
+            $sessionWorkflowStep = Session::get('workflow_step');
+            $sessionCurrentSessionId = Session::get('current_session_id');
+
+            // STRICT MODE: Only allow access from proper flow
+            $validSteps = ['frame_selection_unlocked'];
+            if (!in_array($sessionWorkflowStep, $validSteps) || $sessionCurrentSessionId != $session_id) {
+                $this->flashAndRedirect('packages', 'Sesi tidak valid atau telah berakhir. Silakan mulai lagi.');
+            }
+        }
+        // When ENABLE_SESSION_REFRESH_BACK = false, allow free navigation (no restrictions)
+
         $photoSessionModel = $this->model('PhotoSession');
         $session = $photoSessionModel->find($session_id);
         
         if (!$session) {
             $this->flashAndRedirect('packages', 'Sesi foto tidak ditemukan.');
         }
+
+        // Check if user is returning to photo session (has existing photos and possibly photostrips)
+        // Only clear data when in strict mode (ENABLE_SESSION_REFRESH_BACK = true)
+        if (ENABLE_SESSION_REFRESH_BACK) {
+            $photoSessionPhotoModel = $this->model('PhotoSessionPhoto');
+            $existingPhotos = $photoSessionPhotoModel->getBySessionId($session_id);
+            
+            $photostripModel = $this->model('Photostrip');
+            $existingPhotostrips = $photostripModel->getBySessionId($session_id);
+            
+            // If user is returning and has existing data, clear it for a fresh start
+            if (!empty($existingPhotos) || !empty($existingPhotostrips)) {
+                // Clear existing photos
+                $photoSessionPhotoModel->clearSessionPhotos($session_id);
+                
+                // Reset photostrip data but keep the records for frame structure
+                foreach ($existingPhotostrips as $photostrip) {
+                    $photostripModel->update($photostrip->id, [
+                        'layout_data' => null,
+                        'decoration_data' => null,
+                        'final_image_path' => null,
+                        'is_printed' => 0
+                    ]);
+                }
+                
+                // Reset session status
+                $photoSessionModel->updateStatus($session_id, 'started');
+            }
+        }
+        // When ENABLE_SESSION_REFRESH_BACK = false, preserve existing photos and data
 
         $transactionModel = $this->model('Transaction');
         $transaction = $transactionModel->find($session->transaction_id);
@@ -117,6 +160,56 @@ class PhotoController extends Controller
         ];
 
         $this->view('photo/session', $data);
+    }
+
+    public function restartPhotoSession($session_id)
+    {
+        header('Content-Type: application/json');
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            http_response_code(405);
+            echo json_encode(['success' => false, 'message' => 'Method not allowed']);
+            return;
+        }
+
+        try {
+            $photoSessionModel = $this->model('PhotoSession');
+            $session = $photoSessionModel->find($session_id);
+            
+            if (!$session) {
+                throw new Exception('Session not found');
+            }
+
+            // Clear all existing photos from this session
+            $photoSessionPhotoModel = $this->model('PhotoSessionPhoto');
+            $clearResult = $photoSessionPhotoModel->clearSessionPhotos($session_id);
+            
+            // Reset session status to active
+            $photoSessionModel->updateStatus($session_id, 'started');
+            
+            // Clear photostrip data if user wants to restart completely
+            $photostripModel = $this->model('Photostrip');
+            $photostrips = $photostripModel->getBySessionId($session_id);
+            foreach ($photostrips as $photostrip) {
+                $photostripModel->update($photostrip->id, [
+                    'layout_data' => null,
+                    'decoration_data' => null,
+                    'final_image_path' => null,
+                    'is_printed' => 0
+                ]);
+            }
+
+            echo json_encode([
+                'success' => true, 
+                'message' => 'Session restarted successfully',
+                'cleared_photos' => $clearResult['deleted_records'],
+                'cleared_files' => $clearResult['deleted_files']
+            ]);
+
+        } catch (Exception $e) {
+            http_response_code(500);
+            echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+        }
     }
 
     public function saveSessionPhoto()
@@ -267,6 +360,19 @@ class PhotoController extends Controller
     {
         Session::start();
 
+        // Session refresh/back protection
+        if (ENABLE_SESSION_REFRESH_BACK) {
+            $sessionWorkflowStep = Session::get('workflow_step');
+            $sessionCurrentSessionId = Session::get('current_session_id');
+
+            // STRICT MODE: Only allow access from photo session
+            $validSteps = ['photo_session_active'];
+            if (!in_array($sessionWorkflowStep, $validSteps) || $sessionCurrentSessionId != $session_id) {
+                $this->flashAndRedirect('packages', 'Sesi tidak valid atau telah berakhir. Silakan mulai lagi.');
+            }
+        }
+        // When ENABLE_SESSION_REFRESH_BACK = false, allow free navigation (no restrictions)
+
         $photoSessionModel = $this->model('PhotoSession');
         $session = $photoSessionModel->find($session_id);
         
@@ -301,6 +407,11 @@ class PhotoController extends Controller
             ]
         ];
 
+        // Update workflow step for layout editor (only in strict mode)
+        if (ENABLE_SESSION_REFRESH_BACK) {
+            Session::set('workflow_step', 'layout_editor_active');
+        }
+        
         $this->view('photo/layout_editor', $data);
     }
 
@@ -339,13 +450,26 @@ class PhotoController extends Controller
                     'uploads/photostrips' // example directory
                 );
 
-                // Create photostrip record
-                $photostripModel->create([
-                    'session_id' => $session_id,
-                    'frame_id' => $frame_id,
-                    'layout_data' => json_encode($frame_data[$index]['photos'] ?? []),
-                    'final_image_path' => $filePath 
-                ]);
+                // Check if photostrip already exists for this session and frame
+                $existingPhotostrip = $photostripModel->findBySessionAndFrame($session_id, $frame_id);
+                
+                if ($existingPhotostrip) {
+                    // Update existing photostrip
+                    $photostripModel->update($existingPhotostrip->id, [
+                        'layout_data' => json_encode($frame_data[$index]['photos'] ?? []),
+                        'final_image_path' => $filePath,
+                        'decoration_data' => null, // Reset decorations when layout changes
+                        'is_printed' => 0 // Reset print status
+                    ]);
+                } else {
+                    // Create new photostrip record
+                    $photostripModel->create([
+                        'session_id' => $session_id,
+                        'frame_id' => $frame_id,
+                        'layout_data' => json_encode($frame_data[$index]['photos'] ?? []),
+                        'final_image_path' => $filePath 
+                    ]);
+                }
             }
 
             echo json_encode(['success' => true]);
@@ -359,6 +483,19 @@ class PhotoController extends Controller
     public function decorationEditor($session_id)
     {
         Session::start();
+
+        // Session refresh/back protection  
+        if (ENABLE_SESSION_REFRESH_BACK) {
+            $sessionWorkflowStep = Session::get('workflow_step');
+            $sessionCurrentSessionId = Session::get('current_session_id');
+
+            // STRICT MODE: Only allow access from layout editor
+            $validSteps = ['layout_editor_active'];
+            if (!in_array($sessionWorkflowStep, $validSteps) || $sessionCurrentSessionId != $session_id) {
+                $this->flashAndRedirect('packages', 'Sesi tidak valid atau telah berakhir. Silakan mulai lagi.');
+            }
+        }
+        // When ENABLE_SESSION_REFRESH_BACK = false, allow free navigation (no restrictions)
 
         $photoSessionModel = $this->model('PhotoSession');
         $session = $photoSessionModel->find($session_id);
@@ -385,6 +522,11 @@ class PhotoController extends Controller
             'stickers' => $stickers
         ];
 
+        // Update workflow step for decoration editor (only in strict mode)
+        if (ENABLE_SESSION_REFRESH_BACK) {
+            Session::set('workflow_step', 'decoration_editor_active');
+        }
+        
         $this->view('photo/decoration_editor', $data);
     }
 
@@ -428,6 +570,19 @@ class PhotoController extends Controller
     {
         Session::start();
 
+        // Session refresh/back protection
+        if (ENABLE_SESSION_REFRESH_BACK) {
+            $sessionWorkflowStep = Session::get('workflow_step');
+            $sessionCurrentSessionId = Session::get('current_session_id');
+
+            // STRICT MODE: Only allow access from decoration editor
+            $validSteps = ['decoration_editor_active'];
+            if (!in_array($sessionWorkflowStep, $validSteps) || $sessionCurrentSessionId != $session_id) {
+                $this->flashAndRedirect('packages', 'Sesi tidak valid atau telah berakhir. Silakan mulai lagi.');
+            }
+        }
+        // When ENABLE_SESSION_REFRESH_BACK = false, allow free navigation (no restrictions)
+
         $photoSessionModel = $this->model('PhotoSession');
         $session = $photoSessionModel->find($session_id);
         
@@ -444,11 +599,15 @@ class PhotoController extends Controller
 
         // Get completed photostrips
         $photostripModel = $this->model('Photostrip');
-        $photostrips = $photostripModel->getBySessionId($session_id);
+        $allPhotostrips = $photostripModel->getBySessionId($session_id);
 
-        if (empty($photostrips)) {
+        if (empty($allPhotostrips)) {
             $this->flashAndRedirect('packages', 'Tidak ada photostrip yang dibuat.');
         }
+
+        // Limit photostrips to the package frame_limit to prevent duplication issues
+        $frameLimit = $package->frame_limit ?? 2;
+        $photostrips = array_slice($allPhotostrips, 0, $frameLimit);
 
         // Generate final images for each photostrip
         $finalPhotostrips = [];
@@ -472,6 +631,11 @@ class PhotoController extends Controller
             'session_photos' => $sessionPhotos
         ];
 
+        // Update workflow step for finalize session (only in strict mode)
+        if (ENABLE_SESSION_REFRESH_BACK) {
+            Session::set('workflow_step', 'finalize_session_active');
+        }
+        
         $this->view('photo/finalize_session', $data);
     }
 
@@ -611,6 +775,7 @@ class PhotoController extends Controller
 
         $input = json_decode(file_get_contents('php://input'), true);
         $photostrip_id = $input['photostrip_id'] ?? null;
+        $copies = $input['copies'] ?? 1;
 
         if (!$photostrip_id) {
             http_response_code(400);
@@ -630,34 +795,28 @@ class PhotoController extends Controller
                 throw new Exception('Final image not available');
             }
 
-            // Execute print command (similar to existing print functionality)
+            // Check if file exists
             $basePath = dirname(APPROOT);
             $photoPath = $basePath . DIRECTORY_SEPARATOR . 'public' . str_replace('/', DIRECTORY_SEPARATOR, $photostrip->final_image_path);
-            $scriptPath = $basePath . DIRECTORY_SEPARATOR . 'scripts' . DIRECTORY_SEPARATOR . 'print_photostrip.py';
-
+            
             if (!file_exists($photoPath)) {
                 throw new Exception('Photostrip file not found: ' . $photoPath);
             }
 
-            if (!file_exists($scriptPath)) {
-                throw new Exception('Print script not found');
-            }
-
-            $pythonPath = 'python';
-            $command = escapeshellcmd("$pythonPath \"$scriptPath\" \"$photoPath\"");
-            $output = shell_exec("$command 2>&1");
-
-            if (strpos(strtolower($output), 'error') !== false) {
-                throw new Exception('Print failed: ' . $output);
-            }
-
-            // Mark as printed
-            $photostripModel->markAsPrinted($photostrip_id);
+            // Add to print queue instead of printing directly
+            $printQueueModel = $this->model('PrintQueue');
+            $queueId = $emailQueueModel->create([
+                'email' => $email,
+                'subject' => 'Foto Session Photobooth Anda - Session #' . $session_id,
+                'body' => 'Terima kasih telah menggunakan layanan photobooth kami! Terlampir adalah hasil foto session Anda.',
+                'attachments' => json_encode($attachments),
+                'priority' => 5 // High priority for user emails
+            ]);
 
             echo json_encode([
                 'success' => true, 
-                'message' => 'Photostrip sent to printer successfully!',
-                'debug_output' => $output
+                'message' => 'Photostrip telah ditambahkan ke queue print dan akan dicetak segera',
+                'queue_id' => $queueId
             ]);
 
         } catch (Exception $e) {
@@ -708,9 +867,7 @@ class PhotoController extends Controller
             // Create ZIP file with all photos
             $zipPath = $this->createSessionZip($session_id, $sessionPhotos);
 
-            // Send email with photostrips and ZIP attachment
-            $emailService = new \App\Services\EmailService();
-            
+            // Prepare attachments
             $attachments = [];
             
             // Add photostrip images
@@ -734,18 +891,21 @@ class PhotoController extends Controller
                 ];
             }
 
-            $success = $emailService->sendSessionPhotos($email, $attachments);
+            // Add email to queue instead of sending directly
+                        $emailQueueModel = $this->model('EmailQueue');
+            $queueId = $emailQueueModel->add(
+                $email,
+                'Photobooth User', // recipient name
+                'Foto Session Photobooth Anda - Session #' . $session_id,
+                'Terima kasih telah menggunakan layanan photobooth kami! Terlampir adalah hasil foto session Anda.',
+                $attachments
+            );
 
-            if ($success) {
-                // Clean up ZIP file
-                if ($zipPath && file_exists($zipPath)) {
-                    @unlink($zipPath);
-                }
-                
-                echo json_encode(['success' => true]);
-            } else {
-                throw new Exception('Failed to send email');
-            }
+            echo json_encode([
+                'success' => true,
+                'message' => 'Email telah ditambahkan ke queue dan akan dikirim segera',
+                'queue_id' => $queueId
+            ]);
 
         } catch (Exception $e) {
             http_response_code(500);

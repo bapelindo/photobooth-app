@@ -95,7 +95,6 @@ $router->get('admin/reports', 'App\Controllers\AdminController@reports');
 $router->get('admin/settings', 'App\Controllers\AdminController@settings');
 $router->post('admin/settings/update', 'App\Controllers\AdminController@updateSettings');
 
-
 // Rute POST (untuk AJAX)
 $router->post('photo/ajax_save_photo', 'App\\Controllers\\PhotoController@ajax_save_photo');
 // Removed legacy ajax_print_photo route - using printPhotostrip for new session workflow
