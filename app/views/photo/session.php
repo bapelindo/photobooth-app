@@ -103,9 +103,11 @@
             border-radius: 15px;
             position: relative;
             display: flex;
-            padding: 5;
+            padding: 10px;
             align-items: center;
+            justify-content: center;
             flex-direction: column;
+            overflow: hidden;
         }
 
         .safe-zone {
@@ -118,7 +120,9 @@
             align-items: center;
             justify-content: center;
             background: #000;
+            aspect-ratio: 16/9;
         }
+        
 
         .safe-zone-overlay {
             position: absolute;
@@ -174,8 +178,9 @@
         }
 
         #camera-feed {
-            width: 59vw;
-            height: 58.8vh;
+            width: 100%;
+            height: 100%;
+            aspect-ratio: 16/9;
             object-fit: contain;
             border-radius: 7px;
             background: #000;
@@ -364,6 +369,45 @@
             .gallery-photo {
                 max-width: 80px;
                 max-height: 80px;
+            }
+        }
+
+        /* Ensure 16:9 aspect ratio is maintained on all screen sizes */
+        @media (max-width: 1200px) {
+            .session-container {
+                grid-template-columns: 1.8fr 1fr;
+                gap: 8px;
+                padding: 15px;
+            }
+            
+            .safe-zone {
+                margin: 8px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .session-container {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto auto 1fr auto;
+                height: 100vh;
+                padding: 10px;
+            }
+            
+            .camera-section {
+                order: 1;
+                min-height: 40vh;
+            }
+            
+            .sidebar {
+                order: 2;
+                flex-direction: row;
+                gap: 10px;
+                max-height: 30vh;
+            }
+            
+            .gallery-panel, .selected-frames {
+                flex: 1;
+                min-height: 0;
             }
         }
 
@@ -731,44 +775,27 @@
         const photoGallery = document.getElementById('photo-gallery');
         const finishBtn = document.getElementById('finish-session-btn');
         
-        // Adjust camera container to match video aspect ratio
-        function adjustCameraContainer() {
-            const safeZone = document.querySelector('.safe-zone');
-            const cameraFeed = document.getElementById('camera-feed');
-            
-            if (!cameraFeed.videoWidth || !cameraFeed.videoHeight) {
-                // Retry after a short delay if video dimensions aren't available yet
-                setTimeout(adjustCameraContainer, 100);
-                return;
-            }
-            
-            const videoAspectRatio = cameraFeed.videoWidth / cameraFeed.videoHeight;
-            const containerWidth = safeZone.parentElement.clientWidth - 40; // Account for padding
-            const containerHeight = containerWidth / videoAspectRatio;
-            
-            // Set the safe zone to match the video aspect ratio
-            safeZone.style.width = containerWidth + 'px';
-            safeZone.style.height = containerHeight + 'px';
-            safeZone.style.maxHeight = 'none'; // Remove any height constraints
-            
-            console.log(`Camera container adjusted: ${containerWidth}x${containerHeight} (ratio: ${videoAspectRatio.toFixed(2)})`);
-        }
-
-        // Initialize camera
+        // Initialize camera with 16:9 aspect ratio
         async function initCamera() {
             try {
+                // Request camera with 16:9 aspect ratio
                 const stream = await navigator.mediaDevices.getUserMedia({
-                    video: { width: 1280, height: 720, facingMode: 'user' }
+                    video: { 
+                        width: { ideal: 1920, min: 1280 },
+                        height: { ideal: 1080, min: 720 },
+                        aspectRatio: { ideal: 16/9 },
+                        facingMode: 'user' 
+                    }
                 });
                 cameraFeed.srcObject = stream;
                 
                 // Ensure camera starts playing
                 cameraFeed.onloadedmetadata = () => {
                     cameraFeed.play().then(() => {
-                        console.log('Camera started successfully');
-                        // Adjust container to match camera aspect ratio
-                        adjustCameraContainer();
-                        // Delay safe zone calculation to ensure proper dimensions
+                        console.log('Camera started successfully with 16:9 aspect ratio');
+                        console.log(`Camera resolution: ${cameraFeed.videoWidth}x${cameraFeed.videoHeight}`);
+                        
+                        // Calculate safe zone after container adjustment
                         setTimeout(() => {
                             calculateSafeZone();
                         }, 500);
@@ -777,7 +804,7 @@
                     });
                 };
                 
-                // Also calculate safe zone when camera feed resizes
+                // Recalculate when camera feed loads
                 cameraFeed.addEventListener('loadeddata', () => {
                     setTimeout(() => {
                         calculateSafeZone();
@@ -786,7 +813,7 @@
                 
             } catch (err) {
                 console.error('Error accessing camera:', err);
-                alert('Tidak dapat mengakses kamera. Pastikan browser memiliki izin kamera.');
+                alert('Tidak dapat mengakses kamera. Pastikan browser memiliki izin kamera dan mendukung aspek rasio 16:9.');
             }
         }
         
@@ -1035,113 +1062,84 @@
         }
         
         function calculateSafeZone() {
-    const cameraFeed = document.getElementById('camera-feed');
-    const safeZoneContainer = document.querySelector('.safe-zone');
-    const safeZoneOverlay = document.getElementById('safe-zone-overlay');
-    const frames = <?= json_encode($data['frames']) ?>;
-    let allSlots = [];
+            const safeZoneOverlay = document.getElementById('safe-zone-overlay');
+            const frames = <?= json_encode($data['frames']) ?>;
+            let allSlots = [];
 
-    frames.forEach(frame => {
-        try {
-            const slotCoords = JSON.parse(frame.slot_coordinates || '[]');
-            if (Array.isArray(slotCoords) && slotCoords.length > 0) {
-                slotCoords.forEach((slot, index) => {
-                    if (slot && typeof slot === 'object') {
-                        let w = slot.width || 100;
-                        let h = slot.height || 150;
-                        if (w > h) {
-                            [w, h] = [h, w];
-                        }
-                        const validSlot = {
-                            left: slot.x || 50,
-                            top: slot.y || (50 + index * 125),
-                            width: w,
-                            height: h,
-                        };
-                        allSlots.push(validSlot);
+            // Collect all slots from selected frames
+            frames.forEach(frame => {
+                try {
+                    // Make sure slot_coordinates is a string before parsing
+                    if (typeof frame.slot_coordinates !== 'string') {
+                        console.warn('Slot coordinates for frame is not a string:', frame.name);
+                        return;
                     }
-                });
+                    const slotCoords = JSON.parse(frame.slot_coordinates || '[]');
+                    
+                    if (Array.isArray(slotCoords)) {
+                        slotCoords.forEach(slot => {
+                            // Validate that the slot has the required properties
+                            if (slot && typeof slot === 'object' && slot.width && slot.height) {
+                                allSlots.push({
+                                    width: parseFloat(slot.width),
+                                    height: parseFloat(slot.height)
+                                });
+                            } else {
+                                console.warn('Invalid slot data found in frame:', frame.name, slot);
+                            }
+                        });
+                    }
+                } catch (e) {
+                    console.error('Error parsing slot coordinates for frame:', frame.name, e);
+                }
+            });
+
+            if (allSlots.length === 0) {
+                console.log("No valid slots found, showing basic safe zone.");
+                showBasicSafeZone();
+                return;
             }
-        } catch (e) {
-            console.warn('Error parsing slot coordinates for frame:', frame.name, e);
+
+            // Calculate unified safe zone that accommodates all slots
+            const unifiedSafeZone = calculateUnifiedSafeZone(allSlots);
+            updateSafeZoneDisplay(unifiedSafeZone);
         }
-    });
-
-    if (!cameraFeed.videoWidth || !allSlots || allSlots.length === 0) {
-        return;
-    }
-
-    let minX = 100, minY = 100, maxX = 0, maxY = 0;
-
-    allSlots.forEach(slot => {
-        minX = Math.min(minX, slot.left);
-        minY = Math.min(minY, slot.top);
-        maxX = Math.max(maxX, slot.left + slot.width);
-        maxY = Math.max(maxY, slot.top + slot.height);
-    });
-
-    const containerWidth = safeZoneContainer.clientWidth;
-    const containerHeight = safeZoneContainer.clientHeight;
-    const videoWidth = cameraFeed.videoWidth;
-    const videoHeight = cameraFeed.videoHeight;
-
-    const containerAspect = containerWidth / containerHeight;
-    const videoAspect = videoWidth / videoHeight;
-
-    let renderedWidth, renderedHeight, x, y;
-
-    if (videoAspect > containerAspect) {
-        // Video is wider than container, it will be cropped left and right
-        renderedHeight = containerHeight;
-        renderedWidth = renderedHeight * videoAspect;
-        x = (containerWidth - renderedWidth) / 2;
-        y = 0;
-    } else {
-        // Video is taller than container, it will be cropped top and bottom
-        renderedWidth = containerWidth;
-        renderedHeight = renderedWidth / videoAspect;
-        x = 0;
-        y = (containerHeight - renderedHeight) / 2;
-    }
-
-    safeZoneOverlay.innerHTML = ''; // Clear previous safe zone
-
-    const safeZoneWidth = ((maxX - minX) / 100) * renderedWidth;
-    const safeZoneHeight = ((maxY - minY) / 100) * renderedHeight;
-
-    const safeZoneX = x + (renderedWidth - safeZoneWidth) / 2;
-    const safeZoneY = y + (renderedHeight - safeZoneHeight) / 2;
-
-    const safeZoneClear = document.createElement('div');
-    safeZoneClear.className = 'safe-zone-clear';
-    safeZoneClear.style.left = `${safeZoneX}px`;
-    safeZoneClear.style.top = `${safeZoneY}px`;
-    safeZoneClear.style.width = `${safeZoneWidth}px`;
-    safeZoneClear.style.height = `${safeZoneHeight}px`;
-    safeZoneOverlay.appendChild(safeZoneClear);
-}
         
-        function updateSafeZoneDisplay(allSlots) {
+        function showBasicSafeZone() {
+            const safeZoneOverlay = document.getElementById('safe-zone-overlay');
+            safeZoneOverlay.innerHTML = '';
+            
+            // Create basic safe zone (80% of container, centered)
+            const safeZoneClear = document.createElement('div');
+            safeZoneClear.className = 'safe-zone-clear';
+            safeZoneClear.style.cssText = `
+                left: 10%;
+                top: 10%;
+                width: 80%;
+                height: 80%;
+            `;
+            
+            safeZoneOverlay.appendChild(safeZoneClear);
+            
+            const instruction = document.createElement('div');
+            instruction.className = 'safe-zone-instruction';
+            instruction.textContent = 'Pastikan subjek berada di dalam area ini untuk hasil foto terbaik';
+            safeZoneOverlay.appendChild(instruction);
+        }
+        
+        function updateSafeZoneDisplay(unifiedSafeZone) {
             const overlay = document.getElementById('safe-zone-overlay');
             if (!overlay) return;
 
             // Clear existing zones
             overlay.innerHTML = '';
-            overlay.style.clipPath = ''; // Hapus clip-path jika ada
 
-            if (!allSlots || allSlots.length === 0) {
-                const instruction = document.createElement('div');
-                instruction.className = 'safe-zone-instruction';
-                instruction.textContent = '📸 Posisikan diri di tengah untuk hasil foto terbaik';
-                overlay.appendChild(instruction);
+            if (!unifiedSafeZone || !unifiedSafeZone.hasValidIntersection) {
+                showBasicSafeZone();
                 return;
             }
 
-            const cameraFeed = document.getElementById('camera-feed');
-            const cameraRect = cameraFeed.getBoundingClientRect();
-            const unifiedSafeZone = calculateUnifiedSafeZone(allSlots, cameraRect);
-
-            // Buat 4 div untuk area gelap di sekitar zona aman
+            // Create shaded areas around the safe zone
             const topShade = document.createElement('div');
             topShade.className = 'safe-zone-shade';
             topShade.style.cssText = `top: 0; left: 0; right: 0; height: ${unifiedSafeZone.top}%;`;
@@ -1160,7 +1158,7 @@
 
             overlay.append(topShade, bottomShade, leftShade, rightShade);
 
-            // Buat kotak garis putus-putus untuk zona aman
+            // Create the safe zone indicator
             const safeZoneClear = document.createElement('div');
             safeZoneClear.className = 'safe-zone-clear';
             safeZoneClear.style.cssText = `
@@ -1170,92 +1168,80 @@
                 height: ${unifiedSafeZone.height}%;
             `;
             
-            // Tambahkan label
             const label = document.createElement('div');
             label.className = 'safe-zone-label';
-            const aspectRatio = (unifiedSafeZone.width / unifiedSafeZone.height).toFixed(2);
-            label.textContent = `Zona Aman`;
-            label.style.cssText = `
-                left: 50%;
-                top: -15px;
-                transform: translateX(-50%);
-            `;
+            label.textContent = `Zona Aman (${unifiedSafeZone.cameraUsage.toFixed(0)}% Terlihat)`;
             safeZoneClear.appendChild(label);
             
             overlay.appendChild(safeZoneClear);
 
-            // Tambahkan instruksi
-            const instruction = document.createElement('div');
-            instruction.className = 'safe-zone-instruction';
-            instruction.textContent = 'Pastikan subjek berada di dalam area ini';
-            overlay.appendChild(instruction);
-
-            setTimeout(() => {
-                window.safeZoneCalculating = false;
-            }, 100);
+            console.log(`Safe zone updated based on 'contain' logic.`);
         }
         
-        function calculateUnifiedSafeZone(allSlots, cameraRect) {
-            if (!cameraRect || cameraRect.width === 0 || cameraRect.height === 0) {
-                // Fallback if camera dimensions aren't available yet
-                return { left: 15, top: 15, width: 70, height: 70 };
+function calculateUnifiedSafeZone(allSlots) {
+            if (!allSlots || allSlots.length === 0) {
+                // Jika tidak ada slot, tampilkan safe zone default yang lebih masuk akal.
+                return { left: 10, top: 10, width: 80, height: 80, hasValidIntersection: true, cameraUsage: 64 };
             }
 
-            const cameraAspect = cameraRect.width / cameraRect.height;
-            
-            // Calculate average aspect ratio from all available photo slots
-            let totalAspectRatio = 0;
-            let validSlots = 0;
-            allSlots.forEach(slot => {
-                if (slot.width > 0 && slot.height > 0) {
-                    totalAspectRatio += (slot.width / slot.height);
-                    validSlots++;
+            const cameraAspect = 16 / 9; // Rasio aspek kamera (lebar)
+            const frameAspect = 1 / 3;   // Rasio aspek photostrip (tinggi)
+
+            // Area aman dimulai dari 100% tampilan kamera, yang kemudian akan diperkecil.
+            let safeIntersection = { left: 0, top: 0, right: 100, bottom: 100 }; 
+
+            allSlots.forEach((slot) => {
+                const slotWidthPercent = slot.width;
+                const slotHeightPercent = slot.height;
+
+                if (isNaN(slotWidthPercent) || isNaN(slotHeightPercent) || slotWidthPercent <= 0 || slotHeightPercent <= 0) {
+                    return; // Lewati slot yang tidak valid
+                }
+
+                // --- INI BAGIAN PENTING YANG DIPERBAIKI ---
+                // Menghitung rasio aspek slot yang sebenarnya dengan memperhitungkan rasio aspek frame.
+                // Kita gunakan unit proporsional: anggap lebar frame = 1, maka tingginya = 3.
+                const realSlotWidth = (slotWidthPercent / 100) * 1; // Lebar slot proporsional
+                const realSlotHeight = (slotHeightPercent / 100) * 3; // Tinggi slot proporsional
+                const slotAspect = realSlotWidth / realSlotHeight;
+
+                if (slotAspect > cameraAspect) {
+                    // Slot lebih LEBAR dari kamera. Bagian atas/bawah kamera akan terpotong.
+                    const scaledCameraHeight = realSlotWidth / cameraAspect;
+                    const visibleHeightRatio = realSlotHeight / scaledCameraHeight;
+                    const margin = (1 - visibleHeightRatio) / 2;
+                    
+                    safeIntersection.top = Math.max(safeIntersection.top, margin * 100);
+                    safeIntersection.bottom = Math.min(safeIntersection.bottom, 100 - (margin * 100));
+
+                } else {
+                    // Slot lebih TINGGI/SEMPIT dari kamera. Bagian kiri/kanan kamera akan terpotong.
+                    const scaledCameraWidth = realSlotHeight * cameraAspect;
+                    const visibleWidthRatio = realSlotWidth / scaledCameraWidth;
+                    const margin = (1 - visibleWidthRatio) / 2;
+                    
+                    safeIntersection.left = Math.max(safeIntersection.left, margin * 100);
+                    safeIntersection.right = Math.min(safeIntersection.right, 100 - (margin * 100));
                 }
             });
 
-            // If no valid slots, use a default that's slightly portrait
-            const avgSlotAspect = validSlots > 0 ? totalAspectRatio / validSlots : (2/3);
-            console.log(`Camera Aspect: ${cameraAspect.toFixed(2)}, Avg Slot Aspect: ${avgSlotAspect.toFixed(2)}`);
-
-            let safeWidthPercent, safeHeightPercent, safeLeftPercent, safeTopPercent;
-
-            if (cameraAspect > avgSlotAspect) {
-                // Camera is WIDER than the target slot (e.g., 16:9 camera, 4:3 slot)
-                // The final image will be cropped on the sides.
-                safeWidthPercent = (avgSlotAspect / cameraAspect) * 100;
-                safeHeightPercent = 100;
-                safeLeftPercent = (100 - safeWidthPercent) / 2;
-                safeTopPercent = 0;
-            } else {
-                // Camera is TALLER than or equal to the target slot (e.g., 4:3 camera, 1:1 slot)
-                // The final image will be cropped on the top and bottom.
-                safeWidthPercent = 100;
-                safeHeightPercent = (cameraAspect / avgSlotAspect) * 100;
-                safeLeftPercent = 0;
-                safeTopPercent = (100 - safeHeightPercent) / 2;
-            }
-
-            // Apply a safety margin for printing (e.g., 5% from each side)
-            const printMargin = 10; // 5% from each side = 10% total reduction
-            const marginX = (safeWidthPercent * (printMargin / 100)) / 2;
-            const marginY = (safeHeightPercent * (printMargin / 100)) / 2;
-
-            const finalWidth = safeWidthPercent - (marginX * 2);
-            const finalHeight = safeHeightPercent - (marginY * 2);
-            const finalLeft = safeLeftPercent + marginX;
-            const finalTop = safeTopPercent + marginY;
-
-            const safeZone = {
-                left: finalLeft,
-                top: finalTop,
+            // Hitung dimensi akhir dari persimpangan (intersection) semua area aman.
+            const finalWidth = Math.max(0, safeIntersection.right - safeIntersection.left);
+            const finalHeight = Math.max(0, safeIntersection.bottom - safeIntersection.top);
+            
+            const result = {
+                left: safeIntersection.left,
+                top: safeIntersection.top,
                 width: finalWidth,
-                height: finalHeight
+                height: finalHeight,
+                hasValidIntersection: finalWidth > 0 && finalHeight > 0,
+                cameraUsage: (finalWidth * finalHeight) / 100
             };
             
-            console.log('Calculated safe zone:', safeZone);
-            return safeZone;
-        }
+            console.log(`SAFE ZONE: Posisi (${result.left.toFixed(1)}%, ${result.top.toFixed(1)}%), Ukuran (${result.width.toFixed(1)}% x ${result.height.toFixed(1)}%), Area Terlihat: ${result.cameraUsage.toFixed(1)}%`);
 
+            return result;
+        }
         // Apply camera filter
         let currentFilter = 'none';
         
@@ -1334,7 +1320,6 @@
             clearTimeout(window.resizeTimer);
             window.resizeTimer = setTimeout(() => {
                 console.log('Window resized, adjusting camera and recalculating safe zone');
-                adjustCameraContainer();
                 calculateSafeZone();
             }, 300);
         }
@@ -1363,6 +1348,12 @@
                     if (photoPreview.style.display === 'none') {
                         capturePhoto();
                     }
+                } else if (e.code === 'KeyD' && e.ctrlKey) {
+                    // Ctrl+D to toggle slot debug visualization
+                    e.preventDefault();
+                    window.showSlotDebug = !window.showSlotDebug;
+                    console.log('Slot debug visualization:', window.showSlotDebug ? 'ON' : 'OFF');
+                    calculateSafeZone(); // Recalculate to show/hide debug indicators
                 }
             });
         });
