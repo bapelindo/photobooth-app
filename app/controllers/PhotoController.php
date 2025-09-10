@@ -805,12 +805,11 @@ class PhotoController extends Controller
 
             // Add to print queue instead of printing directly
             $printQueueModel = $this->model('PrintQueue');
-            $queueId = $emailQueueModel->create([
-                'email' => $email,
-                'subject' => 'Foto Session Photobooth Anda - Session #' . $session_id,
-                'body' => 'Terima kasih telah menggunakan layanan photobooth kami! Terlampir adalah hasil foto session Anda.',
-                'attachments' => json_encode($attachments),
-                'priority' => 5 // High priority for user emails
+            $queueId = $printQueueModel->create([
+                'photostrip_id' => $photostrip_id,
+                'file_path' => $photostrip->final_image_path,
+                'copies' => $copies,
+                'priority' => 5 // High priority for user print requests
             ]);
 
             echo json_encode([

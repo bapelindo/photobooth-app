@@ -61,7 +61,20 @@ class EmailService
             // Attachments
             foreach ($attachments as $attachment) {
                 if (isset($attachment['path']) && isset($attachment['name'])) {
-                    $mail->addAttachment($attachment['path'], $attachment['name']);
+                    $filePath = $attachment['path'];
+                    
+                    // Handle Windows path issues - convert relative to absolute
+                    if (!file_exists($filePath)) {
+                        $basePath = dirname(dirname(__DIR__));
+                        $filePath = $basePath . DIRECTORY_SEPARATOR . 'public' . str_replace('/', DIRECTORY_SEPARATOR, $attachment['path']);
+                    }
+                    
+                    if (file_exists($filePath)) {
+                        $mail->addAttachment($filePath, $attachment['name']);
+                    } else {
+                        error_log("Email attachment not found: " . $attachment['path'] . " (tried: " . $filePath . ")");
+                        // Continue with other attachments even if one is missing
+                    }
                 }
             }
 

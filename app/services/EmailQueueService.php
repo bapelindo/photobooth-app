@@ -45,7 +45,7 @@ class EmailQueueService
 
                 // Send email
                 $success = $this->emailService->sendSessionPhotos(
-                    $emailJob->recipient_email,
+                    $emailJob->email,
                     $attachments
                 );
 

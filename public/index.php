@@ -88,7 +88,12 @@ $router->get('admin/photostrips', 'App\Controllers\AdminController@listPhotostri
 $router->get('admin/photostrips/view/{photostrip_id}', 'App\Controllers\AdminController@viewPhotostrip');
 $router->post('admin/photostrips/regenerate/{photostrip_id}', 'App\Controllers\AdminController@regeneratePhotostrip');
 
-// Email queue monitoring
+// Queue management routes
+$router->get('admin/queue', 'App\Controllers\AdminController@queueManagement');
+$router->get('admin/queue-stats', 'App\Controllers\AdminController@queueStats');
+$router->post('admin/queue/retry/{queue_type}/{job_id}', 'App\Controllers\AdminController@retryQueueJob');
+$router->post('admin/queue/delete/{queue_type}/{job_id}', 'App\Controllers\AdminController@deleteQueueJob');
+// Email queue monitoring (legacy)
 $router->get('admin/email-queue', 'App\Controllers\AdminController@emailQueue');
 $router->post('admin/email-queue/process', 'App\Controllers\AdminController@processEmailQueue');
 $router->get('admin/reports', 'App\Controllers\AdminController@reports');

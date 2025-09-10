@@ -150,14 +150,111 @@ class AdminController extends Controller {
     {
         header('Content-Type: application/json');
         
-        $emailQueueModel = $this->model('EmailQueue');
-        $printQueueModel = $this->model('PrintQueue');
+        try {
+            $emailQueueModel = $this->model('EmailQueue');
+            $printQueueModel = $this->model('PrintQueue');
+            
+            $emailStats = $emailQueueModel->getStats();
+            $printStats = $printQueueModel->getStats();
+            
+            echo json_encode([
+                'email_stats' => $emailStats ?: (object)['total' => 0, 'pending' => 0, 'processing' => 0, 'completed' => 0, 'failed' => 0],
+                'print_stats' => $printStats ?: (object)['total' => 0, 'pending' => 0, 'processing' => 0, 'completed' => 0, 'failed' => 0],
+                'timestamp' => time()
+            ]);
+        } catch (Exception $e) {
+            echo json_encode([
+                'error' => $e->getMessage(),
+                'email_stats' => (object)['total' => 0, 'pending' => 0, 'processing' => 0, 'completed' => 0, 'failed' => 0],
+                'print_stats' => (object)['total' => 0, 'pending' => 0, 'processing' => 0, 'completed' => 0, 'failed' => 0],
+                'timestamp' => time()
+            ]);
+        }
+    }
+
+    public function retryQueueJob($queue_type, $job_id)
+    {
+        header('Content-Type: application/json');
         
-        echo json_encode([
-            'email_stats' => $emailQueueModel->getStats(),
-            'print_stats' => $printQueueModel->getStats(),
-            'timestamp' => time()
-        ]);
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            http_response_code(405);
+            echo json_encode(['success' => false, 'message' => 'Method not allowed']);
+            return;
+        }
+        
+        try {
+            if ($queue_type === 'email') {
+                $emailQueueModel = $this->model('EmailQueue');
+                $job = $emailQueueModel->find($job_id);
+                
+                if (!$job) {
+                    throw new Exception('Email job not found');
+                }
+                
+                // Reset job to pending status with retry count reset
+                $emailQueueModel->resetJob($job_id);
+                echo json_encode(['success' => true, 'message' => 'Email job queued for retry']);
+                
+            } elseif ($queue_type === 'print') {
+                $printQueueModel = $this->model('PrintQueue');
+                $job = $printQueueModel->find($job_id);
+                
+                if (!$job) {
+                    throw new Exception('Print job not found');
+                }
+                
+                $printQueueModel->updateStatus($job_id, 'pending', null);
+                echo json_encode(['success' => true, 'message' => 'Print job queued for retry']);
+                
+            } else {
+                throw new Exception('Invalid queue type');
+            }
+            
+        } catch (Exception $e) {
+            http_response_code(500);
+            echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+        }
+    }
+
+    public function deleteQueueJob($queue_type, $job_id)
+    {
+        header('Content-Type: application/json');
+        
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            http_response_code(405);
+            echo json_encode(['success' => false, 'message' => 'Method not allowed']);
+            return;
+        }
+        
+        try {
+            if ($queue_type === 'email') {
+                $emailQueueModel = $this->model('EmailQueue');
+                $success = $emailQueueModel->delete($job_id);
+                
+                if ($success) {
+                    echo json_encode(['success' => true, 'message' => 'Email job deleted']);
+                } else {
+                    throw new Exception('Failed to delete email job');
+                }
+                
+            } elseif ($queue_type === 'print') {
+                $printQueueModel = $this->model('PrintQueue');
+                $success = $printQueueModel->delete($job_id);
+                
+                if ($success) {
+                    echo json_encode(['success' => true, 'message' => 'Print job deleted']);
+                } else {
+                    throw new Exception('Failed to delete print job');
+                }
+                
+            } else {
+                throw new Exception('Invalid queue type');
+            }
+            
+        } catch (Exception $e) {
+            http_response_code(500);
+            echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+        }
     }
 
     // === ASSET MANAGEMENT ===

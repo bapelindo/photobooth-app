@@ -343,37 +343,128 @@ function filterPrintJobs() {
 
 function retryEmailJob(id) {
     if (confirm('Retry this email job?')) {
-        // Add retry functionality
-        console.log('Retry email job:', id);
+        fetch(`/photobooth-app/public/admin/queue/retry/email/${id}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showMessage(data.message, 'success');
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                showMessage(data.message, 'error');
+            }
+        })
+        .catch(error => {
+            showMessage('Error retrying job', 'error');
+        });
     }
 }
 
 function retryPrintJob(id) {
     if (confirm('Retry this print job?')) {
-        // Add retry functionality
-        console.log('Retry print job:', id);
+        fetch(`/photobooth-app/public/admin/queue/retry/print/${id}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showMessage(data.message, 'success');
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                showMessage(data.message, 'error');
+            }
+        })
+        .catch(error => {
+            showMessage('Error retrying job', 'error');
+        });
     }
 }
 
 function deleteEmailJob(id) {
-    if (confirm('Delete this email job?')) {
-        // Add delete functionality
-        console.log('Delete email job:', id);
+    if (confirm('Delete this email job? This action cannot be undone.')) {
+        fetch(`/photobooth-app/public/admin/queue/delete/email/${id}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showMessage(data.message, 'success');
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                showMessage(data.message, 'error');
+            }
+        })
+        .catch(error => {
+            showMessage('Error deleting job', 'error');
+        });
     }
 }
 
 function deletePrintJob(id) {
-    if (confirm('Delete this print job?')) {
-        // Add delete functionality
-        console.log('Delete print job:', id);
+    if (confirm('Delete this print job? This action cannot be undone.')) {
+        fetch(`/photobooth-app/public/admin/queue/delete/print/${id}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showMessage(data.message, 'success');
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                showMessage(data.message, 'error');
+            }
+        })
+        .catch(error => {
+            showMessage('Error deleting job', 'error');
+        });
     }
 }
 
 function clearCompletedJobs() {
     if (confirm('Clear all completed jobs? This action cannot be undone.')) {
-        // Add clear completed functionality
-        console.log('Clear completed jobs');
+        // This would require a separate endpoint
+        showMessage('Clear completed jobs feature not implemented yet', 'info');
     }
+}
+
+function showMessage(message, type) {
+    // Simple message display - you can enhance this
+    const alertClass = type === 'success' ? 'alert-success' : type === 'error' ? 'alert-danger' : 'alert-info';
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert ${alertClass}`;
+    alertDiv.textContent = message;
+    alertDiv.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 12px 20px;
+        border-radius: 4px;
+        z-index: 9999;
+        ${type === 'success' ? 'background: #d4edda; color: #155724; border: 1px solid #c3e6cb;' : 
+          type === 'error' ? 'background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb;' : 
+          'background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb;'}
+    `;
+    
+    document.body.appendChild(alertDiv);
+    
+    setTimeout(() => {
+        if (alertDiv.parentNode) {
+            alertDiv.parentNode.removeChild(alertDiv);
+        }
+    }, 3000);
 }
 
 // Initialize feather icons

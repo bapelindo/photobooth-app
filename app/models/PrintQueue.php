@@ -33,9 +33,14 @@ class PrintQueue
         return $this->db->single();
     }
 
-    public function getPendingJobs($limit = 5)
+    public function getPendingJobs($limit = 20)
     {
-        $this->db->query("SELECT * FROM print_queue WHERE status = 'pending' ORDER BY priority DESC, created_at ASC LIMIT :limit");
+        $this->db->query("
+            SELECT * FROM print_queue 
+            WHERE status IN ('pending', 'processing', 'failed') 
+            ORDER BY created_at DESC 
+            LIMIT :limit
+        ");
         $this->db->bind(':limit', $limit);
         return $this->db->resultSet();
     }
@@ -66,6 +71,13 @@ class PrintQueue
     {
         $this->db->query("DELETE FROM print_queue WHERE status = 'completed' AND completed_at < DATE_SUB(NOW(), INTERVAL :days DAY)");
         $this->db->bind(':days', $days);
+        return $this->db->execute();
+    }
+
+    public function delete($id)
+    {
+        $this->db->query("DELETE FROM print_queue WHERE id = :id");
+        $this->db->bind(':id', $id);
         return $this->db->execute();
     }
 
