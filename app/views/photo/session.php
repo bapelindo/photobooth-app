@@ -136,14 +136,14 @@
 
         .safe-zone-shade {
             position: absolute;
-            background: rgba(0, 0, 0, 0.4);
+            background: rgba(0, 0, 0, 0.2);
             pointer-events: none;
         }
 
         .safe-zone-clear {
             position: absolute;
             background: transparent;
-            border: 2px dashed rgba(108, 99, 255, 0.8);
+            border: 2px dashed rgba(253, 253, 253, 0.25);
             border-radius: 8px;
         }
 
@@ -152,7 +152,7 @@
             top: -30px;
             left: 50%;
             transform: translateX(-50%);
-            background: rgba(108, 99, 255, 0.95);
+            background: rgba(255, 255, 255, 0.25);
             color: white;
             padding: 4px 12px;
             border-radius: 15px;
@@ -226,25 +226,25 @@
             align-items: center;
             gap: 10px;
             background: rgba(255, 255, 255, 0.9);
-            padding: 10px 15px;
-            border-radius: 15px;
+            padding: 5px 5px;
+            border-radius: 20px;
             backdrop-filter: blur(10px);
         }
 
         .filter-dropdown label {
             font-weight: 600;
             color: var(--primary-color);
-            font-size: 0.9rem;
+            font-size: 0.7rem;
         }
 
         .filter-dropdown select {
-            padding: 8px 12px;
+            padding: 5px 5px;
             border: 2px solid var(--primary-color);
-            border-radius: 10px;
+            border-radius: 20px;
             background: white;
             color: var(--primary-color);
             font-weight: 600;
-            font-size: 0.9rem;
+            font-size: 0.7rem;
             cursor: pointer;
             outline: none;
             min-width: 120px;
@@ -256,11 +256,11 @@
         }
 
         .btn {
-            padding: 12px 25px;
+            padding: 10px 10px;
             border: none;
             border-radius: 25px;
             font-family: 'Fredoka One', cursive;
-            font-size: 1rem;
+            font-size: 0.7rem;
             cursor: pointer;
             transition: all 0.3s ease;
             text-transform: uppercase;
@@ -270,8 +270,8 @@
         .btn-capture {
             background: var(--accent-color);
             color: white;
-            font-size: 1.2rem;
-            padding: 15px 40px;
+            font-size: 0.7rem;
+            padding: 10px 10px;
             var(--accent-color);
             box-shadow: 0 4px 15px rgba(0,0,0,0.2); 
         }
@@ -294,11 +294,96 @@
         .btn-continue {
             background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
             color: white;
-            font-size: 1.1rem;
+            font-size: 0.7rem;
         }
 
         .btn:hover {
             transform: translateY(-2px);
+        }
+
+        .btn-fullscreen {
+            background: #8A2BE2;
+            color: white;
+        }
+        .btn-fullscreen:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+        }
+
+        .camera-section.fullscreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 1000;
+            padding: 0;
+            margin: 0;
+            border-radius: 0;
+        }
+
+        .camera-section.fullscreen .safe-zone {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            border-radius: 0;
+        }
+
+        .camera-section.fullscreen .camera-controls {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.2);
+            padding: 10px 10px;
+            border-radius: 25px;
+            z-index: 1001;
+            display: flex;
+            gap: 15px;
+        }
+
+        .fullscreen-timer {
+            display: none;
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 15px;
+            z-index: 1001;
+            text-align: center;
+        }
+
+        .fullscreen-timer .timer {
+            color: white;
+        }
+
+        .camera-section.fullscreen .fullscreen-timer {
+            display: block;
+        }
+
+        .fullscreen-active .header-panel {
+            display: none;
+        }
+
+        .fullscreen-active .sidebar {
+            display: none;
+        }
+
+        .fullscreen-active .session-container {
+            grid-template-columns: 1fr;
+            padding: 0;
+            gap: 0;
+            height: 100vh;
+            width: 100vw;
+            max-width: 100vw;
+            border-radius: 0px;
+        }
+        
+        .fullscreen-active .camera-section {
+            height: 100vh;
+            border-radius: 0px;
         }
 
         .sidebar {
@@ -519,8 +604,7 @@
         .camera-controls {
             position: relative;
             display: flex;
-            flex-direction: column; 
-            bottom: 6px;
+            flex-direction: column;
             background: rgba(108, 99, 255, 0.1);
             padding: 10px;
             border-radius: 20px;
@@ -556,9 +640,10 @@
             background: rgba(255, 255, 255, 0.95);
             border-radius: 15px;
             padding: 20px;
-            max-height: 300px;
-            overflow-y: auto;
-            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+            flex: 1;
         }
 
         .selected-frames h3 {
@@ -571,6 +656,8 @@
             display: flex;
             flex-direction: column;
             gap: 10px;
+            overflow-y: auto;
+            flex: 1;
         }
 
         .frame-item {
@@ -592,21 +679,21 @@
         }
         
         /* Custom scrollbar for frame list */
-        .selected-frames::-webkit-scrollbar {
+        .frames-list::-webkit-scrollbar {
             width: 8px;
         }
         
-        .selected-frames::-webkit-scrollbar-track {
+        .frames-list::-webkit-scrollbar-track {
             background: rgba(108, 99, 255, 0.1);
             border-radius: 10px;
         }
         
-        .selected-frames::-webkit-scrollbar-thumb {
+        .frames-list::-webkit-scrollbar-thumb {
             background: rgba(108, 99, 255, 0.5);
             border-radius: 10px;
         }
         
-        .selected-frames::-webkit-scrollbar-thumb:hover {
+        .frames-list::-webkit-scrollbar-thumb:hover {
             background: rgba(108, 99, 255, 0.7);
         }
 
@@ -615,9 +702,9 @@
             background-color: var(--primary-color);
             color: white;
             border: none;
-            padding: 12px 20px;
+            padding: 10px 10px;
             font-family: 'Fredoka One', cursive;
-            font-size: 1rem;
+            font-size: 0.7rem;
             border-radius: 25px;
             cursor: pointer;
             transition: all 0.3s ease;
@@ -647,6 +734,61 @@
             border-radius: 20px;
             text-align: center;
             max-width: 400px;
+        }
+
+        .custom-alert-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000; /* Higher than other overlays */
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        .custom-alert-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .custom-alert-modal {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            max-width: 350px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            transform: translateY(-20px);
+            transition: transform 0.3s ease, opacity 0.3s ease;
+        }
+
+        .custom-alert-overlay.show .custom-alert-modal {
+            transform: translateY(0);
+        }
+
+        .custom-alert-modal h2 {
+            color: var(--secondary-color);
+            font-family: 'Fredoka One', cursive;
+            margin-top: 0;
+            font-size: 1.8rem;
+        }
+
+        .custom-alert-modal p {
+            color: #555;
+            margin-bottom: 25px;
+            line-height: 1.5;
+        }
+
+        .custom-alert-modal .btn-continue {
+            background: var(--secondary-color); /* Use secondary color for warning */
+            font-size: 0.9rem;
+            padding: 12px 25px;
         }
     </style>
 </head>
@@ -680,6 +822,12 @@
         </div>
 
         <div class="camera-section">
+            <div class="stat-item fullscreen-timer">
+                <div class="timer" id="session-timer-fullscreen">
+                    <?= sprintf("%02d:%02d", floor($data['session_duration'] / 60), $data['session_duration'] % 60) ?>
+                </div>
+                <div class="stat-label" style="color: white;">Waktu Tersisa</div>
+            </div>
             <div class="safe-zone">
                 <div class="safe-zone-overlay" id="safe-zone-overlay">
                     <!-- Safe zone boxes will be dynamically added here -->
@@ -699,8 +847,12 @@
             <div class="camera-controls">
                 <div class="capture-section">
                     <button class="btn btn-capture" id="capture-btn" onclick="capturePhoto()">📸 Ambil Foto</button>
+                    <button class="btn btn-fullscreen" id="fullscreen-btn">🖼️ Fullscreen</button>
+                    <button class="finish-session-btn" id="finish-session-btn" onclick="finishSession()">
+                        ✨ SELESAI
+                    </button>
                     <div class="filter-dropdown">
-                        <label for="camera-filter">🎨 Filter:</label>
+                        <label for="camera-filter">🎨 FILTER:</label>
                         <select id="camera-filter" onchange="applyFilter(this.value)">
                             <option value="none">Normal</option>
                             <option value="sepia">Sepia</option>
@@ -713,9 +865,6 @@
                             <option value="blur">Blur</option>
                         </select>
                     </div>
-                    <button class="finish-session-btn" id="finish-session-btn" onclick="finishSession()">
-                        ✨ Selesai & Lanjut
-                    </button>
                 </div>
             </div>
         </div>
@@ -744,6 +893,14 @@
 
     </div>
 
+    <div class="custom-alert-overlay" id="custom-alert-overlay">
+        <div class="custom-alert-modal">
+            <h2 id="custom-alert-title">Peringatan!</h2>
+            <p id="custom-alert-message"></p>
+            <button class="btn btn-continue" onclick="hideCustomAlert()">Oke</button>
+        </div>
+    </div>
+
     <div class="session-expired" id="session-expired">
         <div class="expired-modal">
             <h2>⏰ Waktu Habis!</h2>
@@ -757,6 +914,16 @@
         const sessionId = <?= $data['session']->id ?>;
         const sessionDuration = <?= $data['session_duration'] ?>;
         const maxSavePhotos = <?= $data['max_save_photos'] ?>;
+        <?php
+        $totalSlots = 0;
+        foreach ($data['frames'] as $frame) {
+            $slotCoords = json_decode($frame->slot_coordinates, true);
+            if (is_array($slotCoords)) {
+                $totalSlots += count($slotCoords);
+            }
+        }
+        ?>
+        const numFrameSlots = <?= $totalSlots ?>;
         
         let timeRemaining = sessionDuration;
         let photosTaken = 0;
@@ -771,7 +938,8 @@
         const previewImage = document.getElementById('preview-image');
         const photosTakenEl = document.getElementById('photos-taken');
         const photosSavedEl = document.getElementById('photos-saved');
-        const timerEl = document.getElementById('session-timer');
+                const timerEl = document.getElementById('session-timer');
+        const timerElFullscreen = document.getElementById('session-timer-fullscreen');
         const photoGallery = document.getElementById('photo-gallery');
         const finishBtn = document.getElementById('finish-session-btn');
         
@@ -981,11 +1149,17 @@
                 
                 const minutes = Math.floor(timeRemaining / 60);
                 const seconds = timeRemaining % 60;
-                timerEl.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                const timeString = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                
+                if(timerEl) timerEl.textContent = timeString;
+                if(timerElFullscreen) timerElFullscreen.textContent = timeString;
                 
                 // Warning when 1 minute remaining
                 if (timeRemaining <= 60) {
-                    timerEl.classList.add('warning');
+                    if(timerEl) timerEl.classList.add('warning');
+                    if(timerElFullscreen) {
+                        timerElFullscreen.classList.add('warning');
+                    }
                 }
                 
                 // Session expired
@@ -996,10 +1170,22 @@
             }, 1000);
         }
         
+        function showCustomAlert(message) {
+            const overlay = document.getElementById('custom-alert-overlay');
+            const msgElement = document.getElementById('custom-alert-message');
+            msgElement.textContent = message;
+            overlay.classList.add('show');
+        }
+
+        function hideCustomAlert() {
+            const overlay = document.getElementById('custom-alert-overlay');
+            overlay.classList.remove('show');
+        }
+
         // Finish session
         function finishSession() {
-            if (photosSaved === 0) {
-                alert('Simpan minimal satu foto sebelum melanjutkan!');
+            if (photosSaved < numFrameSlots) {
+                showCustomAlert('Simpan minimal ' + numFrameSlots + ' foto sebelum melanjutkan!');
                 return;
             }
             
@@ -1327,6 +1513,37 @@ function calculateUnifiedSafeZone(allSlots) {
 
         // Initialize everything
         document.addEventListener('DOMContentLoaded', () => {
+            const fullscreenBtn = document.getElementById('fullscreen-btn');
+            const cameraSection = document.querySelector('.camera-section');
+
+            fullscreenBtn.addEventListener('click', () => {
+                toggleFullScreen(cameraSection);
+            });
+
+            function toggleFullScreen(elem) {
+                if (!document.fullscreenElement) {
+                    elem.requestFullscreen().catch(err => {
+                        alert(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`);
+                    });
+                } else {
+                    if (document.exitFullscreen) {
+                        document.exitFullscreen();
+                    }
+                }
+            }
+
+            document.addEventListener('fullscreenchange', () => {
+                if (!document.fullscreenElement) {
+                    cameraSection.classList.remove('fullscreen');
+                    document.body.classList.remove('fullscreen-active');
+                } else {
+                    cameraSection.classList.add('fullscreen');
+                    document.body.classList.add('fullscreen-active');
+                }
+                // Recalculate safe zone on fullscreen change
+                setTimeout(calculateSafeZone, 300);
+            });
+
             initCamera();
             startTimer();
             
