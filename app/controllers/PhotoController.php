@@ -150,7 +150,7 @@ class PhotoController extends Controller
         // Load filters from database
         $filters = $assetModel->getAssetsByType('filter');
         
-        $data = [
+                $data = [
             'session' => $session,
             'package' => $package,
             'frames' => $frames,
@@ -662,15 +662,14 @@ class PhotoController extends Controller
             $layoutData = json_decode($photostrip->layout_data ?: '[]', true) ?: [];
             $slotCoordinates = json_decode($photostrip->slot_coordinates ?: '[]', true) ?: [];
             
-            // Prepare photo paths array
-            $photoPaths = [];
+            // Prepare photo data array (with path and panning)
+            $photosData = [];
             if (!empty($layoutData)) {
                 foreach ($layoutData as $slotIndex => $photo) {
                     if (!is_array($photo)) {
-                        continue; // Skip non-array items
+                        continue;
                     }
                     
-                    // Try different possible key names for the photo path
                     $photoPathKey = null;
                     $possibleKeys = ['photoPath', 'path', 'file_path', 'photo_path'];
                     
@@ -684,7 +683,11 @@ class PhotoController extends Controller
                     if ($photoPathKey) {
                         $photoPath = dirname(APPROOT) . '/public' . $photo[$photoPathKey];
                         if (file_exists($photoPath)) {
-                            $photoPaths[(int)($photo['slot'] ?? $slotIndex)] = $photoPath;
+                            $photosData[(int)($photo['slot'] ?? $slotIndex)] = [
+                                'path' => $photoPath,
+                                'panX' => $photo['panX'] ?? 0.5,
+                                'panY' => $photo['panY'] ?? 0.5
+                            ];
                         }
                     }
                 }
@@ -693,7 +696,7 @@ class PhotoController extends Controller
             // Use ImageProcessingService to create the photostrip
             $imageService = new \App\Services\ImageProcessingService();
             $success = $imageService->createPhotoStrip(
-                $photoPaths,
+                $photosData, // Pass the new array here
                 $framePath,
                 $outputPath,
                 $slotCoordinates,

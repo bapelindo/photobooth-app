@@ -20,12 +20,14 @@
             height: 100vh;
             margin: 0;
             padding: 20px;
-            overflow: auto;
+            overflow: hidden;
             font-family: 'Poppins', sans-serif;
             background: var(--bg-gradient);
             display: flex;
             justify-content: center; align-items: center;box-sizing: border-box;
         }
+
+
         
         .finalize-container {
             display: grid;
@@ -92,6 +94,8 @@
             backdrop-filter: blur(10px);
             overflow-y: auto;
             max-height: 100%;
+            scrollbar-width: thin; /* For Firefox */
+            scrollbar-color: #fa709a rgba(255, 255, 255, 0.95); /* For Firefox */
         }
 
         .photostrips-panel h3 {
@@ -194,6 +198,8 @@
             gap: 10px;
             max-height: 100%;
             overflow-y: auto;
+            scrollbar-width: thin; /* For Firefox */
+            scrollbar-color: #fa709a rgba(255, 255, 255, 0.95); /* For Firefox */
         }
 
         .actions-panel h3 {
@@ -423,7 +429,7 @@
                 <?php foreach ($data['photostrips'] as $photostrip): ?>
                     <div class="photostrip-card">
                         <?php if ($photostrip->final_image_path): ?>
-                            <img src="<?= URLROOT . $photostrip->final_image_path ?>" 
+                            <img src="<?= URLROOT . $photostrip->final_image_path ?>?v=<?= time() ?>" 
                                  alt="<?= $photostrip->frame_name ?>" 
                                  class="photostrip-preview">
                         <?php else: ?>
@@ -510,47 +516,50 @@
 
     <script>
         const sessionId = <?= $data['session']->id ?>;
-        const photostrips = <?= json_encode($data['photostrips']) ?>;
-        let printedCount = <?= array_sum(array_map(function($p) { return $p->is_printed ? 1 : 0; }, $data['photostrips'])) ?>;
-        
+
         document.addEventListener('DOMContentLoaded', () => {
             updatePrintAllButton();
+            setInterval(checkPrintStatus, 10000); // Check every 10 seconds
         });
 
-        function printPhotostrip(photostripId) {
+        function printPhotostrip(photostripId, silent = false) {
             const button = document.querySelector(`[data-photostrip-id="${photostripId}"]`);
+            if (!button) return;
+
             const card = button.closest('.photostrip-card');
             const status = card.querySelector('.print-status');
             
             button.disabled = true;
-            button.textContent = '⏳ Mencetak...';
+            button.textContent = '⏳ Mengantri...';
             
             fetch('<?= URLROOT ?>/photo/print-photostrip', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    photostrip_id: photostripId
-                })
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ photostrip_id: photostripId })
             })
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    button.textContent = '⏳ Queue Print';
-                    button.disabled = true;
-                    showMessage('Photostrip telah dijadwalkan untuk dicetak! Proses pencetakan sedang berjalan.', 'success');
+                    button.textContent = '✓ Diantrikan';
+                    status.textContent = '⏳ Dalam Antrian';
+                    if (!silent) {
+                        showMessage('Photostrip telah ditambahkan ke antrian cetak.', 'success');
+                    }
                 } else {
                     button.disabled = false;
                     button.textContent = '🖨️ Cetak';
-                    showMessage('Gagal menambahkan ke queue print: ' + data.message, 'error');
+                    if (!silent) {
+                        showMessage('Gagal menambahkan ke antrian cetak: ' + data.message, 'error');
+                    }
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
                 button.disabled = false;
                 button.textContent = '🖨️ Cetak';
-                showMessage('Terjadi kesalahan saat mencetak', 'error');
+                if (!silent) {
+                    showMessage('Terjadi kesalahan saat mencetak.', 'error');
+                }
             });
         }
 
@@ -558,28 +567,27 @@
             const unprintedButtons = document.querySelectorAll('.btn-print:not(:disabled)');
             
             if (unprintedButtons.length === 0) {
-                showMessage('Semua photostrip sudah dicetak!', 'success');
+                showMessage('Semua photostrip sudah dicetak atau sedang dalam antrian.', 'success');
                 return;
             }
 
             const printAllBtn = document.getElementById('print-all-btn');
             printAllBtn.disabled = true;
-            printAllBtn.textContent = '⏳ Mencetak Semua...';
+            printAllBtn.textContent = '⏳ Menambahkan ke Antrian...';
 
-            // Print each photostrip sequentially
             let printIndex = 0;
             function printNext() {
                 if (printIndex < unprintedButtons.length) {
                     const button = unprintedButtons[printIndex];
                     const photostripId = button.dataset.photostripId;
                     
-                    printPhotostrip(photostripId);
+                    printPhotostrip(photostripId, true); // silent = true
+                    
                     printIndex++;
-                    setTimeout(printNext, 2000); // Wait 2 seconds between prints
+                    setTimeout(printNext, 500); // 0.5 second delay between queueing
                 } else {
-                    printAllBtn.disabled = false;
-                    printAllBtn.textContent = '🖨️ Cetak Semua';
-                    showMessage('Semua photostrip telah dicetak!', 'success');
+                    showMessage('Semua photostrip telah ditambahkan ke antrian cetak.', 'success');
+                    updatePrintAllButton(); 
                 }
             }
 
@@ -598,7 +606,6 @@
             sendButton.textContent = '⏳ Mengirim...';
             progress.style.display = 'block';
             
-            // Animate progress bar
             let progressValue = 0;
             const progressInterval = setInterval(() => {
                 progressValue += 10;
@@ -610,9 +617,7 @@
 
             fetch('<?= URLROOT ?>/photo/send-session-email', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     session_id: sessionId,
                     email: email
@@ -650,10 +655,11 @@
 
         function updatePrintAllButton() {
             const printAllBtn = document.getElementById('print-all-btn');
-            const unprintedCount = photostrips.length - printedCount;
+            const unprintedButtons = document.querySelectorAll('.btn-print:not(:disabled)');
+            const unprintedCount = unprintedButtons.length;
             
             if (unprintedCount === 0) {
-                printAllBtn.textContent = '✓ Semua Sudah Dicetak';
+                printAllBtn.textContent = '✓ Semua Sudah Diantrikan';
                 printAllBtn.disabled = true;
             } else {
                 printAllBtn.textContent = `🖨️ Cetak Semua (${unprintedCount})`;
@@ -679,32 +685,39 @@
             window.location.href = '<?= URLROOT ?>/packages';
         }
 
-        // Auto-refresh print status every 30 seconds
-        setInterval(() => {
+        function checkPrintStatus() {
             fetch('<?= URLROOT ?>/photo/check-print-status/' + sessionId)
                 .then(response => response.json())
                 .then(data => {
                     if (data.success && data.updates) {
+                        let hasChanges = false;
                         data.updates.forEach(update => {
                             const button = document.querySelector(`[data-photostrip-id="${update.id}"]`);
-                            const card = button.closest('.photostrip-card');
-                            const status = card.querySelector('.print-status');
-                            
-                            if (update.is_printed && !button.disabled) {
+                            if (!button) return;
+
+                            const isAlreadyPrinted = button.disabled && button.textContent === '✓ Tercetak';
+
+                            if (update.is_printed && !isAlreadyPrinted) {
+                                hasChanges = true;
+                                const card = button.closest('.photostrip-card');
+                                const status = card.querySelector('.print-status');
+                                
                                 button.textContent = '✓ Tercetak';
                                 button.disabled = true;
                                 status.textContent = '✓ Sudah Dicetak';
                                 status.className = 'print-status printed';
-                                printedCount++;
                             }
                         });
-                        updatePrintAllButton();
+
+                        if (hasChanges) {
+                            updatePrintAllButton();
+                        }
                     }
                 })
                 .catch(error => {
                     console.error('Error checking print status:', error);
                 });
-        }, 30000);
+        }
     </script>
 </body>
 </html>

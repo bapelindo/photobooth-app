@@ -16,6 +16,12 @@
             --bg-gradient: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
         }
 
+        /* Firefox Scrollbar */
+        html {
+            scrollbar-width: thin; /* "auto" or "thin" */
+            scrollbar-color: rgba(252, 182, 159, 1) rgba(255, 255, 255, 0.95); /* thumb and track color */
+        }
+
         body {
             height: 100vh;
             margin: 0;
@@ -212,8 +218,12 @@
         }
 
         .photo-layer {
-            position: absolute;
-            border-radius: 6px;
+            position: relative;
+            z-index: 2;
+            display: block;
+        }
+
+        .photo-slot-container {
             z-index: 2;
         }
 
@@ -303,6 +313,7 @@
             backdrop-filter: blur(10px);
             display: flex;
             flex-direction: column;
+            overflow-y: auto;
             gap: 12px;
         }
 
@@ -424,6 +435,7 @@
                 flex-direction: row;
                 height: auto;
                 overflow-x: auto;
+                overflow-y: auto;
             }
 
             .workspace {
@@ -527,12 +539,35 @@
                                     'width' => $slotCoordData['width'],
                                     'height' => $slotCoordData['height']
                                 ];
+                                
+                                // Calculate object-position for panning
+                                $objectPosition = '50% 50%'; // Default center
+                                if (isset($photo['panX']) && isset($photo['panY'])) {
+                                    // panX is 0 (left-most) to 1 (right-most) from the user's panning action.
+                                    // object-position: 0% aligns the left edge of the image with the left edge of the container.
+                                    // object-position: 100% aligns the right edge of the image with the right edge of the container.
+                                    // When user pans "left" (sees more of the right side of the image), panX becomes 0.
+                                    // This corresponds to object-position: 100%.
+                                    // When user pans "right" (sees more of the left side of the image), panX becomes 1.
+                                    // This corresponds to object-position: 0%.
+                                    // So, we invert the panX value.
+                                    $posX = (1 - $photo['panX']) * 100;
+                                    $posY = (1 - $photo['panY']) * 100;
+
+                                    // Clamp values between 0 and 100
+                                    $posX = max(0, min(100, $posX));
+                                    $posY = max(0, min(100, $posY));
+                                    
+                                    $objectPosition = $posX . '% ' . $posY . '%';
+                                }
                             ?>
-                                <img src="<?= URLROOT . $photo['photoPath'] ?>" 
-                                     class="photo-layer"
-                                     style="left: <?= $slot['left'] ?>%; top: <?= $slot['top'] ?>%; 
-                                            width: <?= $slot['width'] ?>%; height: <?= $slot['height'] ?>%;
-                                            object-fit: cover; position: absolute;">
+                                <div class="photo-slot-container" style="position: absolute; left: <?= $slot['left'] ?>%; top: <?= $slot['top'] ?>%; width: <?= $slot['width'] ?>%; height: <?= $slot['height'] ?>%; overflow: hidden; border-radius: 6px;">
+                                    <img src="<?= URLROOT . $photo['photoPath'] ?>" 
+                                         class="photo-layer"
+                                         style="width: 100%; height: 100%;
+                                                object-fit: cover; 
+                                                object-position: <?= $objectPosition ?>;">
+                                </div>
                             <?php endforeach; ?>
                             
                             <div class="decoration-layer" id="decoration-<?= $photostrip->id ?>">
@@ -555,7 +590,7 @@
             <div class="tool-group">
                 <h4>Reset & Clear</h4>
                 <button class="tool-btn danger" onclick="clearCurrentPhotostrip()">🧹 Bersihkan</button>
-                <button class="tool-btn danger" onclick="clearAllDecorations()">💥 Reset Semua</button>
+                <button class="tool-btn danger" onclick="clearAllDecorations()">💥 Reset</button>
             </div>
             
             <div class="tool-group">

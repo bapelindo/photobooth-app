@@ -16,6 +16,11 @@
             --warning-color: #FF9800;
             --bg-gradient: linear-gradient(135deg, #fed6e3 0%, #ffecd2 100%);
         }
+                /* Firefox Scrollbar */
+        html {
+            scrollbar-width: thin; /* "auto" or "thin" */
+            scrollbar-color: rgba(254, 214, 227, 1  ) rgba(255, 255, 255, 0.95); /* thumb and track color */
+        }
 
         body {
             height: 100vh;
@@ -478,18 +483,9 @@
                 alert('Error initializing layout editor: ' + error.message);
             }
             
-            // Refresh photo gallery to show newest photos
-            refreshPhotoGallery();
+            // Update used status on photos in the gallery
+            updatePhotoUsedStatus();
         });
-
-        function refreshPhotoGallery() {
-            // This ensures we're showing the most recent photos by reloading the page data
-            const photoSource = document.getElementById('photo-source');
-            if (photoSource) {
-                // Update used status based on current state
-                updatePhotoUsedStatus();
-            }
-        }
 
         function updatePhotoUsedStatus() {
             // Remove all 'used' classes first
@@ -1142,7 +1138,7 @@
             showNotification('👁️ Preview dibuka di tab baru!', 'success');
         }
 
-        function saveLayouts() {
+        async function saveLayouts() {
             const continueBtn = document.getElementById('continue-btn');
             if (continueBtn.disabled) {
                 alert('Lengkapi semua slot sebelum melanjutkan!');
@@ -1163,13 +1159,21 @@
                 if (frameIndex !== currentFrameIndex) {
                     currentFrameIndex = frameIndex;
                     loadCurrentFrame();
+                    
+                    // Wait a bit for frame to fully load and render
+                    await new Promise(resolve => setTimeout(resolve, 100));
                 }
                 
                 // Hide slots before generating final image
                 if (frame.slotObjects) {
                     Object.values(frame.slotObjects).forEach(slot => slot.set({ visible: false }));
                 }
+                
+                // Force render multiple times to ensure all elements are properly positioned
                 mainCanvas.renderAll();
+                await new Promise(resolve => setTimeout(resolve, 50));
+                mainCanvas.renderAll();
+                await new Promise(resolve => setTimeout(resolve, 50));
                 
                 // Generate final image
                 finalImages.push(mainCanvas.toDataURL({ format: 'png', quality: 0.9, multiplier: 2 }));
@@ -1183,10 +1187,38 @@
                 // Prepare frame data for payload
                 const photos = frame.images ? Object.entries(frame.images).map(([slotIndex, imageData]) => {
                     const fabricImage = imageData.fabricImage;
+                    const slot = frame.slotObjects[slotIndex];
+                    
+                    let panX = 0.5;
+                    let panY = 0.5;
+
+                    if (fabricImage && slot) {
+                        const slotWidth = slot.width;
+                        const slotHeight = slot.height;
+                        const scaledWidth = fabricImage.getScaledWidth();
+                        const scaledHeight = fabricImage.getScaledHeight();
+
+                        const rightBoundX = slot.left;
+                        const leftBoundX = slot.left - (scaledWidth - slotWidth);
+                        
+                        const bottomBoundY = slot.top;
+                        const topBoundY = slot.top - (scaledHeight - slotHeight);
+
+                        if (scaledWidth > slotWidth) {
+                            panX = (fabricImage.left - leftBoundX) / (rightBoundX - leftBoundX);
+                        }
+
+                        if (scaledHeight > slotHeight) {
+                            panY = (fabricImage.top - topBoundY) / (bottomBoundY - topBoundY);
+                        }
+                    }
+
                     return {
                         slot: parseInt(slotIndex),
                         photoId: imageData.photoId,
                         photoPath: imageData.photoPath,
+                        panX: isNaN(panX) ? 0.5 : panX,
+                        panY: isNaN(panY) ? 0.5 : panY,
                         left: fabricImage ? fabricImage.left : 0,
                         top: fabricImage ? fabricImage.top : 0,
                         scaleX: fabricImage ? fabricImage.scaleX : 1,

@@ -52,12 +52,10 @@ class ImageProcessingService
         }
     }
 
-    public function createPhotoStrip($photoPaths, $framePath, $outputPath, $slotCoordinates, $filter = 'none')
+    public function createPhotoStrip($photosData, $framePath, $outputPath, $slotCoordinates, $filter = 'none')
     {
         try {
-            if (empty($photoPaths) || !$framePath || !file_exists($framePath) || !$slotCoordinates) {
-                // If we don't have a frame or coordinates, we can't proceed with this logic.
-                // You might want to add a fallback to the old method here if needed.
+            if (empty($photosData) || !$framePath || !file_exists($framePath) || !$slotCoordinates) {
                 error_log('ImageProcessing Error: Frame path or slot coordinates are missing.');
                 return false;
             }
@@ -66,52 +64,65 @@ class ImageProcessingService
             $frameWidth = $frame->getImageWidth();
             $frameHeight = $frame->getImageHeight();
             
-            // Ensure 2:6 aspect ratio for photobooth standard (1:3 ratio)
-            $targetRatio = 1/3; // width:height = 2:6 = 1:3
+            $targetRatio = 1/3;
             $currentRatio = $frameWidth / $frameHeight;
             
             if (abs($currentRatio - $targetRatio) > 0.01) {
-                // Resize frame to maintain proper aspect ratio
-                $standardWidth = 400; // Standard width for 2-inch photostrip
-                $standardHeight = $standardWidth * 3; // 6-inch height (2:6 ratio)
-                
+                $standardWidth = 400;
+                $standardHeight = $standardWidth * 3;
                 $frame->resizeImage($standardWidth, $standardHeight, Imagick::FILTER_LANCZOS, 1);
                 $frameWidth = $frame->getImageWidth();
                 $frameHeight = $frame->getImageHeight();
             }
 
-            foreach ($photoPaths as $index => $photoPath) {
+            foreach ($photosData as $index => $photoData) {
                 if (!isset($slotCoordinates[$index])) {
-                    continue; // Skip if there is no coordinate for this photo
+                    continue;
                 }
 
                 $coords = $slotCoordinates[$index];
-                $photo = new Imagick($photoPath);
+                $photo = new Imagick($photoData['path']);
 
-                // Apply filter if specified
                 if ($filter !== 'none') {
                     $this->applyFilter($photo, $filter);
                 }
 
-                // Calculate pixel values from percentages
                 $targetWidth = (int)($frameWidth * ($coords['width'] / 100));
                 $targetHeight = (int)($frameHeight * ($coords['height'] / 100));
                 $targetX = (int)($frameWidth * ($coords['left'] / 100));
                 $targetY = (int)($frameHeight * ($coords['top'] / 100));
 
-                // Crop and resize the photo to perfectly fit the slot dimensions
-                $photo->cropThumbnailImage($targetWidth, $targetHeight);
+                $photoWidth = $photo->getImageWidth();
+                $photoHeight = $photo->getImageHeight();
+                $photoRatio = $photoWidth / $photoHeight;
+                $targetSlotRatio = $targetWidth / $targetHeight;
 
-                // Composite the photo onto the frame at the specified coordinates
+                if ($photoRatio > $targetSlotRatio) {
+                    $newHeight = $targetHeight;
+                    $newWidth = (int)($newHeight * $photoRatio);
+                    $photo->resizeImage($newWidth, $newHeight, Imagick::FILTER_LANCZOS, 1);
+                } else {
+                    $newWidth = $targetWidth;
+                    $newHeight = (int)($newWidth / $photoRatio);
+                    $photo->resizeImage($newWidth, $newHeight, Imagick::FILTER_LANCZOS, 1);
+                }
+
+                $panX = $photoData['panX'] ?? 0.5;
+                $panY = $photoData['panY'] ?? 0.5;
+
+                $cropX = (int)(($photo->getImageWidth() - $targetWidth) * (1 - $panX));
+                $cropY = (int)(($photo->getImageHeight() - $targetHeight) * (1 - $panY));
+
+                $photo->cropImage($targetWidth, $targetHeight, $cropX, $cropY);
+
                 $frame->compositeImage($photo, Imagick::COMPOSITE_OVER, $targetX, $targetY);
                 
                 $photo->clear();
             }
 
-            // Set PNG format with highest quality
             $frame->setImageFormat('png');
-            $frame->setImageCompressionQuality(100); // Highest quality (0-100)
-            $frame->setOption('png:compression-level', 0); // No compression for maximum quality
+            $frame->setImageCompressionQuality(100);
+            $frame->setOption('png:compression-level', 0);
             $frame->writeImage($outputPath);
             $frame->clear();
 
