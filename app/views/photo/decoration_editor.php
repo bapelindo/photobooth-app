@@ -195,9 +195,10 @@
             border-radius: 15px;
             position: relative;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            /* 2:6 inch ratio = 1:3 */
-            height: calc(95vh - 180px); /* Adjust to fit workspace */
-            aspect-ratio: 1 / 3;
+            /* Fixed dimensions for consistency across all photostrips */
+            width: 200px !important;
+            height: 600px !important;
+            flex-shrink: 0;
         }
 
         .canvas-inner {
@@ -459,7 +460,8 @@
             }
 
             .photostrip-canvas {
-                width: min(200px, 60vw);
+                width: 200px !important;
+                height: 600px !important;
             }
         }
     </style>
@@ -680,10 +682,10 @@
                 id: `sticker-${stickerCounter}`,
                 stickerPath: stickerPath,
                 stickerAssetId: stickerId,
-                x: Math.random() * (canvasWidth > 60 ? canvasWidth - 60 : 0),
-                y: Math.random() * (canvasHeight > 60 ? canvasHeight - 60 : 0),
-                width: 60,
-                height: 60,
+                x: Math.random() * (canvasWidth > 40 ? canvasWidth - 40 : 0),
+                y: Math.random() * (canvasHeight > 40 ? canvasHeight - 40 : 0),
+                width: 40,
+                height: 40,
                 rotation: 0,
                 zIndex: stickerCounter
             };
@@ -946,11 +948,22 @@
         }
 
         function finishDecorations() {
-            // Save all decorations to database
+            // Save all decorations with fixed canvas dimensions (200x600)
             const decorationData = {};
             photostrips.forEach(photostrip => {
                 if (decorations[photostrip.id] && decorations[photostrip.id].length > 0) {
-                    decorationData[photostrip.id] = decorations[photostrip.id];
+                    // All canvases are now fixed at 200x600 - no conversion needed
+                    const canvasWidth = 200;
+                    const canvasHeight = 600;
+                    
+                    console.log(`Photostrip ${photostrip.id}: Using fixed canvas dimensions ${canvasWidth}x${canvasHeight}`);
+                    
+                    const canvasData = {
+                        decorations: decorations[photostrip.id], // Use raw pixel coordinates
+                        canvasWidth: canvasWidth,
+                        canvasHeight: canvasHeight
+                    };
+                    decorationData[photostrip.id] = canvasData;
                 }
             });
             

@@ -122,8 +122,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         function closeDragElement() {
+            // Clean up all mouse event listeners
             document.onmouseup = null;
             document.onmousemove = null;
+            document.ontouchend = null;
+            document.ontouchmove = null;
         }
     }
 

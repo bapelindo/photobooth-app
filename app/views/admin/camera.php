@@ -105,7 +105,7 @@
         height: 80vh; /* Increased height */
     }
     .live-view-wrapper {
-        background: #111827;
+        background: var(--bg-dark);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -148,8 +148,8 @@
     }
     
     #connection-status { padding: 0.75rem; border-radius: 0.5rem; text-align: center; font-weight: 600; color: white; transition: background-color 0.3s; }
-    #connection-status.connected { background-color: #10B981; }
-    #connection-status.disconnected { background-color: #EF4444; }
+    #connection-status.connected { background-color: var(--success-color); }
+    #connection-status.disconnected { background-color: var(--error-color); }
 </style>
 
 <script>

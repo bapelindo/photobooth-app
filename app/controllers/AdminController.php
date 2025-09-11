@@ -16,27 +16,71 @@ class AdminController extends Controller {
 
     public function dashboard()
     {
+        try {
+            $data = $this->getDashboardData();
+            $data['title'] = 'Dashboard';
+            $this->adminView('admin/dashboard/index', $data);
+        } catch (Exception $e) {
+            error_log('Dashboard error: ' . $e->getMessage());
+            // Provide fallback data if database queries fail
+            $data = [
+                'summary' => (object)['revenue_today' => 0, 'transactions_today' => 0, 'total_revenue' => 0, 'total_transactions' => 0],
+                'popular_packages' => [],
+                'session_stats' => (object)['sessions_today' => 0, 'completed_sessions' => 0, 'avg_photos_per_session' => 0],
+                'recent_sessions' => [],
+                'email_queue_stats' => (object)['pending' => 0, 'completed' => 0, 'failed' => 0],
+                'print_queue_stats' => (object)['pending' => 0, 'completed' => 0, 'failed' => 0],
+                'title' => 'Dashboard',
+                'error_message' => 'Unable to load dashboard data. Please check system status.'
+            ];
+            $this->adminView('admin/dashboard/index', $data);
+        }
+    }
+
+    private function getDashboardData()
+    {
         $transactionModel = $this->model('Transaction');
         $packageModel = $this->model('Package');
         $photoSessionModel = $this->model('PhotoSession');
         $emailQueueModel = $this->model('EmailQueue');
         $printQueueModel = $this->model('PrintQueue');
 
-        $data['summary'] = $transactionModel->getSummary();
-        $data['popular_packages'] = $packageModel->getPopularPackages(3);
+        // Use parallel data fetching where possible
+        $data = [];
         
-        // Get photo session statistics
-        $data['session_stats'] = $photoSessionModel->getSessionStatistics();
+        try {
+            $data['summary'] = $transactionModel->getSummary() ?: (object)['revenue_today' => 0, 'transactions_today' => 0, 'total_revenue' => 0, 'total_transactions' => 0];
+        } catch (Exception $e) {
+            error_log('Transaction summary error: ' . $e->getMessage());
+            $data['summary'] = (object)['revenue_today' => 0, 'transactions_today' => 0, 'total_revenue' => 0, 'total_transactions' => 0];
+        }
         
-        // Get recent sessions
-        $data['recent_sessions'] = $photoSessionModel->getRecentSessions(10);
+        try {
+            $data['popular_packages'] = $packageModel->getPopularPackages(3) ?: [];
+        } catch (Exception $e) {
+            error_log('Popular packages error: ' . $e->getMessage());
+            $data['popular_packages'] = [];
+        }
         
-        // Get queue statistics
-        $data['email_queue_stats'] = $emailQueueModel->getStats();
-        $data['print_queue_stats'] = $printQueueModel->getStats();
+        try {
+            $data['session_stats'] = $photoSessionModel->getSessionStatistics() ?: (object)['sessions_today' => 0, 'completed_sessions' => 0, 'avg_photos_per_session' => 0];
+            $data['recent_sessions'] = $photoSessionModel->getRecentSessions(10) ?: [];
+        } catch (Exception $e) {
+            error_log('Session stats error: ' . $e->getMessage());
+            $data['session_stats'] = (object)['sessions_today' => 0, 'completed_sessions' => 0, 'avg_photos_per_session' => 0];
+            $data['recent_sessions'] = [];
+        }
         
-        $data['title'] = 'Dashboard';
-        $this->adminView('admin/dashboard/index', $data);
+        try {
+            $data['email_queue_stats'] = $emailQueueModel->getStats() ?: (object)['pending' => 0, 'completed' => 0, 'failed' => 0];
+            $data['print_queue_stats'] = $printQueueModel->getStats() ?: (object)['pending' => 0, 'completed' => 0, 'failed' => 0];
+        } catch (Exception $e) {
+            error_log('Queue stats error: ' . $e->getMessage());
+            $data['email_queue_stats'] = (object)['pending' => 0, 'completed' => 0, 'failed' => 0];
+            $data['print_queue_stats'] = (object)['pending' => 0, 'completed' => 0, 'failed' => 0];
+        }
+        
+        return $data;
     }
 
     // === PACKAGE MANAGEMENT ===
@@ -58,23 +102,48 @@ class AdminController extends Controller {
     public function storePackage()
     {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-            $data = [
-                'name' => $_POST['name'],
-                'description' => $_POST['description'],
-                'price' => $_POST['price'],
-                'photo_limit' => $_POST['photo_limit'],
-                'photo_slots' => $_POST['photo_slots'] ?? $_POST['photo_limit'],
-                'retake_limit' => $_POST['retake_limit'],
-                'frame_limit' => $_POST['frame_limit'] ?? DEFAULT_FRAME_LIMIT,
-                'session_duration' => $_POST['session_duration'] ?? DEFAULT_SESSION_DURATION,
-                'max_save_photos' => $_POST['max_save_photos'] ?? DEFAULT_MAX_SAVE_PHOTOS,
-            ];
+            try {
+                // Validate required fields
+                $requiredFields = ['name', 'description', 'price', 'photo_limit', 'retake_limit'];
+                foreach ($requiredFields as $field) {
+                    if (empty($_POST[$field])) {
+                        throw new Exception("Field {$field} is required");
+                    }
+                }
 
-            $packageModel = $this->model('Package');
-            if ($packageModel->create($data)) {
-                $this->flashAndRedirect('admin/packages', 'Paket berhasil dibuat!', 'success');
-            } else {
-                $this->flashAndRedirect('admin/packages', 'Gagal menyimpan paket.', 'error');
+                // Validate numeric fields
+                if (!is_numeric($_POST['price']) || $_POST['price'] < 0) {
+                    throw new Exception('Price must be a valid positive number');
+                }
+                if (!is_numeric($_POST['photo_limit']) || $_POST['photo_limit'] < 1) {
+                    throw new Exception('Photo limit must be at least 1');
+                }
+                if (!is_numeric($_POST['retake_limit']) || $_POST['retake_limit'] < 0) {
+                    throw new Exception('Retake limit must be a valid non-negative number');
+                }
+
+                // Sanitize and prepare data
+                $data = [
+                    'name' => htmlspecialchars(trim($_POST['name'])),
+                    'description' => htmlspecialchars(trim($_POST['description'])),
+                    'price' => floatval($_POST['price']),
+                    'photo_limit' => intval($_POST['photo_limit']),
+                    'photo_slots' => intval($_POST['photo_slots'] ?? $_POST['photo_limit']),
+                    'retake_limit' => intval($_POST['retake_limit']),
+                    'frame_limit' => intval($_POST['frame_limit'] ?? DEFAULT_FRAME_LIMIT),
+                    'session_duration' => intval($_POST['session_duration'] ?? DEFAULT_SESSION_DURATION),
+                    'max_save_photos' => intval($_POST['max_save_photos'] ?? DEFAULT_MAX_SAVE_PHOTOS),
+                ];
+
+                $packageModel = $this->model('Package');
+                if ($packageModel->create($data)) {
+                    $this->flashAndRedirect('admin/packages', 'Paket berhasil dibuat!', 'success');
+                } else {
+                    throw new Exception('Failed to save package to database');
+                }
+            } catch (Exception $e) {
+                error_log('Package creation error: ' . $e->getMessage());
+                $this->flashAndRedirect('admin/packages/create', 'Error: ' . $e->getMessage(), 'error');
             }
         }
     }
@@ -96,23 +165,59 @@ class AdminController extends Controller {
     public function updatePackage($id)
     {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-            $data = [
-                'name' => $_POST['name'],
-                'description' => $_POST['description'],
-                'price' => $_POST['price'],
-                'photo_limit' => $_POST['photo_limit'],
-                'photo_slots' => $_POST['photo_slots'] ?? $_POST['photo_limit'],
-                'retake_limit' => $_POST['retake_limit'],
-                'frame_limit' => $_POST['frame_limit'] ?? DEFAULT_FRAME_LIMIT,
-                'session_duration' => $_POST['session_duration'] ?? DEFAULT_SESSION_DURATION,
-                'max_save_photos' => $_POST['max_save_photos'] ?? DEFAULT_MAX_SAVE_PHOTOS,
-            ];
+            try {
+                // Validate ID
+                if (!is_numeric($id) || $id < 1) {
+                    throw new Exception('Invalid package ID');
+                }
 
-            $packageModel = $this->model('Package');
-            if ($packageModel->update($id, $data)) {
-                $this->flashAndRedirect('admin/packages', 'Paket berhasil diperbarui!', 'success');
-            } else {
-                $this->flashAndRedirect('admin/packages', 'Gagal memperbarui paket.', 'error');
+                // Check if package exists
+                $packageModel = $this->model('Package');
+                $existingPackage = $packageModel->find($id);
+                if (!$existingPackage) {
+                    throw new Exception('Package not found');
+                }
+
+                // Validate required fields
+                $requiredFields = ['name', 'description', 'price', 'photo_limit', 'retake_limit'];
+                foreach ($requiredFields as $field) {
+                    if (empty($_POST[$field])) {
+                        throw new Exception("Field {$field} is required");
+                    }
+                }
+
+                // Validate numeric fields
+                if (!is_numeric($_POST['price']) || $_POST['price'] < 0) {
+                    throw new Exception('Price must be a valid positive number');
+                }
+                if (!is_numeric($_POST['photo_limit']) || $_POST['photo_limit'] < 1) {
+                    throw new Exception('Photo limit must be at least 1');
+                }
+                if (!is_numeric($_POST['retake_limit']) || $_POST['retake_limit'] < 0) {
+                    throw new Exception('Retake limit must be a valid non-negative number');
+                }
+
+                // Sanitize and prepare data
+                $data = [
+                    'name' => htmlspecialchars(trim($_POST['name'])),
+                    'description' => htmlspecialchars(trim($_POST['description'])),
+                    'price' => floatval($_POST['price']),
+                    'photo_limit' => intval($_POST['photo_limit']),
+                    'photo_slots' => intval($_POST['photo_slots'] ?? $_POST['photo_limit']),
+                    'retake_limit' => intval($_POST['retake_limit']),
+                    'frame_limit' => intval($_POST['frame_limit'] ?? DEFAULT_FRAME_LIMIT),
+                    'session_duration' => intval($_POST['session_duration'] ?? DEFAULT_SESSION_DURATION),
+                    'max_save_photos' => intval($_POST['max_save_photos'] ?? DEFAULT_MAX_SAVE_PHOTOS),
+                ];
+
+                if ($packageModel->update($id, $data)) {
+                    $this->flashAndRedirect('admin/packages', 'Paket berhasil diperbarui!', 'success');
+                } else {
+                    throw new Exception('Failed to update package in database');
+                }
+            } catch (Exception $e) {
+                error_log('Package update error: ' . $e->getMessage());
+                $this->flashAndRedirect('admin/packages/edit/' . $id, 'Error: ' . $e->getMessage(), 'error');
             }
         }
     }
@@ -120,11 +225,40 @@ class AdminController extends Controller {
     public function deletePackage($id)
     {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-            $packageModel = $this->model('Package');
-            if ($packageModel->delete($id)) {
-                $this->redirect('admin/packages');
-            } else {
-                $this->flashAndRedirect('admin/packages', 'Gagal menghapus paket.', 'error');
+            try {
+                // Validate ID
+                if (!is_numeric($id) || $id < 1) {
+                    throw new Exception('Invalid package ID');
+                }
+
+                $packageModel = $this->model('Package');
+                $package = $packageModel->find($id);
+                if (!$package) {
+                    throw new Exception('Package not found');
+                }
+
+                // Check if package is being used in active sessions
+                $photoSessionModel = $this->model('PhotoSession');
+                try {
+                    $activeSessions = method_exists($photoSessionModel, 'getActiveSessionsByPackage') 
+                        ? $photoSessionModel->getActiveSessionsByPackage($id)
+                        : [];
+                    if ($activeSessions && count($activeSessions) > 0) {
+                        throw new Exception('Cannot delete package that is currently being used in active sessions');
+                    }
+                } catch (Exception $e) {
+                    // If method doesn't exist, log warning but continue
+                    error_log('Warning: getActiveSessionsByPackage method not found: ' . $e->getMessage());
+                }
+
+                if ($packageModel->delete($id)) {
+                    $this->flashAndRedirect('admin/packages', 'Paket berhasil dihapus!', 'success');
+                } else {
+                    throw new Exception('Failed to delete package from database');
+                }
+            } catch (Exception $e) {
+                error_log('Package deletion error: ' . $e->getMessage());
+                $this->flashAndRedirect('admin/packages', 'Error: ' . $e->getMessage(), 'error');
             }
         }
     }
@@ -276,49 +410,82 @@ class AdminController extends Controller {
     public function storeAsset()
     {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-            $assetType = $_POST['type'];
-            $dbPath = '';
+            try {
+                // Validate required fields
+                if (empty($_POST['name']) || empty($_POST['type'])) {
+                    throw new Exception('Name and type are required fields');
+                }
 
-            // Handle file upload for frame/sticker, or value for filter
-            if ($assetType === 'filter') {
-                $dbPath = $_POST['asset_value']; // Get CSS value from new text field
-            } else if (isset($_FILES['asset_file'])) {
-                $file = $_FILES['asset_file'];
-                if ($file['error'] !== UPLOAD_ERR_OK) {
-                    $this->flashAndRedirect('admin/assets', 'File upload error!', 'error');
+                $assetType = $_POST['type'];
+                $allowedTypes = ['frame', 'sticker', 'filter'];
+                if (!in_array($assetType, $allowedTypes)) {
+                    throw new Exception('Invalid asset type');
                 }
-                $allowedTypes = ['image/png', 'image/jpeg', 'image/gif'];
-                if (!in_array($file['type'], $allowedTypes)) {
-                    $this->flashAndRedirect('admin/assets', 'Invalid file type. Only PNG, JPG, GIF are allowed.', 'error');
+
+                $dbPath = '';
+
+                // Handle file upload for frame/sticker, or value for filter
+                if ($assetType === 'filter') {
+                    if (empty($_POST['asset_value'])) {
+                        throw new Exception('Filter value is required for filter assets');
+                    }
+                    $dbPath = htmlspecialchars(trim($_POST['asset_value']));
+                } else {
+                    if (!isset($_FILES['asset_file']) || $_FILES['asset_file']['error'] !== UPLOAD_ERR_OK) {
+                        throw new Exception('File upload is required for ' . $assetType . ' assets');
+                    }
+
+                    $file = $_FILES['asset_file'];
+                    
+                    // Validate file type
+                    $allowedMimeTypes = ['image/png', 'image/jpeg', 'image/gif', 'image/webp'];
+                    if (!in_array($file['type'], $allowedMimeTypes)) {
+                        throw new Exception('Invalid file type. Only PNG, JPG, GIF, WebP are allowed.');
+                    }
+
+                    // Validate file size (max 5MB)
+                    if ($file['size'] > 5 * 1024 * 1024) {
+                        throw new Exception('File size too large. Maximum 5MB allowed.');
+                    }
+
+                    // Create upload directory
+                    $uploadDir = "../public/assets/{$assetType}s/";
+                    if (!is_dir($uploadDir)) {
+                        if (!mkdir($uploadDir, 0755, true)) {
+                            throw new Exception('Failed to create upload directory');
+                        }
+                    }
+
+                    // Generate secure filename
+                    $fileExtension = pathinfo($file['name'], PATHINFO_EXTENSION);
+                    $filename = uniqid($assetType . '_', true) . '.' . $fileExtension;
+                    $destination = $uploadDir . $filename;
+                    $dbPath = "/assets/{$assetType}s/" . $filename;
+
+                    if (!move_uploaded_file($file['tmp_name'], $destination)) {
+                        throw new Exception('Failed to save uploaded file');
+                    }
+
+                    // Set proper file permissions
+                    chmod($destination, 0644);
                 }
+
+                // Sanitize and prepare data
+                $data = [
+                    'name' => htmlspecialchars(trim($_POST['name'])),
+                    'type' => $assetType,
+                    'file_path' => $dbPath
+                ];
                 
-                $uploadDir = "../public/assets/{$assetType}s/";
-                if (!is_dir($uploadDir)) {
-                    mkdir($uploadDir, 0777, true);
+                $assetModel = $this->model('Asset');
+                if ($assetModel->create($data)) {
+                    $this->flashAndRedirect('admin/assets', 'Asset berhasil ditambahkan!', 'success');
+                } else {
+                    throw new Exception('Failed to save asset to database');
                 }
-
-                $filename = uniqid() . '-' . basename($file['name']);
-                $destination = $uploadDir . $filename;
-                $dbPath = "/assets/{$assetType}s/" . $filename;
-
-                if (!move_uploaded_file($file['tmp_name'], $destination)) {
-                     $this->flashAndRedirect('admin/assets', 'Failed to save asset file.', 'error');
-                }
-            } else {
-                $this->flashAndRedirect('admin/assets', 'No file or value provided for asset.', 'error');
-            }
-
-            $data = [
-                'name' => $_POST['name'],
-                'type' => $assetType,
-                'file_path' => $dbPath // Changed 'path' to 'file_path'
-            ];
-            
-            $assetModel = $this->model('Asset');
-            if ($assetModel->create($data)) {
-                $this->redirect('admin/assets');
-            } else {
-                $this->flashAndRedirect('admin/assets', 'Failed to save asset to database.', 'error');
+            } catch (Exception $e) {
+                error_log('Asset creation error: ' . $e->getMessage());
+                $this->flashAndRedirect('admin/assets/create', 'Error: ' . $e->getMessage(), 'error');
             }
         }
     }
@@ -332,8 +499,8 @@ class AdminController extends Controller {
 
             if ($asset && $asset->type !== 'filter') { // Don't delete file for filters
                 // Hapus file dari server
-                $filePath = '../public' . $asset->path;
-                if (file_exists($filePath)) {
+                $filePath = '../public' . ($asset->file_path ?? $asset->path ?? '');
+                if (!empty($filePath) && file_exists($filePath)) {
                     unlink($filePath);
                 }
             }
@@ -362,34 +529,70 @@ class AdminController extends Controller {
     public function ajax_save_frame_data()
     {
         header('Content-Type: application/json');
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            http_response_code(405);
-            echo json_encode(['success' => false, 'message' => 'Method Not Allowed']);
-            return;
-        }
+        
+        try {
+            if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+                throw new Exception('Method Not Allowed', 405);
+            }
 
-        $input = json_decode(file_get_contents('php://input'), true);
-        $assetId = $input['asset_id'] ?? null;
-        $slotCount = $input['slot_count'] ?? 0;
-        $coordinates = $input['coordinates'] ?? null;
+            $input = json_decode(file_get_contents('php://input'), true);
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                throw new Exception('Invalid JSON data', 400);
+            }
 
-        if (!$assetId || !is_array($coordinates)) {
-            http_response_code(400);
-            echo json_encode(['success' => false, 'message' => 'Invalid input.']);
-            return;
-        }
+            $assetId = $input['asset_id'] ?? null;
+            $slotCount = $input['slot_count'] ?? 0;
+            $coordinates = $input['coordinates'] ?? null;
 
-        $dataToUpdate = [
-            'slot_count' => $slotCount,
-            'slot_coordinates' => json_encode($coordinates)
-        ];
+            // Validate input
+            if (!$assetId || !is_numeric($assetId) || $assetId < 1) {
+                throw new Exception('Invalid asset ID', 400);
+            }
+            if (!is_numeric($slotCount) || $slotCount < 0 || $slotCount > 20) {
+                throw new Exception('Slot count must be between 0 and 20', 400);
+            }
+            if (!is_array($coordinates)) {
+                throw new Exception('Coordinates must be an array', 400);
+            }
 
-        $assetModel = $this->model('Asset');
-        if ($assetModel->updateFrameData($assetId, $dataToUpdate)) {
-            echo json_encode(['success' => true, 'message' => 'Frame data saved successfully.']);
-        } else {
-            http_response_code(500);
-            echo json_encode(['success' => false, 'message' => 'Failed to save frame data to database.']);
+            // Validate coordinates structure
+            foreach ($coordinates as $coord) {
+                if (!is_array($coord) || !isset($coord['x']) || !isset($coord['y']) || !isset($coord['width']) || !isset($coord['height'])) {
+                    throw new Exception('Invalid coordinate structure', 400);
+                }
+                if (!is_numeric($coord['x']) || !is_numeric($coord['y']) || !is_numeric($coord['width']) || !is_numeric($coord['height'])) {
+                    throw new Exception('Coordinate values must be numeric', 400);
+                }
+            }
+
+            // Check if asset exists and is a frame
+            $assetModel = $this->model('Asset');
+            $asset = $assetModel->find($assetId);
+            if (!$asset) {
+                throw new Exception('Asset not found', 404);
+            }
+            if (($asset->type ?? '') !== 'frame') {
+                throw new Exception('Asset is not a frame type', 400);
+            }
+
+            $dataToUpdate = [
+                'slot_count' => intval($slotCount),
+                'slot_coordinates' => json_encode($coordinates)
+            ];
+
+            if ($assetModel->updateFrameData($assetId, $dataToUpdate)) {
+                echo json_encode(['success' => true, 'message' => 'Frame data saved successfully.']);
+            } else {
+                throw new Exception('Failed to save frame data to database', 500);
+            }
+        } catch (Exception $e) {
+            $statusCode = $e->getCode() ?: 500;
+            if ($statusCode < 400 || $statusCode >= 600) {
+                $statusCode = 500;
+            }
+            http_response_code($statusCode);
+            echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+            error_log('Frame data save error: ' . $e->getMessage());
         }
     }
 
@@ -790,5 +993,360 @@ class AdminController extends Controller {
         // This would save settings to database or config file
         // For now, just log them
         error_log('Settings updated: ' . json_encode($settings));
+    }
+
+    // === ADVANCED ADMIN FEATURES ===
+
+    public function systemInfo()
+    {
+        header('Content-Type: application/json');
+        
+        try {
+            $info = [
+                'php_version' => PHP_VERSION,
+                'server_software' => $_SERVER['SERVER_SOFTWARE'] ?? 'Unknown',
+                'memory_limit' => ini_get('memory_limit'),
+                'max_execution_time' => ini_get('max_execution_time'),
+                'upload_max_filesize' => ini_get('upload_max_filesize'),
+                'post_max_size' => ini_get('post_max_size'),
+                'disk_free_space' => $this->formatBytes(disk_free_space(dirname(APPROOT))),
+                'disk_total_space' => $this->formatBytes(disk_total_space(dirname(APPROOT))),
+                'current_time' => date('Y-m-d H:i:s'),
+                'timezone' => date_default_timezone_get(),
+                'extensions' => [
+                    'gd' => extension_loaded('gd'),
+                    'curl' => extension_loaded('curl'),
+                    'pdo' => extension_loaded('pdo'),
+                    'zip' => extension_loaded('zip')
+                ]
+            ];
+            
+            echo json_encode($info);
+        } catch (Exception $e) {
+            http_response_code(500);
+            echo json_encode(['error' => $e->getMessage()]);
+        }
+    }
+
+    public function exportData($type = 'all')
+    {
+        try {
+            $allowedTypes = ['sessions', 'packages', 'transactions', 'all'];
+            if (!in_array($type, $allowedTypes)) {
+                throw new Exception('Invalid export type');
+            }
+
+            $data = [];
+            $filename = 'photobooth_export_' . date('Y-m-d_H-i-s');
+
+            switch ($type) {
+                case 'sessions':
+                    $photoSessionModel = $this->model('PhotoSession');
+                    $data = method_exists($photoSessionModel, 'getAllWithDetails')
+                        ? $photoSessionModel->getAllWithDetails()
+                        : $photoSessionModel->getAll();
+                    $filename .= '_sessions';
+                    break;
+                case 'packages':
+                    $packageModel = $this->model('Package');
+                    $data = $packageModel->getAll() ?? [];
+                    $filename .= '_packages';
+                    break;
+                case 'transactions':
+                    $transactionModel = $this->model('Transaction');
+                    $data = method_exists($transactionModel, 'getAllWithDetails')
+                        ? $transactionModel->getAllWithDetails()
+                        : $transactionModel->getAll();
+                    $filename .= '_transactions';
+                    break;
+                case 'all':
+                    try {
+                        $sessionModel = $this->model('PhotoSession');
+                        $packageModel = $this->model('Package');
+                        $transactionModel = $this->model('Transaction');
+                        
+                        $data = [
+                            'sessions' => method_exists($sessionModel, 'getAllWithDetails')
+                                ? $sessionModel->getAllWithDetails() : $sessionModel->getAll(),
+                            'packages' => $packageModel->getAll() ?? [],
+                            'transactions' => method_exists($transactionModel, 'getAllWithDetails')
+                                ? $transactionModel->getAllWithDetails() : $transactionModel->getAll(),
+                            'export_date' => date('Y-m-d H:i:s'),
+                            'version' => '1.0'
+                        ];
+                    } catch (Exception $e) {
+                        error_log('Export all data error: ' . $e->getMessage());
+                        $data = [
+                            'error' => 'Failed to export some data',
+                            'export_date' => date('Y-m-d H:i:s'),
+                            'version' => '1.0'
+                        ];
+                    }
+                    break;
+            }
+
+            header('Content-Type: application/json');
+            header('Content-Disposition: attachment; filename="' . $filename . '.json"');
+            echo json_encode($data, JSON_PRETTY_PRINT);
+        } catch (Exception $e) {
+            $this->flashAndRedirect('admin/dashboard', 'Export failed: ' . $e->getMessage(), 'error');
+        }
+    }
+
+    public function bulkActions()
+    {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            $this->flashAndRedirect('admin/dashboard', 'Invalid request method', 'error');
+            return;
+        }
+
+        try {
+            $action = $_POST['bulk_action'] ?? '';
+            $ids = $_POST['selected_ids'] ?? [];
+            $type = $_POST['item_type'] ?? '';
+
+            if (empty($action) || empty($ids) || empty($type)) {
+                throw new Exception('Missing required parameters for bulk action');
+            }
+
+            if (!is_array($ids)) {
+                $ids = [$ids];
+            }
+
+            $result = $this->processBulkAction($action, $ids, $type);
+            
+            if ($result['success']) {
+                $this->flashAndRedirect($result['redirect'], $result['message'], 'success');
+            } else {
+                throw new Exception($result['message']);
+            }
+        } catch (Exception $e) {
+            error_log('Bulk action error: ' . $e->getMessage());
+            $this->flashAndRedirect('admin/dashboard', 'Bulk action failed: ' . $e->getMessage(), 'error');
+        }
+    }
+
+    private function processBulkAction($action, $ids, $type)
+    {
+        $result = ['success' => false, 'message' => '', 'redirect' => 'admin/dashboard'];
+        
+        switch ($type) {
+            case 'sessions':
+                $result = $this->handleSessionBulkAction($action, $ids);
+                break;
+            case 'packages':
+                $result = $this->handlePackageBulkAction($action, $ids);
+                break;
+            case 'photos':
+                $result = $this->handlePhotoBulkAction($action, $ids);
+                break;
+            default:
+                $result['message'] = 'Unknown item type for bulk action';
+        }
+        
+        return $result;
+    }
+
+    private function handleSessionBulkAction($action, $ids)
+    {
+        $photoSessionModel = $this->model('PhotoSession');
+        $count = 0;
+        
+        switch ($action) {
+            case 'delete':
+                foreach ($ids as $id) {
+                    if (is_numeric($id) && $id > 0) {
+                        $this->deleteSessionData($id);
+                        if ($photoSessionModel->delete($id)) {
+                            $count++;
+                        }
+                    }
+                }
+                return [
+                    'success' => true,
+                    'message' => "Successfully deleted {$count} session(s)",
+                    'redirect' => 'admin/sessions'
+                ];
+            default:
+                return ['success' => false, 'message' => 'Unknown action for sessions'];
+        }
+    }
+
+    private function handlePackageBulkAction($action, $ids)
+    {
+        $packageModel = $this->model('Package');
+        $count = 0;
+        
+        switch ($action) {
+            case 'delete':
+                foreach ($ids as $id) {
+                    if (is_numeric($id) && $id > 0) {
+                        // Check if package is in use
+                        $photoSessionModel = $this->model('PhotoSession');
+                        $activeSessions = $photoSessionModel->getActiveSessionsByPackage($id);
+                        if (!$activeSessions || count($activeSessions) === 0) {
+                            if ($packageModel->delete($id)) {
+                                $count++;
+                            }
+                        }
+                    }
+                }
+                return [
+                    'success' => true,
+                    'message' => "Successfully deleted {$count} package(s)",
+                    'redirect' => 'admin/packages'
+                ];
+            default:
+                return ['success' => false, 'message' => 'Unknown action for packages'];
+        }
+    }
+
+    private function handlePhotoBulkAction($action, $ids)
+    {
+        $photoModel = $this->model('Photo');
+        $count = 0;
+        
+        switch ($action) {
+            case 'delete':
+                foreach ($ids as $id) {
+                    if (is_numeric($id) && $id > 0) {
+                        $photo = $photoModel->find($id);
+                        if ($photo) {
+                            $filePath = dirname(APPROOT) . $photo->file_path;
+                            if (file_exists($filePath) && is_file($filePath)) {
+                                unlink($filePath);
+                            }
+                            if ($photoModel->delete($id)) {
+                                $count++;
+                            }
+                        }
+                    }
+                }
+                return [
+                    'success' => true,
+                    'message' => "Successfully deleted {$count} photo(s)",
+                    'redirect' => 'admin/gallery'
+                ];
+            default:
+                return ['success' => false, 'message' => 'Unknown action for photos'];
+        }
+    }
+
+    public function searchData()
+    {
+        if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
+            header('Content-Type: application/json');
+            http_response_code(405);
+            echo json_encode(['error' => 'Method not allowed']);
+            return;
+        }
+
+        try {
+            $query = $_GET['q'] ?? '';
+            $type = $_GET['type'] ?? 'all';
+            
+            if (strlen($query) < 2) {
+                throw new Exception('Search query must be at least 2 characters');
+            }
+
+            $results = [];
+            
+            if ($type === 'all' || $type === 'sessions') {
+                $photoSessionModel = $this->model('PhotoSession');
+                $sessions = $photoSessionModel->search($query);
+                $results['sessions'] = $sessions;
+            }
+            
+            if ($type === 'all' || $type === 'packages') {
+                $packageModel = $this->model('Package');
+                $packages = $packageModel->search($query);
+                $results['packages'] = $packages;
+            }
+            
+            if ($type === 'all' || $type === 'users') {
+                // Add user search if implemented
+                $results['users'] = [];
+            }
+
+            header('Content-Type: application/json');
+            echo json_encode($results);
+        } catch (Exception $e) {
+            header('Content-Type: application/json');
+            http_response_code(400);
+            echo json_encode(['error' => $e->getMessage()]);
+        }
+    }
+
+    public function clearCache()
+    {
+        header('Content-Type: application/json');
+        
+        try {
+            $cacheCleared = 0;
+            $tempDir = sys_get_temp_dir();
+            
+            // Clear PHP session files
+            $sessionPath = session_save_path() ?: $tempDir;
+            if (is_dir($sessionPath)) {
+                $files = glob($sessionPath . '/sess_*');
+                foreach ($files as $file) {
+                    if (is_file($file) && filemtime($file) < time() - 3600) { // Older than 1 hour
+                        if (unlink($file)) {
+                            $cacheCleared++;
+                        }
+                    }
+                }
+            }
+            
+            // Clear thumbnail cache if exists
+            $thumbDir = dirname(APPROOT) . '/public/cache/thumbnails/';
+            if (is_dir($thumbDir)) {
+                $files = glob($thumbDir . '*');
+                foreach ($files as $file) {
+                    if (is_file($file)) {
+                        if (unlink($file)) {
+                            $cacheCleared++;
+                        }
+                    }
+                }
+            }
+
+            echo json_encode([
+                'success' => true,
+                'message' => "Cleared {$cacheCleared} cache files",
+                'timestamp' => time()
+            ]);
+        } catch (Exception $e) {
+            http_response_code(500);
+            echo json_encode([
+                'success' => false,
+                'message' => $e->getMessage()
+            ]);
+        }
+    }
+
+    private function formatBytes($size, $precision = 2)
+    {
+        $units = ['B', 'KB', 'MB', 'GB', 'TB'];
+        for ($i = 0; $size > 1024 && $i < count($units) - 1; $i++) {
+            $size /= 1024;
+        }
+        return round($size, $precision) . ' ' . $units[$i];
+    }
+
+    public function downloadLogs()
+    {
+        try {
+            $logFile = dirname(APPROOT) . '/logs/app.log';
+            if (!file_exists($logFile)) {
+                throw new Exception('Log file not found');
+            }
+
+            header('Content-Type: text/plain');
+            header('Content-Disposition: attachment; filename="photobooth_logs_' . date('Y-m-d') . '.log"');
+            readfile($logFile);
+        } catch (Exception $e) {
+            $this->flashAndRedirect('admin/dashboard', 'Failed to download logs: ' . $e->getMessage(), 'error');
+        }
     }
 }
