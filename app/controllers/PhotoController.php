@@ -530,7 +530,7 @@ class PhotoController extends Controller
         $this->view('photo/decoration_editor', $data);
     }
 
-    public function saveDecorations()
+public function saveDecorations()
     {
         header('Content-Type: application/json');
 
@@ -544,6 +544,11 @@ class PhotoController extends Controller
         $session_id = $input['session_id'] ?? null;
         $decorations = $input['decorations'] ?? [];
 
+        // [DEBUG] Log data mentah yang diterima dari frontend
+        error_log("--- DEBUG saveDecorations (Session #{$session_id}) ---");
+        error_log("RAW DATA RECEIVED: " . print_r($decorations, true));
+        error_log("--- END DEBUG ---");
+
         if (!$session_id) {
             http_response_code(400);
             echo json_encode(['success' => false, 'message' => 'Missing session ID']);
@@ -553,7 +558,6 @@ class PhotoController extends Controller
         try {
             $photostripModel = $this->model('Photostrip');
             
-            // Save decorations for each photostrip
             foreach ($decorations as $photostrip_id => $decoration_data) {
                 $photostripModel->updateDecorationData($photostrip_id, json_encode($decoration_data));
             }
@@ -639,6 +643,12 @@ class PhotoController extends Controller
         $this->view('photo/finalize_session', $data);
     }
 
+// [KALIBRASI FINAL] Sesuaikan nilai ini jika di masa depan ada pergeseran lagi.
+    // Tambah nilai untuk menggeser ke KANAN/BAWAH.
+    // Kurangi nilai untuk menggeser ke KIRI/ATAS.
+    private const FINAL_OFFSET_X = 10; // Koreksi pergeseran ke kiri (dalam piksel)
+    private const FINAL_OFFSET_Y = 10; // Koreksi pergeseran ke atas (dalam piksel)
+
     private function generateFinalPhotostrip($photostrip)
     {
         try {
@@ -651,121 +661,80 @@ class PhotoController extends Controller
             $relativePath = '/uploads/final_photostrips/' . $filename;
             $outputPath = $outputDir . $filename;
             
-            // Get frame path
-            $framePath = dirname(APPROOT) . '/public' . $photostrip->frame_path;
-            if (!file_exists($framePath)) {
-                error_log('Frame file not found: ' . $framePath);
-                return null;
-            }
-            
-            // Get layout data and slot coordinates
+            // --- Bagian Pembuatan Gambar Dasar (Tidak perlu diubah) ---
             $layoutData = json_decode($photostrip->layout_data ?: '[]', true) ?: [];
             $slotCoordinates = json_decode($photostrip->slot_coordinates ?: '[]', true) ?: [];
-            
-            // Prepare photo data array (with path and panning)
             $photosData = [];
             if (!empty($layoutData)) {
                 foreach ($layoutData as $slotIndex => $photo) {
-                    if (!is_array($photo)) {
-                        continue;
-                    }
-                    
+                    if (!is_array($photo)) continue;
                     $photoPathKey = null;
                     $possibleKeys = ['photoPath', 'path', 'file_path', 'photo_path'];
-                    
                     foreach ($possibleKeys as $key) {
-                        if (isset($photo[$key])) {
-                            $photoPathKey = $key;
-                            break;
-                        }
+                        if (isset($photo[$key])) { $photoPathKey = $key; break; }
                     }
-                    
                     if ($photoPathKey) {
                         $photoPath = dirname(APPROOT) . '/public' . $photo[$photoPathKey];
                         if (file_exists($photoPath)) {
-                            $photosData[(int)($photo['slot'] ?? $slotIndex)] = [
-                                'path' => $photoPath,
-                                'panX' => $photo['panX'] ?? 0.5,
-                                'panY' => $photo['panY'] ?? 0.5
-                            ];
+                            $photosData[(int)($photo['slot'] ?? $slotIndex)] = ['path' => $photoPath, 'panX' => $photo['panX'] ?? 0.5, 'panY' => $photo['panY'] ?? 0.5];
                         }
                     }
                 }
             }
-            
-            // Use ImageProcessingService to create the photostrip
+            $framePath = dirname(APPROOT) . '/public' . $photostrip->frame_path;
+            if (!file_exists($framePath)) return null;
             $imageService = new \App\Services\ImageProcessingService();
-            $success = $imageService->createPhotoStrip(
-                $photosData, // Pass the new array here
-                $framePath,
-                $outputPath,
-                $slotCoordinates,
-                'none'
-            );
+            $imageService->createPhotoStrip($photosData, $framePath, $outputPath, $slotCoordinates, 'none');
+            // --- Akhir Bagian Pembuatan Gambar Dasar ---
+
+            // [LOGIKA FINAL DENGAN KALIBRASI]
+            $decorationPayload = json_decode($photostrip->decoration_data ?: '[]', true) ?: [];
             
-            if (!$success) {
-                error_log('Failed to create photostrip using ImageProcessingService');
-                return null;
-            }
-            
-            // Add decorations if any
-            $decorationData = json_decode($photostrip->decoration_data ?: '[]', true) ?: [];
-            if (!empty($decorationData)) {
+            if (isset($decorationPayload['canvas_context']) && isset($decorationPayload['stickers'])) {
+                $context = $decorationPayload['canvas_context'];
+                $decorationData = $decorationPayload['stickers'];
                 $stickers = [];
-                foreach ($decorationData as $decoration) {
-                    if (!is_array($decoration)) {
-                        continue;
-                    }
-                    
-                    // Try different possible key names for the sticker path
-                    $stickerPathKey = null;
-                    $possibleStickerKeys = ['stickerPath', 'path', 'file_path'];
-                    
-                    foreach ($possibleStickerKeys as $key) {
-                        if (isset($decoration[$key])) {
-                            $stickerPathKey = $key;
-                            break;
-                        }
-                    }
-                    
-                    if ($stickerPathKey) {
-                        $stickerPath = dirname(APPROOT) . '/public' . $decoration[$stickerPathKey];
+
+                if (!empty($decorationData)) {
+                    $original_w = $context['width'];
+                    $original_h = $context['height'];
+                    $final_w = 600;
+                    $final_h = 1800;
+
+                    $scaleX = ($original_w > 0) ? $final_w / $original_w : 1;
+                    $scaleY = ($original_h > 0) ? $final_h / $original_h : 1;
+
+                    foreach ($decorationData as $decoration) {
+                        $stickerPath = dirname(APPROOT) . '/public' . $decoration['stickerPath'];
                         if (file_exists($stickerPath)) {
                             $stickers[] = [
                                 'path' => $stickerPath,
-                                'x' => (int)($decoration['x'] ?? 0),
-                                'y' => (int)($decoration['y'] ?? 0),
-                                'width' => (int)($decoration['width'] ?? 50),
-                                'height' => (int)($decoration['height'] ?? 50)
+                                // Terapkan offset setelah penskalaan
+                                'x' => (int)($decoration['x'] * $scaleX) + self::FINAL_OFFSET_X,
+                                'y' => (int)($decoration['y'] * $scaleY) + self::FINAL_OFFSET_Y,
+                                'width' => (int)($decoration['width'] * $scaleX),
+                                'height' => (int)($decoration['height'] * $scaleY)
                             ];
                         }
                     }
-                }
                 
-                if (!empty($stickers)) {
-                    // Create temporary path for decorated image
-                    $tempPath = $outputDir . 'temp_' . $filename;
-                    $success = $imageService->applyOverlays(
-                        $outputPath,
-                        null, // No additional frame overlay
-                        $stickers,
-                        $tempPath
-                    );
-                    
-                    if ($success && file_exists($tempPath)) {
-                        rename($tempPath, $outputPath);
+                    if (!empty($stickers)) {
+                        $tempPath = $outputDir . 'temp_' . $filename;
+                        $imageService->applyOverlays($outputPath, null, $stickers, $tempPath);
+                        if (file_exists($tempPath)) {
+                            rename($tempPath, $outputPath);
+                        }
                     }
                 }
             }
             
             return $relativePath;
-            
+
         } catch (Exception $e) {
-            error_log('Error generating final photostrip: ' . $e->getMessage());
+            error_log("FATAL ERROR in generateFinalPhotostrip (Photostrip ID #{$photostrip->id}): " . $e->getMessage());
             return null;
         }
     }
-
     public function printPhotostrip()
     {
         header('Content-Type: application/json');

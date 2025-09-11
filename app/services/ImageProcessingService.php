@@ -59,8 +59,8 @@ class ImageProcessingService
                 error_log('ImageProcessing Error: Frame path or slot coordinates are missing.');
                 return false;
             }
-
             $frame = new Imagick($framePath);
+            $frame->resizeImage(600, 1800, Imagick::FILTER_LANCZOS, 1);
             $frameWidth = $frame->getImageWidth();
             $frameHeight = $frame->getImageHeight();
             

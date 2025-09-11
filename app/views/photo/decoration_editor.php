@@ -680,10 +680,10 @@
                 id: `sticker-${stickerCounter}`,
                 stickerPath: stickerPath,
                 stickerAssetId: stickerId,
-                x: Math.random() * (canvasWidth > 60 ? canvasWidth - 60 : 0),
-                y: Math.random() * (canvasHeight > 60 ? canvasHeight - 60 : 0),
-                width: 60,
-                height: 60,
+                x: Math.random() * (canvasWidth > 40 ? canvasWidth - 40 : 0),
+                y: Math.random() * (canvasHeight > 40 ? canvasHeight - 40 : 0),
+                width: 40,
+                height: 40,
                 rotation: 0,
                 zIndex: stickerCounter
             };
@@ -945,20 +945,42 @@
             });
         }
 
-        function finishDecorations() {
-            // Save all decorations to database
+function finishDecorations() {
             const decorationData = {};
+            const activeCanvas = document.querySelector('.photostrip-canvas:not([style*="display: none"])');
+            if (!activeCanvas) {
+                alert("Error: Tidak dapat menemukan kanvas aktif.");
+                return;
+            }
+
+            // [PERBAIKAN FINAL] Dapatkan ukuran konten yang sebenarnya dari .canvas-inner
+            // Ini adalah elemen yang paling akurat untuk dijadikan referensi karena tidak memiliki border/padding sendiri.
+            const contentArea = activeCanvas.querySelector('.canvas-inner');
+            if (!contentArea) {
+                alert("Error: Tidak dapat menemukan .canvas-inner.");
+                return;
+            }
+
+            const onScreenWidth = contentArea.offsetWidth;
+            const onScreenHeight = contentArea.offsetHeight;
+
             photostrips.forEach(photostrip => {
-                if (decorations[photostrip.id] && decorations[photostrip.id].length > 0) {
-                    decorationData[photostrip.id] = decorations[photostrip.id];
-                }
+                const decorationsForStrip = decorations[photostrip.id] || [];
+                
+                // Kirim data mentah beserta konteks ukuran kanvas yang sudah SANGAT AKURAT
+                decorationData[photostrip.id] = {
+                    canvas_context: {
+                        width: onScreenWidth,
+                        height: onScreenHeight
+                    },
+                    stickers: decorationsForStrip 
+                };
             });
             
+            // Proses pengiriman (fetch) tidak perlu diubah
             fetch('<?= URLROOT ?>/photo/save-decorations', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     session_id: sessionId,
                     decorations: decorationData
@@ -977,7 +999,6 @@
                 alert('Terjadi kesalahan saat menyimpan dekorasi.');
             });
         }
-
         // Keyboard shortcuts
         document.addEventListener('keydown', (e) => {
             if (selectedSticker) {

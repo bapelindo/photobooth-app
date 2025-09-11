@@ -15,6 +15,7 @@
             --success-color: #4CAF50;
             --warning-color: #FF9800;
             --bg-gradient: linear-gradient(135deg, #fed6e3 0%, #ffecd2 100%);
+            --primary-color-rgb: 108, 99, 255; /* RGB for #6C63FF */
         }
                 /* Firefox Scrollbar */
         html {
@@ -236,86 +237,104 @@
             justify-content: center;
         }
 
-        .controls-panel {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 15px;
-            padding: 15px;
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-start;
-            gap: 10px;
-            align-items: stretch;
-            backdrop-filter: blur(10px);
-        }
+.controls-panel {
+    background: transparent;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end; /* Align items to the bottom */
+    gap: 15px;
+}
 
-        .btn {
-            padding: 10px 15px;
-            border: none;
-            border-radius: 10px;
-            font-family: 'Fredoka One', cursive;
-            font-size: 0.9rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            text-align: center;
-        }
+.btn {
+    padding: 15px;
+    border: none;
+    border-radius: 18px; /* Slightly more rounded */
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+}
 
-        .btn-preview {
-            background: var(--primary-color);
-            color: white;
-        }
+.side-actions {
+    display: flex;
+    gap: 10px;
+}
 
-        .btn-continue {
-            background: linear-gradient(135deg, var(--success-color), var(--primary-color));
-            color: white;
-            font-size: 1.1rem;
-            padding: 15px 35px;
-        }
+.btn-side-action {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(8px);
+    color: var(--text-dark);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
 
-        .btn-clear {
-            background: var(--warning-color);
-            color: white;
-        }
+.btn-side-action:hover {
+    background: white;
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+}
 
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-        }
+.btn-continue {
+    background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+    color: white;
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.2rem;
+    padding: 10px;
+}
+.btn-continue:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(255, 127, 80, 0.4);
+}
 
-        .btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
-        }
+.btn:disabled {
+    background: #e0e0e0;
+    color: #9e9e9e;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
 
-        .progress-indicator {
-            display: flex;
-            flex-direction: column;
-            align-items: stretch;
-            gap: 5px;
-            font-weight: 600;
-            color: var(--primary-color);
-            text-align: center;
-            margin-bottom: 10px;
-        }
+.progress-indicator {
+    background: rgba(255,255,255,0.7);
+    padding: 15px;
+    border-radius: 18px;
+    backdrop-filter: blur(8px);
+    text-align: center;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    margin-bottom: auto; /* Push to the top */
+}
 
-        .progress-bar {
-            width: 100%;
-            height: 8px;
-            background: rgba(108, 99, 255, 0.2);
-            border-radius: 4px;
-            overflow: hidden;
-        }
+#progress-text {
+    font-weight: 600;
+    color: var(--text-dark);
+    font-size: 0.9rem;
+    margin-bottom: 10px;
+    display: block;
+}
 
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
-            border-radius: 4px;
-            width: 0%;
-            transition: width 0.5s ease;
-        }
+.progress-bar {
+    width: 100%;
+    height: 8px;
+    background: rgba(0,0,0,0.08);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+    border-radius: 4px;
+    width: 0%;
+    transition: width 0.5s ease;
+}
 
         .empty-state {
             text-align: center;
@@ -415,21 +434,30 @@
                 <?php endif; ?>
             </div>
 
-            <div class="controls-panel">
-                <div class="progress-indicator">
-                    <span>Progress:</span>
-                    <div class="progress-bar">
-                        <div class="progress-fill" id="progress-fill"></div>
-                    </div>
-                    <span id="progress-text">0%</span>
-                </div>
-                
-                <button class="btn btn-clear" onclick="clearAllSlots()">🗑️ Bersihkan</button>
-                <button class="btn btn-preview" onclick="previewPhotostrips()">👁️ Preview</button>
-                <button class="btn btn-continue" id="continue-btn" onclick="saveLayouts()" disabled>
-                    🎨 Lanjut ke Dekorasi
-                </button>
-            </div>
+<div class="controls-panel">
+    <div class="progress-indicator">
+        <span id="progress-text">Lengkapi semua slot foto!</span>
+        <div class="progress-bar">
+            <div class="progress-fill" id="progress-fill"></div>
+        </div>
+    </div>
+    
+    <div class="side-actions">
+        <button class="btn btn-side-action" onclick="clearAllSlots()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+            <span>Bersihkan</span>
+        </button>
+        <button class="btn btn-side-action" onclick="previewPhotostrips()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+            <span>Preview</span>
+        </button>
+    </div>
+
+    <button class="btn btn-continue" id="continue-btn" onclick="saveLayouts()" disabled>
+        <span>Lanjut ke Dekorasi</span>
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="M12 5l7 7-7 7"></path></svg>
+    </button>
+</div>
         </div>
     </div>
 
