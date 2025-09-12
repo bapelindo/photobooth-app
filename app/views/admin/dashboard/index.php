@@ -127,7 +127,7 @@
             </div>
             <div class="card-content">
                 <h3 class="card-title">Sessions Today</h3>
-                <p class="card-value"><?= $session_stats->sessions_today ?? 0 ?></p>
+                <p class="card-value"><?= $session_stats->sessions_today ?? 0 ?> sessions</p>
                 <small class="card-subtitle">
                     <?= $session_stats->completed_sessions ?? 0 ?> completed • 
                     <?= $session_stats->avg_photos_per_session ?? 0 ?> avg photos
