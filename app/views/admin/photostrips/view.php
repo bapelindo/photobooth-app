@@ -44,14 +44,14 @@
         <div style="margin-top: 2rem;">
             <h3>Layout Configuration</h3>
             <div class="layout-config">
-                <pre style="background: #f9fafb; padding: 1rem; border-radius: 0.5rem; overflow-x: auto;"><?= htmlspecialchars($photostrip->layout_data ?? 'No layout configuration') ?></pre>
+                <pre class="data-display"><?= htmlspecialchars($photostrip->layout_data ?? 'No layout configuration') ?></pre>
             </div>
         </div>
 
         <div style="margin-top: 2rem;">
             <h3>Decoration Data</h3>
             <div class="decoration-data">
-                <pre style="background: #f9fafb; padding: 1rem; border-radius: 0.5rem; overflow-x: auto;"><?= htmlspecialchars($photostrip->decoration_data ?? 'No decorations applied') ?></pre>
+                <pre class="data-display"><?= htmlspecialchars($photostrip->decoration_data ?? 'No decorations applied') ?></pre>
             </div>
         </div>
 
@@ -130,6 +130,14 @@
     .badge-success { background-color: #dcfce7; color: #15803d; }
     .badge-warning { background-color: #fef3c7; color: #d97706; }
     .badge-secondary { background-color: #f3f4f6; color: #6b7280; }
+    .data-display {
+        background: var(--card-secondary);
+        color: var(--text-color);
+        padding: 1rem;
+        border-radius: 0.5rem;
+        overflow-x: auto;
+        border: 1px solid var(--border-color);
+    }
 </style>
 
 <script>

@@ -23,11 +23,15 @@
             </div>
             <div class="info-item">
                 <label>Photos Captured:</label>
-                <span><?= htmlspecialchars($session->photos_captured ?? 0) ?></span>
+                <span><?= htmlspecialchars(max($session->photos_taken ?? 0, $session->total_photos_captured ?? 0)) ?></span>
+            </div>
+            <div class="info-item">
+                <label>Photos Saved:</label>
+                <span><?= htmlspecialchars(max($session->photos_saved ?? 0, $session->photos_count ?? 0)) ?></span>
             </div>
             <div class="info-item">
                 <label>Duration Used:</label>
-                <span><?= htmlspecialchars($session->duration_used ?? 0) ?> seconds</span>
+                <span><?= htmlspecialchars($session->session_duration_seconds ?? 0) ?> seconds</span>
             </div>
             <div class="info-item">
                 <label>Created At:</label>

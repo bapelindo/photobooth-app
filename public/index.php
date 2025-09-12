@@ -100,6 +100,12 @@ $router->get('admin/reports', 'App\Controllers\AdminController@reports');
 $router->get('admin/settings', 'App\Controllers\AdminController@settings');
 $router->post('admin/settings/update', 'App\Controllers\AdminController@updateSettings');
 
+// Quick Actions routes
+$router->get('admin/export-data/{type}', 'App\Controllers\AdminController@exportData');
+$router->post('admin/clear-cache', 'App\Controllers\AdminController@clearCache');
+$router->get('admin/system-info', 'App\Controllers\AdminController@systemInfo');
+$router->get('admin/download-logs', 'App\Controllers\AdminController@downloadLogs');
+
 // Rute POST (untuk AJAX)
 $router->post('photo/ajax_save_photo', 'App\\Controllers\\PhotoController@ajax_save_photo');
 // Removed legacy ajax_print_photo route - using printPhotostrip for new session workflow

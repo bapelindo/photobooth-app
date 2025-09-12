@@ -76,4 +76,18 @@ class Photo
         $this->db->bind(':id', $id);
         return $this->db->execute();
     }
+
+    public function getBySession($session_id)
+    {
+        $this->db->query("
+            SELECT p.* 
+            FROM photos p
+            JOIN transactions t ON p.transaction_id = t.id
+            JOIN photo_sessions ps ON t.id = ps.transaction_id
+            WHERE ps.id = :session_id
+            ORDER BY p.created_at ASC
+        ");
+        $this->db->bind(':session_id', $session_id);
+        return $this->db->resultSet();
+    }
 }

@@ -87,15 +87,29 @@ class PhotoSession
     public function getAllWithDetails()
     {
         $this->db->query("
-            SELECT ps.*, t.order_id, p.name as package_name, p.price, 
-                   COUNT(psp.id) as photos_count,
-                   COUNT(ph.id) as photostrips_count
+            SELECT ps.*, 
+                   t.order_id, 
+                   t.amount,
+                   p.name as package_name, 
+                   p.price,
+                   COALESCE(ps.photos_saved, 0) as photos_saved,
+                   COALESCE(ps.photos_taken, 0) as photos_taken,
+                   COUNT(DISTINCT CASE WHEN psp.is_saved = 1 THEN psp.id END) as photos_count,
+                   COUNT(DISTINCT psp.id) as total_photos_captured,
+                   COUNT(DISTINCT ph.id) as photostrips_count,
+                   CASE 
+                       WHEN ps.session_end_time IS NOT NULL AND ps.session_start_time IS NOT NULL 
+                       THEN TIMESTAMPDIFF(SECOND, ps.session_start_time, ps.session_end_time)
+                       WHEN ps.session_start_time IS NOT NULL 
+                       THEN TIMESTAMPDIFF(SECOND, ps.session_start_time, NOW())
+                       ELSE 0 
+                   END as session_duration_seconds
             FROM photo_sessions ps
             JOIN transactions t ON ps.transaction_id = t.id
             JOIN packages p ON t.package_id = p.id
-            LEFT JOIN photo_session_photos psp ON ps.id = psp.session_id AND psp.is_saved = 1
+            LEFT JOIN photo_session_photos psp ON ps.id = psp.session_id
             LEFT JOIN photostrips ph ON ps.id = ph.session_id
-            GROUP BY ps.id
+            GROUP BY ps.id, ps.photos_saved, ps.photos_taken, ps.session_start_time, ps.session_end_time, t.order_id, t.amount, p.name, p.price
             ORDER BY ps.created_at DESC
         ");
         return $this->db->resultSet();
@@ -104,12 +118,33 @@ class PhotoSession
     public function getSessionWithDetails($session_id)
     {
         $this->db->query("
-            SELECT ps.*, t.order_id, t.amount, p.name as package_name, 
-                   p.price, p.frame_limit, p.session_duration, p.max_save_photos
+            SELECT ps.*, 
+                   t.order_id, 
+                   t.amount,
+                   p.name as package_name, 
+                   p.price, 
+                   p.frame_limit, 
+                   p.session_duration, 
+                   p.max_save_photos,
+                   COALESCE(ps.photos_saved, 0) as photos_saved,
+                   COALESCE(ps.photos_taken, 0) as photos_taken,
+                   COUNT(DISTINCT CASE WHEN psp.is_saved = 1 THEN psp.id END) as photos_count,
+                   COUNT(DISTINCT psp.id) as total_photos_captured,
+                   COUNT(DISTINCT ph.id) as photostrips_count,
+                   CASE 
+                       WHEN ps.session_end_time IS NOT NULL AND ps.session_start_time IS NOT NULL 
+                       THEN TIMESTAMPDIFF(SECOND, ps.session_start_time, ps.session_end_time)
+                       WHEN ps.session_start_time IS NOT NULL 
+                       THEN TIMESTAMPDIFF(SECOND, ps.session_start_time, NOW())
+                       ELSE 0 
+                   END as session_duration_seconds
             FROM photo_sessions ps
             JOIN transactions t ON ps.transaction_id = t.id
             JOIN packages p ON t.package_id = p.id
+            LEFT JOIN photo_session_photos psp ON ps.id = psp.session_id
+            LEFT JOIN photostrips ph ON ps.id = ph.session_id
             WHERE ps.id = :session_id
+            GROUP BY ps.id, ps.photos_saved, ps.photos_taken, ps.session_start_time, ps.session_end_time
         ");
         $this->db->bind(':session_id', $session_id);
         return $this->db->single();
@@ -122,7 +157,12 @@ class PhotoSession
                 COUNT(*) as total_sessions,
                 COUNT(CASE WHEN session_status = 'completed' THEN 1 END) as completed_sessions,
                 COUNT(CASE WHEN DATE(created_at) = CURDATE() THEN 1 END) as sessions_today,
-                AVG(photos_saved) as avg_photos_per_session
+                AVG(COALESCE(photos_saved, 0)) as avg_photos_per_session,
+                AVG(CASE 
+                    WHEN session_end_time IS NOT NULL AND session_start_time IS NOT NULL 
+                    THEN TIMESTAMPDIFF(SECOND, session_start_time, session_end_time)
+                    ELSE 0 
+                END) as avg_session_duration_seconds
             FROM photo_sessions
         ");
         return $this->db->single();
@@ -149,6 +189,29 @@ class PhotoSession
         $this->db->bind(':date', $date);
         $result = $this->db->single();
         return $result ? $result->count : 0;
+    }
+
+    public function getDailySessionStats($days = 7)
+    {
+        $this->db->query("
+            SELECT 
+                DATE(ps.created_at) as date,
+                COUNT(*) as sessions,
+                SUM(COALESCE(t.amount, 0)) as revenue,
+                AVG(CASE 
+                    WHEN ps.session_end_time IS NOT NULL AND ps.session_start_time IS NOT NULL 
+                    THEN TIMESTAMPDIFF(SECOND, ps.session_start_time, ps.session_end_time)
+                    ELSE 0 
+                END) as avg_duration,
+                COUNT(CASE WHEN ps.session_status = 'completed' THEN 1 END) / COUNT(*) * 100 as print_success_rate
+            FROM photo_sessions ps
+            JOIN transactions t ON ps.transaction_id = t.id
+            WHERE ps.created_at >= DATE_SUB(CURDATE(), INTERVAL :days DAY)
+            GROUP BY DATE(ps.created_at)
+            ORDER BY DATE(ps.created_at) DESC
+        ");
+        $this->db->bind(':days', $days);
+        return $this->db->resultSet();
     }
 
     public function getPhotosTakenByDate($date)

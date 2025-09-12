@@ -250,7 +250,7 @@
         }
         .user-info {
             margin-top: auto;
-            padding: 1rem 0.75rem 1.5rem 0.75rem;
+            padding: 0.5rem;
             border-top: 1px solid var(--border-color);
             background: var(--card-secondary);
         }
@@ -646,17 +646,38 @@
             const currentPath = window.location.pathname;
             const navLinks = document.querySelectorAll('.nav-links a');
             
+            let bestMatch = null;
+            let longestMatch = 0;
+
+            const dashboardPath = new URL('<?= URLROOT; ?>/admin/dashboard').pathname;
+            const adminRootPath = new URL('<?= URLROOT; ?>/admin').pathname;
+            const adminRootPathWithSlash = adminRootPath + '/';
+
+            if (currentPath === adminRootPath || currentPath === adminRootPathWithSlash) {
+                navLinks.forEach(link => {
+                    if (new URL(link.href).pathname === dashboardPath) {
+                        bestMatch = link;
+                    }
+                });
+            } else {
+                navLinks.forEach(link => {
+                    const linkPath = new URL(link.href).pathname;
+                    if (currentPath.startsWith(linkPath) && linkPath.length > longestMatch) {
+                        longestMatch = linkPath.length;
+                        bestMatch = link;
+                    }
+                });
+            }
+
+            if (bestMatch) {
+                bestMatch.classList.add('active');
+                bestMatch.scrollIntoView({ block: 'center' });
+            }
+
             navLinks.forEach((link, index) => {
-                const href = link.getAttribute('href');
-                const relativePath = href.replace('<?= URLROOT; ?>', '');
-                
                 // Add staggered animation
                 link.style.animationDelay = `${index * 0.1}s`;
                 link.classList.add('slide-in');
-                
-                if (currentPath === relativePath || currentPath.startsWith(relativePath + '/')) {
-                    link.classList.add('active');
-                }
                 
                 // Prevent sidebar movement on navigation
                 link.addEventListener('click', function(e) {

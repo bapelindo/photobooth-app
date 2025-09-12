@@ -92,6 +92,17 @@ class Transaction
         return (object) $summary;
     }
 
+    public function getAll()
+    {
+        $this->db->query("
+            SELECT t.*, p.name as package_name 
+            FROM transactions t
+            LEFT JOIN packages p ON t.package_id = p.id
+            ORDER BY t.created_at DESC
+        ");
+        return $this->db->resultSet();
+    }
+
     public function getRevenueByDate($date)
     {
         $this->db->query("SELECT SUM(amount) as revenue FROM transactions WHERE payment_status = 'success' AND DATE(created_at) = :date");

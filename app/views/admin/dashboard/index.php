@@ -45,8 +45,8 @@
 
 <div class="dashboard-grid">
     <div class="stat-card">
-        <div class="card-icon" style="background-color: #E0E7FF;">
-            <i data-feather="dollar-sign" style="color: #4F46E5;"></i>
+        <div class="card-icon revenue-icon">
+            <i data-feather="dollar-sign"></i>
         </div>
         <div class="card-content">
             <h3 class="card-title">Revenue Today</h3>
@@ -54,8 +54,8 @@
         </div>
     </div>
      <div class="stat-card">
-        <div class="card-icon" style="background-color: #FEF3C7;">
-            <i data-feather="shopping-cart" style="color: #D97706;"></i>
+        <div class="card-icon transaction-icon">
+            <i data-feather="shopping-cart"></i>
         </div>
         <div class="card-content">
             <h3 class="card-title">Transactions Today</h3>
@@ -63,8 +63,8 @@
         </div>
     </div>
      <div class="stat-card">
-        <div class="card-icon" style="background-color: #D1FAE5;">
-            <i data-feather="bar-chart-2" style="color: #059669;"></i>
+        <div class="card-icon total-revenue-icon">
+            <i data-feather="bar-chart-2"></i>
         </div>
         <div class="card-content">
             <h3 class="card-title">Total Revenue</h3>
@@ -72,8 +72,8 @@
         </div>
     </div>
      <div class="stat-card">
-        <div class="card-icon" style="background-color: #FEE2E2;">
-            <i data-feather="check-circle" style="color: #DC2626;"></i>
+        <div class="card-icon total-trans-icon">
+            <i data-feather="check-circle"></i>
         </div>
         <div class="card-content">
             <h3 class="card-title">Total Transactions</h3>
@@ -92,8 +92,8 @@
     <div class="dashboard-grid" style="grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));">
         <!-- Email Queue Stats -->
         <div class="stat-card">
-            <div class="card-icon" style="background-color: #E0F2FE;">
-                <i data-feather="mail" style="color: #0284C7;"></i>
+            <div class="card-icon email-icon">
+                <i data-feather="mail"></i>
             </div>
             <div class="card-content">
                 <h3 class="card-title">Email Queue</h3>
@@ -107,8 +107,8 @@
         
         <!-- Print Queue Stats -->
         <div class="stat-card">
-            <div class="card-icon" style="background-color: #F3E8FF;">
-                <i data-feather="printer" style="color: #7C3AED;"></i>
+            <div class="card-icon print-icon">
+                <i data-feather="printer"></i>
             </div>
             <div class="card-content">
                 <h3 class="card-title">Print Queue</h3>
@@ -122,8 +122,8 @@
         
         <!-- Photo Sessions Today -->
         <div class="stat-card">
-            <div class="card-icon" style="background-color: #FEF7CD;">
-                <i data-feather="camera" style="color: #CA8A04;"></i>
+            <div class="card-icon session-icon">
+                <i data-feather="camera"></i>
             </div>
             <div class="card-content">
                 <h3 class="card-title">Sessions Today</h3>
@@ -137,13 +137,13 @@
         
         <!-- System Status -->
         <div class="stat-card">
-            <div class="card-icon" style="background-color: #DCFCE7;">
-                <i data-feather="activity" style="color: #16A34A;"></i>
+            <div class="card-icon system-icon">
+                <i data-feather="activity"></i>
             </div>
             <div class="card-content">
                 <h3 class="card-title">System Status</h3>
                 <p class="card-value" id="system-status">
-                    <span class="status-dot" style="background: #16A34A;"></span> Active
+                    <span class="status-dot active"></span> Active
                 </p>
                 <small class="card-subtitle" id="last-updated">Updated just now</small>
             </div>
@@ -182,6 +182,44 @@
     </table>
 </div>
 
+<!-- Daily Session Statistics -->
+<div class="section-container card" style="margin-top: 2rem;">
+    <div class="section-header">
+        <h2 class="section-title">Daily Session Statistics</h2>
+    </div>
+    <table>
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Sessions</th>
+                <th>Revenue</th>
+                <th>Avg. Duration</th>
+                <th>Print Success Rate</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php if (!empty($daily_session_stats)): ?>
+                <?php foreach ($daily_session_stats as $stat): ?>
+                <tr>
+                    <td><?= date('M j, Y', strtotime($stat->date)) ?></td>
+                    <td><span class="badge"><?= $stat->sessions ?></span></td>
+                    <td><strong>Rp <?= number_format($stat->revenue ?? 0, 0, ',', '.') ?></strong></td>
+                    <td><?= round($stat->avg_duration ?? 0) ?>s</td>
+                    <td><?= round($stat->print_success_rate ?? 0, 1) ?>%</td>
+                </tr>
+                <?php endforeach; ?>
+            <?php else: ?>
+                <tr>
+                    <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 2rem;">
+                        <i data-feather="inbox"></i><br>
+                        No session data available for the past 7 days
+                    </td>
+                </tr>
+            <?php endif; ?>
+        </tbody>
+    </table>
+</div>
+
 <style>
 .status-dot {
     display: inline-block;
@@ -192,10 +230,71 @@
 }
 
 .card-subtitle {
-    color: #6B7280;
+    color: var(--text-muted);
     font-size: 0.875rem;
     margin-top: 4px;
 }
+
+/* Icon styling for different types */
+.revenue-icon {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(59, 130, 246, 0.1));
+    border: 1px solid rgba(59, 130, 246, 0.3);
+}
+.revenue-icon i { color: var(--primary-light); }
+
+.transaction-icon {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(245, 158, 11, 0.1));
+    border: 1px solid rgba(245, 158, 11, 0.3);
+}
+.transaction-icon i { color: #fbbf24; }
+
+.total-revenue-icon {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(16, 185, 129, 0.1));
+    border: 1px solid rgba(16, 185, 129, 0.3);
+}
+.total-revenue-icon i { color: var(--success-light); }
+
+.total-trans-icon {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(239, 68, 68, 0.1));
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+.total-trans-icon i { color: var(--error-light); }
+
+.email-icon {
+    background: linear-gradient(135deg, rgba(14, 165, 233, 0.2), rgba(14, 165, 233, 0.1));
+    border: 1px solid rgba(14, 165, 233, 0.3);
+}
+.email-icon i { color: #38bdf8; }
+
+.print-icon {
+    background: linear-gradient(135deg, rgba(124, 58, 237, 0.2), rgba(124, 58, 237, 0.1));
+    border: 1px solid rgba(124, 58, 237, 0.3);
+}
+.print-icon i { color: #a855f7; }
+
+.session-icon {
+    background: linear-gradient(135deg, rgba(202, 138, 4, 0.2), rgba(202, 138, 4, 0.1));
+    border: 1px solid rgba(202, 138, 4, 0.3);
+}
+.session-icon i { color: #facc15; }
+
+.system-icon {
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.2), rgba(34, 197, 94, 0.1));
+    border: 1px solid rgba(34, 197, 94, 0.3);
+}
+.system-icon i { color: var(--success-color); }
+
+.status-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 6px;
+}
+
+.status-dot.active { background: var(--success-color); }
+.status-dot.warning { background: var(--warning-color); }
+.status-dot.error { background: var(--error-color); }
 
 .section-header {
     display: flex;
@@ -457,31 +556,44 @@ document.addEventListener('click', function(event) {
     }
     .section-container { 
         margin-top: 2.5rem; 
-        background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+        background: var(--card-bg);
+        background-image: var(--gradient-card);
         border-radius: 1rem;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-        border: 1px solid #e2e8f0;
+        box-shadow: var(--shadow);
+        border: 1px solid var(--border-color);
         overflow: hidden;
+        transition: var(--transition);
     }
+    
+    .section-container:hover {
+        box-shadow: var(--shadow-lg);
+        border-color: var(--border-light);
+    }
+    
     .section-header { 
         padding: 2rem; 
-        border-bottom: 1px solid #e2e8f0; 
-        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        border-bottom: 1px solid var(--border-color); 
+        background: var(--card-secondary);
     }
     .section-title { 
         font-size: 1.375rem; 
         font-weight: 700; 
         margin: 0; 
-        color: #1e293b;
+        color: var(--text-color);
+        background: linear-gradient(135deg, var(--primary-light) 0%, var(--primary-color) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
     }
     .badge {
-        background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);
-        color: #4338ca;
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-hover) 100%);
+        color: white;
         padding: 0.375rem 1rem;
         border-radius: 9999px;
         font-weight: 600;
         font-size: 0.875rem;
-        border: 1px solid #a5b4fc;
+        border: 1px solid var(--primary-color);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
     
     /* Page actions */
@@ -528,8 +640,8 @@ document.addEventListener('click', function(event) {
     }
     
     .dropdown-content a:hover {
-        background-color: #f8fafc;
-        color: var(--primary-color);
+        background-color: var(--card-hover);
+        color: var(--primary-light);
     }
     
     .dropdown-content a .feather {
@@ -580,7 +692,7 @@ document.addEventListener('click', function(event) {
         align-items: center;
         padding: 1.5rem 2rem;
         border-bottom: 1px solid var(--border-color);
-        background: linear-gradient(135deg, #fafbfc 0%, #f8fafc 100%);
+        background: var(--card-secondary);
     }
     
     .modal-header h3 {
