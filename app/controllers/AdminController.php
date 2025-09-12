@@ -279,7 +279,6 @@ class AdminController extends Controller {
         $data['print_stats'] = $printQueueModel->getStats();
         
         $data['title'] = 'Queue Management';
-        $data['active_page'] = 'queue';
         $this->adminView('admin/queue/index', $data);
     }
     
@@ -401,14 +400,12 @@ class AdminController extends Controller {
         $assetModel = $this->model('Asset');
         $data['assets'] = $assetModel->getAll();
         $data['title'] = 'Manage Assets';
-        $data['active_page'] = 'assets';
         $this->adminView('admin/assets/index', $data);
     }
 
     public function createAsset()
     {
         $data['title'] = 'Upload New Asset';
-        $data['active_page'] = 'assets';
         $this->adminView('admin/assets/create', $data);
     }
 
