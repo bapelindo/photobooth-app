@@ -18,7 +18,8 @@ class Controller {
             
             '/payment/process', // Allow payment process to initiate workflow
             '/photo/send_email', // Allow send_email to be accessed without workflow_step
-            '/photo/ajax_print_photo' // Allow ajax_print_photo to be accessed without workflow_step
+            '/photo/ajax_print_photo', // Allow ajax_print_photo to be accessed without workflow_step
+            '/photo/select_frame' // Allow frame selection to be accessed directly
         ];
 
         // Get the current request URI
@@ -40,14 +41,16 @@ class Controller {
 
         $is_public_page = in_array($path, $public_pages);
         $is_payment_process = strpos($path, '/payment/process') === 0;
+        $is_frame_selection = strpos($path, '/photo/select_frame') === 0;
 
         error_log('Controller __construct: is_public_page: ' . ($is_public_page ? 'true' : 'false'));
         error_log('Controller __construct: is_payment_process: ' . ($is_payment_process ? 'true' : 'false'));
+        error_log('Controller __construct: is_frame_selection: ' . ($is_frame_selection ? 'true' : 'false'));
 
-        // Check if the current page is a public page or a payment initiation page
-        if ($is_public_page || $is_payment_process) {
-            error_log('Controller __construct: Path is public or payment process, returning.');
-            return; // No session check needed for public pages or payment initiation
+        // Check if the current page is a public page, payment initiation page, or frame selection
+        if ($is_public_page || $is_payment_process || $is_frame_selection) {
+            error_log('Controller __construct: Path is public, payment process, or frame selection, returning.');
+            return; // No session check needed for public pages, payment initiation, or frame selection
         }
 
         // If workflow_step is not set, redirect to packages

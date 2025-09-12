@@ -16,15 +16,25 @@
             --bg-gradient: linear-gradient(135deg, #fcb69f 0%, #fa709a 100%);
         }
 
-        body {
-            height: 100vh;
-            margin: 0;
-            padding: 20px;
+        /* Exact same animation as select-frame */
+        html, body {
+            height: 100%; 
+            margin: 0; 
             overflow: hidden;
+        }
+
+        body {
+            padding: 20px;
             font-family: 'Poppins', sans-serif;
             background: var(--bg-gradient);
             display: flex;
             justify-content: center; align-items: center;box-sizing: border-box;
+            opacity: 1;
+            transition: opacity 0.4s ease-out;
+        }
+
+        body.fade-out { 
+            opacity: 0; 
         }
 
 
@@ -40,6 +50,26 @@
             box-sizing: border-box;
             background: rgba(255, 255, 255, 0.5); backdrop-filter: blur(10px);
             border-radius: 20px; box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.05);
+            opacity: 0;
+            animation: contentFadeIn 0.5s ease-in 0.2s forwards;
+            transition: opacity 0.5s ease-out;
+        }
+
+        .finalize-container.content-fade-out { 
+            opacity: 0; 
+        }
+        
+        .finalize-container > * {
+            opacity: 0;
+            animation: innerElementFadeIn 0.5s ease-in 0.7s forwards;
+        }
+
+        @keyframes contentFadeIn { 
+            to { opacity: 1; } 
+        }
+
+        @keyframes innerElementFadeIn { 
+            to { opacity: 1; } 
         }
 
         .header-panel {
@@ -682,7 +712,12 @@
         }
 
         function goToPackages() {
-            window.location.href = '<?= URLROOT ?>/packages';
+            // Same fade-out animation as select-frame
+            document.body.classList.add('fade-out');
+            
+            setTimeout(() => {
+                window.location.href = '<?= URLROOT ?>/packages';
+            }, 500);
         }
 
         function checkPrintStatus() {

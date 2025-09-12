@@ -23,15 +23,25 @@
             scrollbar-color: rgba(254, 214, 227, 1  ) rgba(255, 255, 255, 0.95); /* thumb and track color */
         }
 
-        body {
-            height: 100vh;
-            margin: 0;
+        /* Exact same animation as select-frame */
+        html, body {
+            height: 100%; 
+            margin: 0; 
             overflow: hidden;
+        }
+
+        body {
             font-family: 'Poppins', sans-serif;
             background: var(--bg-gradient);
             padding: 20px;
             display: flex;
             justify-content: center; align-items: center;box-sizing: border-box;
+            opacity: 1;
+            transition: opacity 0.4s ease-out;
+        }
+
+        body.fade-out { 
+            opacity: 0; 
         }
 
         .layout-container {
@@ -45,7 +55,26 @@
             box-sizing: border-box;
             background: rgba(255, 255, 255, 0.5); backdrop-filter: blur(10px);
             border-radius: 20px; padding: 20px; box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.05);
-            
+            opacity: 0;
+            animation: contentFadeIn 0.5s ease-in 0.2s forwards;
+            transition: opacity 0.5s ease-out;
+        }
+
+        .layout-container.content-fade-out { 
+            opacity: 0; 
+        }
+        
+        .layout-container > * {
+            opacity: 0;
+            animation: innerElementFadeIn 0.5s ease-in 0.7s forwards;
+        }
+
+        @keyframes contentFadeIn { 
+            to { opacity: 1; } 
+        }
+
+        @keyframes innerElementFadeIn { 
+            to { opacity: 1; } 
         }
 
         .header-panel {
@@ -1284,7 +1313,12 @@
             })
             .then(data => {
                 if (data.success) {
-                    window.location.href = `${URLROOT}/photo/decoration/${sessionId}`;
+                    // Same fade-out animation as select-frame
+                    document.body.classList.add('fade-out');
+                    
+                    setTimeout(() => {
+                        window.location.href = `${URLROOT}/photo/decoration/${sessionId}`;
+                    }, 500);
                 } else {
                     throw new Error(data.message || 'An unknown error occurred.');
                 }

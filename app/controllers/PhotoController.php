@@ -75,6 +75,11 @@ class PhotoController extends Controller
 
         Session::set('workflow_step', 'photo_session_active');
         Session::set('current_session_id', $session_id);
+        
+        // Set one-time access token for photo session (strict mode only)
+        if (ENABLE_SESSION_REFRESH_BACK) {
+            Session::set('photo_session_token', uniqid('session_', true));
+        }
 
         header('Location: ' . URLROOT . '/photo/session/' . $session_id);
         exit();
@@ -88,12 +93,17 @@ class PhotoController extends Controller
         if (ENABLE_SESSION_REFRESH_BACK) {
             $sessionWorkflowStep = Session::get('workflow_step');
             $sessionCurrentSessionId = Session::get('current_session_id');
+            $photoSessionToken = Session::get('photo_session_token');
 
-            // STRICT MODE: Only allow access from proper flow
-            $validSteps = ['frame_selection_unlocked'];
-            if (!in_array($sessionWorkflowStep, $validSteps) || $sessionCurrentSessionId != $session_id) {
+            // Only allow access with valid photo session token (prevents refresh/back/direct access)
+            if ($sessionWorkflowStep !== 'photo_session_active' || 
+                $sessionCurrentSessionId != $session_id || 
+                empty($photoSessionToken)) {
                 $this->flashAndRedirect('packages', 'Sesi tidak valid atau telah berakhir. Silakan mulai lagi.');
             }
+            
+            // Consume the token (prevents refresh)
+            Session::set('photo_session_token', null);
         }
         // When ENABLE_SESSION_REFRESH_BACK = false, allow free navigation (no restrictions)
 
@@ -345,6 +355,12 @@ class PhotoController extends Controller
             $success = $photoSessionModel->completeSession($session_id);
 
             if ($success) {
+                // Generate token for layout editor access (strict mode only)
+                if (ENABLE_SESSION_REFRESH_BACK) {
+                    Session::start();
+                    Session::set('layout_editor_token', uniqid('layout_', true));
+                }
+                
                 echo json_encode(['success' => true]);
             } else {
                 throw new Exception('Failed to complete session');
@@ -364,12 +380,18 @@ class PhotoController extends Controller
         if (ENABLE_SESSION_REFRESH_BACK) {
             $sessionWorkflowStep = Session::get('workflow_step');
             $sessionCurrentSessionId = Session::get('current_session_id');
+            $layoutEditorToken = Session::get('layout_editor_token');
 
-            // STRICT MODE: Only allow access from photo session
-            $validSteps = ['photo_session_active'];
-            if (!in_array($sessionWorkflowStep, $validSteps) || $sessionCurrentSessionId != $session_id) {
+            // Only allow access with valid layout editor token (prevents refresh/back/direct access)
+            if ($sessionWorkflowStep !== 'photo_session_active' || 
+                $sessionCurrentSessionId != $session_id || 
+                empty($layoutEditorToken)) {
                 $this->flashAndRedirect('packages', 'Sesi tidak valid atau telah berakhir. Silakan mulai lagi.');
             }
+            
+            // Update to current step and consume token
+            Session::set('workflow_step', 'layout_editor_active');
+            Session::set('layout_editor_token', null);
         }
         // When ENABLE_SESSION_REFRESH_BACK = false, allow free navigation (no restrictions)
 
@@ -407,11 +429,6 @@ class PhotoController extends Controller
             ]
         ];
 
-        // Update workflow step for layout editor (only in strict mode)
-        if (ENABLE_SESSION_REFRESH_BACK) {
-            Session::set('workflow_step', 'layout_editor_active');
-        }
-        
         $this->view('photo/layout_editor', $data);
     }
 
@@ -472,6 +489,12 @@ class PhotoController extends Controller
                 }
             }
 
+            // Generate token for decoration editor access (strict mode only)
+            if (ENABLE_SESSION_REFRESH_BACK) {
+                Session::start();
+                Session::set('decoration_editor_token', uniqid('decoration_', true));
+            }
+
             echo json_encode(['success' => true]);
 
         } catch (Exception $e) {
@@ -488,12 +511,18 @@ class PhotoController extends Controller
         if (ENABLE_SESSION_REFRESH_BACK) {
             $sessionWorkflowStep = Session::get('workflow_step');
             $sessionCurrentSessionId = Session::get('current_session_id');
+            $decorationEditorToken = Session::get('decoration_editor_token');
 
-            // STRICT MODE: Only allow access from layout editor
-            $validSteps = ['layout_editor_active'];
-            if (!in_array($sessionWorkflowStep, $validSteps) || $sessionCurrentSessionId != $session_id) {
+            // Only allow access with valid decoration editor token (prevents refresh/back/direct access)
+            if ($sessionWorkflowStep !== 'layout_editor_active' || 
+                $sessionCurrentSessionId != $session_id || 
+                empty($decorationEditorToken)) {
                 $this->flashAndRedirect('packages', 'Sesi tidak valid atau telah berakhir. Silakan mulai lagi.');
             }
+            
+            // Update to current step and consume token
+            Session::set('workflow_step', 'decoration_editor_active');
+            Session::set('decoration_editor_token', null);
         }
         // When ENABLE_SESSION_REFRESH_BACK = false, allow free navigation (no restrictions)
 
@@ -522,11 +551,6 @@ class PhotoController extends Controller
             'stickers' => $stickers
         ];
 
-        // Update workflow step for decoration editor (only in strict mode)
-        if (ENABLE_SESSION_REFRESH_BACK) {
-            Session::set('workflow_step', 'decoration_editor_active');
-        }
-        
         $this->view('photo/decoration_editor', $data);
     }
 
@@ -562,6 +586,12 @@ public function saveDecorations()
                 $photostripModel->updateDecorationData($photostrip_id, json_encode($decoration_data));
             }
 
+            // Generate token for finalize session access (strict mode only)
+            if (ENABLE_SESSION_REFRESH_BACK) {
+                Session::start();
+                Session::set('finalize_session_token', uniqid('finalize_', true));
+            }
+
             echo json_encode(['success' => true]);
 
         } catch (Exception $e) {
@@ -578,12 +608,18 @@ public function saveDecorations()
         if (ENABLE_SESSION_REFRESH_BACK) {
             $sessionWorkflowStep = Session::get('workflow_step');
             $sessionCurrentSessionId = Session::get('current_session_id');
+            $finalizeSessionToken = Session::get('finalize_session_token');
 
-            // STRICT MODE: Only allow access from decoration editor
-            $validSteps = ['decoration_editor_active'];
-            if (!in_array($sessionWorkflowStep, $validSteps) || $sessionCurrentSessionId != $session_id) {
+            // Only allow access with valid finalize session token (prevents refresh/back/direct access)
+            if ($sessionWorkflowStep !== 'decoration_editor_active' || 
+                $sessionCurrentSessionId != $session_id || 
+                empty($finalizeSessionToken)) {
                 $this->flashAndRedirect('packages', 'Sesi tidak valid atau telah berakhir. Silakan mulai lagi.');
             }
+            
+            // Update to current step and consume token
+            Session::set('workflow_step', 'finalize_session_active');
+            Session::set('finalize_session_token', null);
         }
         // When ENABLE_SESSION_REFRESH_BACK = false, allow free navigation (no restrictions)
 
@@ -635,11 +671,6 @@ public function saveDecorations()
             'session_photos' => $sessionPhotos
         ];
 
-        // Update workflow step for finalize session (only in strict mode)
-        if (ENABLE_SESSION_REFRESH_BACK) {
-            Session::set('workflow_step', 'finalize_session_active');
-        }
-        
         $this->view('photo/finalize_session', $data);
     }
 
@@ -784,6 +815,13 @@ public function saveDecorations()
                 'priority' => 5 // High priority for user print requests
             ]);
 
+            // Clear workflow session after successful print queue (strict mode only)
+            if (ENABLE_SESSION_REFRESH_BACK) {
+                Session::set('workflow_step', null);
+                Session::set('current_session_id', null);
+                Session::set('current_transaction_id', null);
+            }
+
             echo json_encode([
                 'success' => true, 
                 'message' => 'Photostrip telah ditambahkan ke queue print dan akan dicetak segera',
@@ -871,6 +909,13 @@ public function saveDecorations()
                 'Terima kasih telah menggunakan layanan photobooth kami! Terlampir adalah hasil foto session Anda.',
                 $attachments
             );
+
+            // Clear workflow session after successful email queue (strict mode only)
+            if (ENABLE_SESSION_REFRESH_BACK) {
+                Session::set('workflow_step', null);
+                Session::set('current_session_id', null);
+                Session::set('current_transaction_id', null);
+            }
 
             echo json_encode([
                 'success' => true,

@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use App\Core\Controller;
 use App\Core\Session;
+use Exception;
 
 class AdminController extends Controller {
     public function __construct()
@@ -1447,17 +1448,120 @@ class AdminController extends Controller {
     public function downloadLogs()
     {
         try {
-            $logFile = dirname(APPROOT) . '/logs/app.log';
-            if (!file_exists($logFile)) {
-                throw new \Exception('Log file not found');
+            // Try multiple possible log locations
+            $logLocations = [
+                dirname(APPROOT) . '/logs/app.log',
+                dirname(APPROOT) . '/logs/error.log',
+                dirname(APPROOT) . '/logs/access.log',
+                dirname(APPROOT) . '/app.log',
+                APPROOT . '/logs/app.log'
+            ];
+            
+            $logFile = null;
+            $logContent = '';
+            
+            // Find existing log file
+            foreach ($logLocations as $location) {
+                if (file_exists($location) && filesize($location) > 0) {
+                    $logFile = $location;
+                    break;
+                }
             }
-
+            
+            // If no log file found, create a basic log with system info
+            if (!$logFile) {
+                $logContent = "=== PHOTOBOOTH APPLICATION LOG ===\n";
+                $logContent .= "Generated: " . date('Y-m-d H:i:s') . "\n";
+                $logContent .= "PHP Version: " . phpversion() . "\n";
+                $logContent .= "Server: " . ($_SERVER['SERVER_SOFTWARE'] ?? 'Unknown') . "\n";
+                $logContent .= "Document Root: " . ($_SERVER['DOCUMENT_ROOT'] ?? 'Unknown') . "\n";
+                $logContent .= "App Root: " . APPROOT . "\n";
+                $logContent .= "\n=== ERROR LOG (if any) ===\n";
+                
+                // Try to get PHP error log
+                $phpErrorLog = ini_get('error_log');
+                if ($phpErrorLog && file_exists($phpErrorLog)) {
+                    $recentErrors = $this->tail($phpErrorLog, 50);
+                    $logContent .= $recentErrors;
+                } else {
+                    $logContent .= "No PHP error log found.\n";
+                }
+                
+                $logContent .= "\n=== SESSION DATA ===\n";
+                $logContent .= "Session ID: " . session_id() . "\n";
+                $logContent .= "Admin logged in: " . (Session::has('admin_id') ? 'Yes' : 'No') . "\n";
+                
+            } else {
+                $logContent = file_get_contents($logFile);
+            }
+            
+            // Set headers for file download
             header('Content-Type: text/plain');
-            header('Content-Disposition: attachment; filename="photobooth_logs_' . date('Y-m-d') . '.log"');
-            readfile($logFile);
-        } catch (\Exception $e) {
-            $this->flashAndRedirect('admin/dashboard', 'Failed to download logs: ' . $e->getMessage(), 'error');
+            header('Content-Disposition: attachment; filename="photobooth_logs_' . date('Y-m-d_H-i-s') . '.log"');
+            header('Content-Length: ' . strlen($logContent));
+            header('Cache-Control: no-cache, no-store, must-revalidate');
+            header('Pragma: no-cache');
+            header('Expires: 0');
+            
+            // Output the log content
+            echo $logContent;
+            exit; // Important: prevent any additional output
+            
+        } catch (Exception $e) {
+            // If download fails, create an error log content
+            $errorLog = "=== LOG DOWNLOAD ERROR ===\n";
+            $errorLog .= "Error: " . $e->getMessage() . "\n";
+            $errorLog .= "Time: " . date('Y-m-d H:i:s') . "\n";
+            $errorLog .= "Attempted locations:\n";
+            
+            if (isset($logLocations)) {
+                foreach ($logLocations as $location) {
+                    $errorLog .= "- $location " . (file_exists($location) ? '(exists)' : '(not found)') . "\n";
+                }
+            }
+            
+            header('Content-Type: text/plain');
+            header('Content-Disposition: attachment; filename="photobooth_error_log_' . date('Y-m-d_H-i-s') . '.log"');
+            echo $errorLog;
+            exit;
         }
+    }
+    
+    private function tail($file, $lines = 50) 
+    {
+        if (!file_exists($file)) {
+            return "File not found: $file\n";
+        }
+        
+        $handle = fopen($file, 'r');
+        if (!$handle) {
+            return "Could not open file: $file\n";
+        }
+        
+        $linecounter = 0;
+        $pos = -2;
+        $beginning = false;
+        $text = array();
+        
+        while ($linecounter < $lines) {
+            $t = " ";
+            while ($t != "\n") {
+                if (fseek($handle, $pos, SEEK_END) == -1) {
+                    $beginning = true;
+                    break;
+                }
+                $t = fgetc($handle);
+                $pos--;
+            }
+            $linecounter++;
+            if ($beginning) {
+                rewind($handle);
+            }
+            $text[$lines - $linecounter - 1] = fgets($handle);
+            if ($beginning) break;
+        }
+        fclose($handle);
+        return implode('', array_reverse($text));
     }
 
 
