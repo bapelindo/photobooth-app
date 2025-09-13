@@ -274,6 +274,8 @@
             padding: 10px 10px;
             var(--accent-color);
             box-shadow: 0 4px 15px rgba(0,0,0,0.2); 
+            min-width: 150px;
+            text-align: center;
         }
 
         .btn-capture:hover {

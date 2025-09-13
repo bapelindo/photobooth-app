@@ -395,6 +395,164 @@
             background: rgba(244, 67, 54, 0.95);
         }
 
+        /* Preview Modal Styles */
+        .preview-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+            z-index: 10000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .preview-modal.show {
+            display: flex;
+            opacity: 1;
+        }
+        
+        .preview-content {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 50vw;
+            max-height: 50vh;
+            overflow: auto;
+            position: relative;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            transform: scale(0.8);
+            transition: transform 0.3s ease;
+        }
+        
+        .preview-modal.show .preview-content {
+            transform: scale(1);
+        }
+        
+        .preview-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        
+        .preview-header h2 {
+            font-family: 'Fredoka One', cursive;
+            color: var(--primary-color);
+            margin: 0;
+            font-size: 1.8rem;
+        }
+        
+        .close-preview {
+            background: var(--secondary-color);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        
+        .close-preview:hover {
+            background: #ff4757;
+            transform: scale(1.1);
+        }
+        
+        .print-preview-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .photostrip-paper {
+            background: white;
+            box-shadow: 
+                0 10px 30px rgba(0, 0, 0, 0.2),
+                inset 0 0 0 1px #e0e0e0;
+            border-radius: 8px;
+            padding: 15px;
+            position: relative;
+            transform-style: preserve-3d;
+            transform: perspective(1000px) rotateX(2deg);
+            max-width: 320px;
+            max-height: 80vh;
+            overflow: auto;
+        }
+        
+        .photostrip-paper::before {
+            content: '';
+            position: absolute;
+            top: -5px;
+            left: 10px;
+            right: 10px;
+            height: 3px;
+            background: linear-gradient(90deg, transparent 0%, #ddd 20%, #ddd 80%, transparent 100%);
+            border-radius: 50%;
+            opacity: 0.6;
+        }
+        
+        .photostrip-image {
+            width: 200px;
+            height: 600px;
+            border-radius: 8px;
+            object-fit: contain;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .print-info {
+            text-align: center;
+            color: #666;
+            font-size: 0.9rem;
+            max-width: 400px;
+        }
+        
+        .preview-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        
+        .btn-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(255, 255, 255, 0.9);
+            color: #666;
+            border: 2px solid #ddd;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(5px);
+        }
+        
+        .btn-close:hover {
+            background: #ff5757;
+            color: white;
+            border-color: #ff5757;
+            transform: scale(1.1);
+        }
+
         @media (max-width: 768px) {
             .layout-container {
                 grid-template-columns: 1fr;
@@ -418,6 +576,21 @@
 
             .controls-panel {
                 order: 4;
+            }
+            
+            .preview-content {
+                padding: 20px;
+                margin: 10px;
+            }
+            
+            .photostrip-image {
+                width: 150px;
+                height: 450px;
+            }
+            
+            .preview-actions {
+                flex-direction: column;
+                gap: 10px;
             }
         }
     </style>
@@ -1168,32 +1341,35 @@
             }
             mainCanvas.renderAll();
 
-            const previewWindow = window.open('', '_blank', 'width=1000,height=700,scrollbars=yes');
+            // Create preview content for modal
+            var previewContent = document.getElementById('previewContent');
+            previewContent.innerHTML = '<div class="photostrip-preview-content">' +
+                '<h3 style="margin: 0 0 15px 0; color: #FF6584; text-align: center; font-weight: bold;">📷 ' + frame.name + '</h3>' +
+                '<img src="' + dataURL + '" style="width: 180px; height: auto; box-shadow: 0 4px 8px rgba(0,0,0,0.1);" alt="Photostrip Preview">' +
+                '</div>';
+
+            // Store dataURL for printing
+            window.currentPreviewDataURL = dataURL;
+            window.currentFrameName = frame.name;
+
+            // Show modal
+            var modal = document.getElementById('previewModal');
+            modal.style.display = 'flex';
+            setTimeout(function() {
+                modal.style.opacity = '1';
+            }, 10);
             
-            let previewHTML = '<html>' +
-                '<head>' +
-                    '<title>Preview Photostrip</title>' +
-                    '<style>' +
-                        'body { font-family: "Poppins", sans-serif; padding: 20px; background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%); margin: 0; display: flex; align-items: center; justify-content: center; }' +
-                        'h1 { text-align: center; color: #6C63FF; font-family: "Fredoka One", cursive; margin-bottom: 30px; }' +
-                        '.photostrip-preview { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); }' +
-                        '.photostrip-preview h3 { margin: 0 0 15px 0; color: #FF6584; text-align: center; font-weight: bold; }' +
-                        '.photostrip-image { width: 300px; height: 900px; border-radius: 15px; object-fit: contain; }' +
-                        '@media print { body { background: white !important; } }' +
-                    '</style>' +
-                '</head>' +
-                '<body>' +
-                    '<div class="photostrip-preview">' +
-                        '<h3>📷 ' + frame.name + '</h3>' +
-                        '<img src="' + dataURL + '" class="photostrip-image" alt="Photostrip Preview">' +
-                    '</div>' +
-                '</body></html>';
-            
-            previewWindow.document.write(previewHTML);
-            previewWindow.document.close();
-            
-            showNotification('👁️ Preview dibuka di tab baru!', 'success');
+            showNotification('👁️ Preview photostrip siap!', 'success');
         }
+
+        function closePreview() {
+            var modal = document.getElementById('previewModal');
+            modal.style.opacity = '0';
+            setTimeout(function() {
+                modal.style.display = 'none';
+            }, 300);
+        }
+
 
         async function saveLayouts() {
             const continueBtn = document.getElementById('continue-btn');
@@ -1331,5 +1507,20 @@
             });
         }
     </script>
+
+    <!-- Preview Modal -->
+    <div id="previewModal" class="preview-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>📸 Preview Photostrip</h3>
+                <button onclick="closePreview()" class="btn-close">×</button>
+            </div>
+            <div class="photostrip-container">
+                <div id="photostripPaper" class="photostrip-paper">
+                    <div id="previewContent"></div>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

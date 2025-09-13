@@ -184,6 +184,7 @@
             height: 100%;
             background-color: rgba(0, 0, 0, 0.7);
             display: none;
+            flex-direction: column; /* Stack spinner and text vertically */
             justify-content: center;
             align-items: center;
             z-index: 2000;
@@ -223,10 +224,8 @@
 
         <!-- Loading overlay -->
         <div id="loading-overlay" class="loading-overlay">
-            <div style="text-align: center;">
-                <div class="loading-spinner"></div>
-                <div class="loading-text">Memuat pembayaran...</div>
-            </div>
+            <div class="loading-spinner"></div>
+            <div class="loading-text">Memuat pembayaran...</div>
         </div>
 
         <script>
