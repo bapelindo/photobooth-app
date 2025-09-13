@@ -159,14 +159,14 @@ function regeneratePhotostrip(photostripId) {
             // Reload the page to show the new image
             window.location.reload();
         } else {
-            alert('Error regenerating photostrip: ' + (data.message || 'Unknown error'));
+            showAdminMessage('Error regenerating photostrip: ' + (data.message || 'Unknown error'), 'error');
             btn.innerHTML = originalText;
             btn.disabled = false;
         }
     })
     .catch(error => {
         console.error('Error:', error);
-        alert('Error regenerating photostrip: ' + error.message);
+        showAdminMessage('Error regenerating photostrip: ' + error.message, 'error');
         btn.innerHTML = originalText;
         btn.disabled = false;
     });

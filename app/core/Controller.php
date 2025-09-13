@@ -104,9 +104,19 @@ class Controller {
      * Menyimpan pesan flash ke sesi dan mengalihkan pengguna.
      * @param string $url Tujuan redirect.
      * @param string $message Pesan yang akan ditampilkan.
+     * @param string $type Tipe pesan (success, error, info)
      */
-    protected function flashAndRedirect($url, $message) {
-        Session::set('flash_message', $message);
+    protected function flashAndRedirect($url, $message, $type = 'info') {
+        // Check if this is an admin controller by checking the URL
+        if (strpos($url, 'admin/') === 0) {
+            // Admin flash message
+            Session::set('admin_flash_message', $message);
+            Session::set('admin_flash_type', $type);
+        } else {
+            // Public flash message
+            Session::set('flash_message', $message);
+            Session::set('flash_type', $type);
+        }
         $this->redirect($url);
     }
 }

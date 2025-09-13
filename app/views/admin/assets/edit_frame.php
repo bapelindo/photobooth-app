@@ -263,13 +263,15 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             const result = await response.json();
             if (result.success) {
-                alert('Frame data saved successfully!');
-                window.location.href = '<?= URLROOT; ?>/admin/assets';
+                showAdminMessage('Frame data saved successfully!', 'success');
+                setTimeout(() => {
+                    window.location.href = '<?= URLROOT; ?>/admin/assets';
+                }, 1000);
             } else {
                 throw new Error(result.message || 'Failed to save.');
             }
         } catch (err) {
-            alert('Error: ' + err.message);
+            showAdminMessage('Error: ' + err.message, 'error');
             console.error(err);
         }
     });

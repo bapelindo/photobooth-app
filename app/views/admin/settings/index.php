@@ -168,7 +168,7 @@ document.querySelector('form').addEventListener('submit', function(e) {
     
     if (!isValid) {
         e.preventDefault();
-        alert('Please fill in all required fields.');
+        showAdminMessage('Please fill in all required fields.', 'warning');
     }
 });
 </script>

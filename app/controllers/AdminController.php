@@ -1087,7 +1087,7 @@ class AdminController extends Controller {
             $data = json_decode(json_encode($data), true);
         }
         if (empty($data)) {
-            return '';
+            return "No data available\n";
         }
 
         $output = fopen('php://memory', 'w');
@@ -1103,7 +1103,7 @@ class AdminController extends Controller {
                 $headers[] = $key;
             }
         }
-        fputcsv($output, $headers);
+        fputcsv($output, $headers, ',', '"', '\\');
 
         foreach ($data as $row) {
             $row = (array)$row;
@@ -1115,7 +1115,7 @@ class AdminController extends Controller {
                     $flat_row[] = $value;
                 }
             }
-            fputcsv($output, $flat_row);
+            fputcsv($output, $flat_row, ',', '"', '\\');
         }
 
         rewind($output);
@@ -1127,6 +1127,9 @@ class AdminController extends Controller {
 
     public function exportData($type = 'all')
     {
+        // Suppress any output that could interfere with headers
+        ob_clean();
+
         try {
             $allowedTypes = ['sessions', 'packages', 'transactions', 'all'];
             if (!in_array($type, $allowedTypes)) {
@@ -1150,18 +1153,24 @@ class AdminController extends Controller {
                     ? $transactionModel->getAllWithDetails() : $transactionModel->getAll();
 
                 $zip = new \ZipArchive();
-                $zipFile = tempnam(sys_get_temp_dir(), 'photobooth_export');
-                
-                if ($zip->open($zipFile, \ZipArchive::CREATE) !== TRUE) {
+                $zipFile = tempnam(sys_get_temp_dir(), 'photobooth_export') . '.zip';
+
+                if ($zip->open($zipFile, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) !== TRUE) {
                     throw new \Exception("Cannot create zip archive");
                 }
 
-                if (!empty($sessions)) $zip->addFromString('sessions.csv', $this->arrayToCsv($sessions));
-                if (!empty($packages)) $zip->addFromString('packages.csv', $this->arrayToCsv($packages));
-                if (!empty($transactions)) $zip->addFromString('transactions.csv', $this->arrayToCsv($transactions));
+                // Always add CSV files, even if empty (with headers only)
+                $sessionsCsv = !empty($sessions) ? $this->arrayToCsv($sessions) : "No session data available\n";
+                $packagesCsv = !empty($packages) ? $this->arrayToCsv($packages) : "No package data available\n";
+                $transactionsCsv = !empty($transactions) ? $this->arrayToCsv($transactions) : "No transaction data available\n";
+
+                $zip->addFromString('sessions.csv', $sessionsCsv);
+                $zip->addFromString('packages.csv', $packagesCsv);
+                $zip->addFromString('transactions.csv', $transactionsCsv);
                 
                 $zip->close();
 
+                ob_clean();
                 header('Content-Type: application/zip');
                 header('Content-Disposition: attachment; filename="' . $filename . '"');
                 header('Content-Length: ' . filesize($zipFile));
@@ -1193,6 +1202,7 @@ class AdminController extends Controller {
                         break;
                 }
 
+                ob_clean();
                 header('Content-Type: text/csv');
                 header('Content-Disposition: attachment; filename="' . $filename . '"');
                 echo $this->arrayToCsv($data);

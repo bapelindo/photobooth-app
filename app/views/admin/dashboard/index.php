@@ -418,13 +418,13 @@ function clearCache() {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                alert('Cache cleared successfully: ' + data.message);
+                showAdminMessage('Cache cleared successfully: ' + data.message, 'success');
             } else {
-                alert('Failed to clear cache: ' + data.message);
+                showAdminMessage('Failed to clear cache: ' + data.message, 'error');
             }
         })
         .catch(error => {
-            alert('Error clearing cache: ' + error.message);
+            showAdminMessage('Error clearing cache: ' + error.message, 'error');
         });
     }
     toggleDropdown('adminDropdown');
@@ -435,7 +435,7 @@ function showSystemInfo() {
         .then(response => response.json())
         .then(data => {
             if (data.error) {
-                alert('Error loading system info: ' + data.error);
+                showAdminMessage('Error loading system info: ' + data.error, 'error');
                 return;
             }
             
@@ -477,7 +477,7 @@ Extensions:
             document.body.appendChild(modal);
         })
         .catch(error => {
-            alert('Error loading system info: ' + error.message);
+            showAdminMessage('Error loading system info: ' + error.message, 'error');
         });
     
     toggleDropdown('adminDropdown');

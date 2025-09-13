@@ -572,6 +572,8 @@
                 transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             }
         }
+
+        /* Removed old popup styles - now using simple notifications */
     </style>
 </head>
 <body>
@@ -615,6 +617,20 @@
             </a>
         </div>
     </aside>
+
+    <?php if (\App\Core\Session::has('admin_flash_message')): ?>
+        <?php
+            $flashType = \App\Core\Session::get('admin_flash_type', 'info');
+            $flashMessage = \App\Core\Session::get('admin_flash_message');
+            \App\Core\Session::unset('admin_flash_message');
+            \App\Core\Session::unset('admin_flash_type');
+        ?>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                showAdminMessage('<?= addslashes($flashMessage) ?>', '<?= $flashType ?>');
+            });
+        </script>
+    <?php endif; ?>
 
     <main class="main-content">
         <?= $content ?? '' ?>
@@ -734,6 +750,79 @@
                 console.warn('Slow page load detected:', loadTime + 'ms');
             }
         });
+
+        // Removed old popup functions - now using simple notifications
+
+        // Simple Admin Message System (like original queue messages)
+        function showAdminMessage(message, type = 'info') {
+            const alertClass = type === 'success' ? 'alert-success' : type === 'error' ? 'alert-danger' : 'alert-info';
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `admin-simple-alert ${alertClass}`;
+            alertDiv.textContent = message;
+            alertDiv.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 12px 20px;
+                border-radius: 6px;
+                z-index: 9999;
+                font-weight: 500;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+                animation: slideInRight 0.3s ease-out;
+                max-width: 400px;
+                ${type === 'success' ? 'background: #d4edda; color: #155724; border: 1px solid #c3e6cb;' :
+                  type === 'error' ? 'background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb;' :
+                  'background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb;'}
+            `;
+
+            // Add slide-in animation
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes slideInRight {
+                    from {
+                        transform: translateX(100%);
+                        opacity: 0;
+                    }
+                    to {
+                        transform: translateX(0);
+                        opacity: 1;
+                    }
+                }
+                @keyframes slideOutRight {
+                    from {
+                        transform: translateX(0);
+                        opacity: 1;
+                    }
+                    to {
+                        transform: translateX(100%);
+                        opacity: 0;
+                    }
+                }
+            `;
+            if (!document.querySelector('#admin-alert-styles')) {
+                style.id = 'admin-alert-styles';
+                document.head.appendChild(style);
+            }
+
+            document.body.appendChild(alertDiv);
+
+            // Auto-close after 3 seconds with slide-out animation
+            setTimeout(() => {
+                if (alertDiv.parentNode) {
+                    alertDiv.style.animation = 'slideOutRight 0.3s ease-out forwards';
+                    setTimeout(() => {
+                        if (alertDiv.parentNode) {
+                            alertDiv.parentNode.removeChild(alertDiv);
+                        }
+                    }, 300);
+                }
+            }, 3000);
+        }
+
+        // Legacy compatibility - replace old showMessage calls
+        window.showMessage = showAdminMessage;
+
+        // Removed old popup event handlers - now using simple notifications
     </script>
 </body>
 </html>

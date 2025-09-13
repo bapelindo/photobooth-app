@@ -695,32 +695,7 @@ function clearCompletedJobs() {
     }
 }
 
-function showMessage(message, type) {
-    // Simple message display - you can enhance this
-    const alertClass = type === 'success' ? 'alert-success' : type === 'error' ? 'alert-danger' : 'alert-info';
-    const alertDiv = document.createElement('div');
-    alertDiv.className = `alert ${alertClass}`;
-    alertDiv.textContent = message;
-    alertDiv.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        padding: 12px 20px;
-        border-radius: 4px;
-        z-index: 9999;
-        ${type === 'success' ? 'background: #d4edda; color: #155724; border: 1px solid #c3e6cb;' : 
-          type === 'error' ? 'background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb;' : 
-          'background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb;'}
-    `;
-    
-    document.body.appendChild(alertDiv);
-    
-    setTimeout(() => {
-        if (alertDiv.parentNode) {
-            alertDiv.parentNode.removeChild(alertDiv);
-        }
-    }, 3000);
-}
+// showMessage function is now handled globally by admin layout
 
 // Initialize feather icons
 feather.replace();

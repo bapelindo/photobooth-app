@@ -198,16 +198,16 @@ function processQueue() {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            alert(`Success: ${data.message}`);
+            showAdminMessage(`Success: ${data.message}`, 'success');
             // Reload page to show updated stats
-            window.location.reload();
+            setTimeout(() => window.location.reload(), 1000);
         } else {
-            alert(`Error: ${data.message}`);
+            showAdminMessage(`Error: ${data.message}`, 'error');
         }
     })
     .catch(error => {
         console.error('Error:', error);
-        alert('Failed to process queue');
+        showAdminMessage('Failed to process queue', 'error');
     })
     .finally(() => {
         btn.innerHTML = originalText;
