@@ -712,9 +712,14 @@
         }
 
         function goToPackages() {
+            // Allow navigation when going to packages
+            <?php if (ENABLE_SESSION_REFRESH_BACK): ?>
+            allowNavigation = true;
+            <?php endif; ?>
+
             // Same fade-out animation as select-frame
             document.body.classList.add('fade-out');
-            
+
             setTimeout(() => {
                 window.location.href = '<?= URLROOT ?>/packages';
             }, 500);
@@ -753,6 +758,43 @@
                     console.error('Error checking print status:', error);
                 });
         }
+
+        // Simple back/refresh protection with popup
+        <?php if (ENABLE_SESSION_REFRESH_BACK): ?>
+        let allowNavigation = false;
+
+        // Handle refresh attempts
+        window.addEventListener('beforeunload', function(e) {
+            if (allowNavigation) {
+                return;
+            }
+
+            e.preventDefault();
+            e.returnValue = '';
+            return '';
+        });
+
+        // Handle browser back button
+        let currentUrl = window.location.href;
+        window.history.pushState({}, '', currentUrl);
+
+        window.addEventListener('popstate', function(e) {
+            if (allowNavigation) {
+                return;
+            }
+
+            // Show confirmation for back button
+            if (confirm('⚠️ PERINGATAN!\n\nAnda mencoba kembali ke halaman sebelumnya. Proses finalisasi akan dibatalkan.\n\nApakah Anda yakin ingin melanjutkan?')) {
+                allowNavigation = true;
+                window.history.go(-1);
+            } else {
+                // Stay on current page
+                window.history.pushState({}, '', currentUrl);
+            }
+        });
+
+        console.log('Simple back/refresh protection loaded for finalize session');
+        <?php endif; ?>
     </script>
 </body>
 </html>

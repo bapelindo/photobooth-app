@@ -256,6 +256,12 @@ class PaymentController extends Controller
                 Session::start();
                 Session::set('workflow_step', 'frame_selection_unlocked');
                 Session::set('current_transaction_id', $transaction->id);
+
+                // Generate tokens for next steps (strict mode only)
+                if (ENABLE_SESSION_REFRESH_BACK) {
+                    Session::set('payment_finish_token', uniqid('finish_', true));
+                    Session::set('frame_selection_token', uniqid('frame_', true));
+                }
                 
                 echo json_encode([
                     'success' => true,
@@ -280,10 +286,19 @@ class PaymentController extends Controller
     public function finish($transaction_id = null)
     {
         Session::start();
-        
-        if (ENABLE_SESSION_REFRESH_BACK && Session::get('payment_finished_displayed')) {
-            $this->flashAndRedirect('packages', 'Transaksi telah selesai diproses. Silakan mulai lagi jika ingin membuat yang baru.');
-            exit();
+
+        // Token-based access control for payment finish page
+        if (ENABLE_SESSION_REFRESH_BACK) {
+            $paymentFinishToken = Session::get('payment_finish_token');
+            $paymentFinishedDisplayed = Session::get('payment_finished_displayed');
+
+            // Check if page was already accessed or no valid token
+            if ($paymentFinishedDisplayed || empty($paymentFinishToken)) {
+                $this->flashAndRedirect('packages', 'Halaman pembayaran sudah pernah diakses atau sesi telah berakhir. Silakan mulai lagi.');
+            }
+
+            // Consume the token (prevents refresh)
+            Session::set('payment_finish_token', null);
         }
 
         // Support both transaction_id parameter and order_id from GET
@@ -319,6 +334,12 @@ class PaymentController extends Controller
             
             Session::set('workflow_step', 'frame_selection_unlocked');
             Session::set('current_transaction_id', $transaction->id);
+
+            // Generate tokens for next steps (strict mode only)
+            if (ENABLE_SESSION_REFRESH_BACK) {
+                Session::set('payment_finish_token', uniqid('finish_', true));
+                Session::set('frame_selection_token', uniqid('frame_', true));
+            }
         }
 
         if ($transaction && $transaction->payment_status === 'success') {

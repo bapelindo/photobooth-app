@@ -18,13 +18,17 @@ class PhotoController extends Controller
         if (ENABLE_SESSION_REFRESH_BACK) {
             $sessionWorkflowStep = Session::get('workflow_step');
             $sessionCurrentTransactionId = Session::get('current_transaction_id');
+            $frameSelectionToken = Session::get('frame_selection_token');
 
-            $condition1 = ($sessionWorkflowStep !== 'frame_selection_unlocked');
-            $condition2 = ($sessionCurrentTransactionId != $transaction_id);
-
-            if ($condition1 || $condition2) {
-                $this->flashAndRedirect('packages', 'Sesi sebelumnya telah berakhir atau tidak valid. Silakan mulai lagi.');
+            // Only allow access with valid frame selection token (prevents refresh/back/direct access)
+            if ($sessionWorkflowStep !== 'frame_selection_unlocked' ||
+                $sessionCurrentTransactionId != $transaction_id ||
+                empty($frameSelectionToken)) {
+                $this->flashAndRedirect('packages', 'Sesi tidak valid atau telah berakhir. Silakan mulai lagi.');
             }
+
+            // Consume the token (prevents refresh)
+            Session::set('frame_selection_token', null);
         }
 
         // Get transaction and package data
@@ -96,8 +100,8 @@ class PhotoController extends Controller
             $photoSessionToken = Session::get('photo_session_token');
 
             // Only allow access with valid photo session token (prevents refresh/back/direct access)
-            if ($sessionWorkflowStep !== 'photo_session_active' || 
-                $sessionCurrentSessionId != $session_id || 
+            if ($sessionWorkflowStep !== 'photo_session_active' ||
+                $sessionCurrentSessionId != $session_id ||
                 empty($photoSessionToken)) {
                 $this->flashAndRedirect('packages', 'Sesi tidak valid atau telah berakhir. Silakan mulai lagi.');
             }
@@ -335,8 +339,8 @@ class PhotoController extends Controller
             $layoutEditorToken = Session::get('layout_editor_token');
 
             // Only allow access with valid layout editor token (prevents refresh/back/direct access)
-            if ($sessionWorkflowStep !== 'photo_session_active' || 
-                $sessionCurrentSessionId != $session_id || 
+            if ($sessionWorkflowStep !== 'photo_session_active' ||
+                $sessionCurrentSessionId != $session_id ||
                 empty($layoutEditorToken)) {
                 $this->flashAndRedirect('packages', 'Sesi tidak valid atau telah berakhir. Silakan mulai lagi.');
             }
@@ -466,8 +470,8 @@ class PhotoController extends Controller
             $decorationEditorToken = Session::get('decoration_editor_token');
 
             // Only allow access with valid decoration editor token (prevents refresh/back/direct access)
-            if ($sessionWorkflowStep !== 'layout_editor_active' || 
-                $sessionCurrentSessionId != $session_id || 
+            if ($sessionWorkflowStep !== 'layout_editor_active' ||
+                $sessionCurrentSessionId != $session_id ||
                 empty($decorationEditorToken)) {
                 $this->flashAndRedirect('packages', 'Sesi tidak valid atau telah berakhir. Silakan mulai lagi.');
             }
@@ -563,8 +567,8 @@ public function saveDecorations()
             $finalizeSessionToken = Session::get('finalize_session_token');
 
             // Only allow access with valid finalize session token (prevents refresh/back/direct access)
-            if ($sessionWorkflowStep !== 'decoration_editor_active' || 
-                $sessionCurrentSessionId != $session_id || 
+            if ($sessionWorkflowStep !== 'decoration_editor_active' ||
+                $sessionCurrentSessionId != $session_id ||
                 empty($finalizeSessionToken)) {
                 $this->flashAndRedirect('packages', 'Sesi tidak valid atau telah berakhir. Silakan mulai lagi.');
             }

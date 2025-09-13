@@ -1449,6 +1449,11 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
+                    // Allow navigation for successful session completion
+                    <?php if (ENABLE_SESSION_REFRESH_BACK): ?>
+                    allowNavigation = true;
+                    <?php endif; ?>
+
                     // Same timing as select-frame (500ms)
                     setTimeout(() => {
                         window.location.href = `<?= URLROOT ?>/photo/layout/${sessionId}`;
@@ -1885,6 +1890,43 @@ function calculateUnifiedSafeZone(allSlots) {
                 }
             });
         });
+
+        // Simple back/refresh protection with popup
+        <?php if (ENABLE_SESSION_REFRESH_BACK): ?>
+        let allowNavigation = false;
+
+        // Handle refresh attempts
+        window.addEventListener('beforeunload', function(e) {
+            if (allowNavigation) {
+                return;
+            }
+
+            e.preventDefault();
+            e.returnValue = '';
+            return '';
+        });
+
+        // Handle browser back button
+        let currentUrl = window.location.href;
+        window.history.pushState({}, '', currentUrl);
+
+        window.addEventListener('popstate', function(e) {
+            if (allowNavigation) {
+                return;
+            }
+
+            // Show confirmation for back button
+            if (confirm('⚠️ PERINGATAN!\n\nAnda mencoba kembali ke halaman sebelumnya. Foto yang belum disimpan akan hilang.\n\nApakah Anda yakin ingin melanjutkan?')) {
+                allowNavigation = true;
+                window.history.go(-1);
+            } else {
+                // Stay on current page
+                window.history.pushState({}, '', currentUrl);
+            }
+        });
+
+        console.log('Simple back/refresh protection loaded for photo session');
+        <?php endif; ?>
     </script>
 </body>
 </html>

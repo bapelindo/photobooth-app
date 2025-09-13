@@ -560,10 +560,10 @@ class AdminController extends Controller {
 
             // Validate coordinates structure
             foreach ($coordinates as $coord) {
-                if (!is_array($coord) || !isset($coord['x']) || !isset($coord['y']) || !isset($coord['width']) || !isset($coord['height'])) {
+                if (!is_array($coord) || !isset($coord['top']) || !isset($coord['left']) || !isset($coord['width']) || !isset($coord['height'])) {
                     throw new \Exception('Invalid coordinate structure', 400);
                 }
-                if (!is_numeric($coord['x']) || !is_numeric($coord['y']) || !is_numeric($coord['width']) || !is_numeric($coord['height'])) {
+                if (!is_numeric($coord['top']) || !is_numeric($coord['left']) || !is_numeric($coord['width']) || !is_numeric($coord['height'])) {
                     throw new \Exception('Coordinate values must be numeric', 400);
                 }
             }
