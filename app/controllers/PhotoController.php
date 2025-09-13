@@ -172,55 +172,7 @@ class PhotoController extends Controller
         $this->view('photo/session', $data);
     }
 
-    public function restartPhotoSession($session_id)
-    {
-        header('Content-Type: application/json');
-
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            http_response_code(405);
-            echo json_encode(['success' => false, 'message' => 'Method not allowed']);
-            return;
-        }
-
-        try {
-            $photoSessionModel = $this->model('PhotoSession');
-            $session = $photoSessionModel->find($session_id);
-            
-            if (!$session) {
-                throw new Exception('Session not found');
-            }
-
-            // Clear all existing photos from this session
-            $photoSessionPhotoModel = $this->model('PhotoSessionPhoto');
-            $clearResult = $photoSessionPhotoModel->clearSessionPhotos($session_id);
-            
-            // Reset session status to active
-            $photoSessionModel->updateStatus($session_id, 'started');
-            
-            // Clear photostrip data if user wants to restart completely
-            $photostripModel = $this->model('Photostrip');
-            $photostrips = $photostripModel->getBySessionId($session_id);
-            foreach ($photostrips as $photostrip) {
-                $photostripModel->update($photostrip->id, [
-                    'layout_data' => null,
-                    'decoration_data' => null,
-                    'final_image_path' => null,
-                    'is_printed' => 0
-                ]);
-            }
-
-            echo json_encode([
-                'success' => true, 
-                'message' => 'Session restarted successfully',
-                'cleared_photos' => $clearResult['deleted_records'],
-                'cleared_files' => $clearResult['deleted_files']
-            ]);
-
-        } catch (Exception $e) {
-            http_response_code(500);
-            echo json_encode(['success' => false, 'message' => $e->getMessage()]);
-        }
-    }
+    
 
     public function saveSessionPhoto()
     {
