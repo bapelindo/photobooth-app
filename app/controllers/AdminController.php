@@ -960,24 +960,24 @@ class AdminController extends Controller {
     private function getPackageStatistics()
     {
         $packageModel = $this->model('Package');
-        
-        // Simple implementation - would need to join with transactions
-        $packages = $packageModel->getAll();
-        $packageStats = [];
-        
-        foreach ($packages as $package) {
-            $packageStats[] = (object) [
-                'package_name' => $package->name,
-                'usage_count' => rand(1, 50) // Placeholder - would need real data
+
+        // Get actual package performance data instead of fake random data
+        $packageStats = $packageModel->getPackagePerformance();
+        $result = [];
+
+        foreach ($packageStats as $stat) {
+            $result[] = (object) [
+                'package_name' => $stat->name,
+                'usage_count' => $stat->successful_sales ?? 0
             ];
         }
-        
+
         // Sort by usage count
-        usort($packageStats, function($a, $b) {
+        usort($result, function($a, $b) {
             return $b->usage_count - $a->usage_count;
         });
-        
-        return $packageStats;
+
+        return $result;
     }
 
     private function getChartData()
