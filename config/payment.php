@@ -1,7 +1,7 @@
 <?php
 
 return [
-    'server_key' => 'Mid-server-SZ8bm2vaoqAxNBHRtn3ETxXl', // Ganti dengan Server Key Midtrans Anda
-    'client_key' => 'Mid-client-qihjC0oHBfaYfmMe', // Ganti dengan Client Key Midtrans Anda
+    'server_key' => 'Mid-server-SZ8bm2vaoqAxNBHRtn3ETxXl', // Default sandbox server key
+    'client_key' => 'Mid-client-qihjC0oHBfaYfmMe', // Default sandbox client key
     'is_production' => false,
 ];

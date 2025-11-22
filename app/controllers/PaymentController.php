@@ -160,7 +160,7 @@ class PaymentController extends Controller
                 'order_id' => $order_id
             ]);
 
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             error_log('PaymentController::getSnapToken Error: ' . $e->getMessage());
             error_log('PaymentController::getSnapToken Stack trace: ' . $e->getTraceAsString());
             
@@ -174,7 +174,7 @@ class PaymentController extends Controller
                     'error' => 'Failed to create payment: ' . $e->getMessage(),
                     'debug_info' => $e->getFile() . ':' . $e->getLine()
                 ]);
-            } catch (Exception $innerException) {
+            } catch (\Throwable $innerException) {
                 error_log('PaymentController::getSnapToken - Even error response failed: ' . $innerException->getMessage());
                 echo json_encode(['success' => false, 'error' => 'Critical error occurred']);
             }

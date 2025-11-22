@@ -15,7 +15,7 @@ class PaymentService
 
     public function __construct()
     {
-        $this->config = require '../config/payment.php';
+        $this->config = require dirname(__DIR__, 2) . '/config/payment.php';
         
         // Validate configuration (sandbox keys start with SB-Mid-)
         if (empty($this->config['server_key']) || strlen($this->config['server_key']) < 20) {
@@ -29,6 +29,11 @@ class PaymentService
         Config::$isProduction = $this->config['is_production'];
         Config::$isSanitized = true;
         Config::$is3ds = true;
+
+        // Setel path ke sertifikat CA bundle
+        Config::$curlOptions = array(
+            CURLOPT_CAINFO => dirname(__DIR__, 2) . '/vendor/midtrans/midtrans-php/data/cacert.pem'
+        );
         
         // Note: apiBase and snapBase are not configurable properties in Midtrans Config
         // The library handles these automatically based on isProduction setting
@@ -57,7 +62,7 @@ class PaymentService
             // The redirect URL is only needed for redirect-based integration
             return ['token' => $snapToken, 'redirect_url' => null];
             
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             error_log("Midtrans Error: " . $e->getMessage());
             error_log("Midtrans Error Code: " . $e->getCode());
             error_log("Midtrans Error File: " . $e->getFile() . ":" . $e->getLine());
