@@ -77,6 +77,11 @@ define('AUTO_PRINT_ENABLED', true);
 // Print queue processing interval (seconds)
 define('PRINT_QUEUE_INTERVAL', 30);
 
+// Print method: 'gdi' (Windows Printer Driver - Recommended) or 'raw' (Raw BMP data)
+// Use 'gdi' for most printers including Epson L3110
+// Use 'raw' if your printer supports raw BMP data
+define('PRINT_METHOD', 'gdi');
+
 // Maximum file size for photo uploads (bytes)
 define('MAX_PHOTO_FILE_SIZE', 10485760); // 10MB
 

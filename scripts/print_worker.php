@@ -53,7 +53,7 @@ while (true) {
 
                 for ($copy = 1; $copy <= $job->copies; $copy++) {
                     $pythonPath = 'python';
-                    $command = escapeshellcmd("$pythonPath \"$scriptPath\" \"$photoPath\"");
+                    $command = escapeshellcmd("$pythonPath \"$scriptPath\" \"$photoPath\" " . PRINT_METHOD);
                     $output = shell_exec("$command 2>&1");
 
                     if (strpos(strtolower($output), 'error') !== false) {
