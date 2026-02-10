@@ -1,12 +1,14 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Editor Layout - Susun Photostrip</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Poppins:wght@400;600;700&display=swap"
+        rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.0/fabric.min.js"></script>
     <style>
         :root {
@@ -15,18 +17,23 @@
             --success-color: #4CAF50;
             --warning-color: #FF9800;
             --bg-gradient: linear-gradient(135deg, #fed6e3 0%, #ffecd2 100%);
-            --primary-color-rgb: 108, 99, 255; /* RGB for #6C63FF */
+            --primary-color-rgb: 108, 99, 255;
+            /* RGB for #6C63FF */
         }
-                /* Firefox Scrollbar */
+
+        /* Firefox Scrollbar */
         html {
-            scrollbar-width: thin; /* "auto" or "thin" */
-            scrollbar-color: rgba(254, 214, 227, 1  ) rgba(255, 255, 255, 0.95); /* thumb and track color */
+            scrollbar-width: thin;
+            /* "auto" or "thin" */
+            scrollbar-color: rgba(254, 214, 227, 1) rgba(255, 255, 255, 0.95);
+            /* thumb and track color */
         }
 
         /* Exact same animation as select-frame */
-        html, body {
-            height: 100%; 
-            margin: 0; 
+        html,
+        body {
+            height: 100%;
+            margin: 0;
             overflow: hidden;
         }
 
@@ -35,46 +42,56 @@
             background: var(--bg-gradient);
             padding: 20px;
             display: flex;
-            justify-content: center; align-items: center;box-sizing: border-box;
+            justify-content: center;
+            align-items: center;
+            box-sizing: border-box;
             opacity: 1;
             transition: opacity 0.4s ease-out;
         }
 
-        body.fade-out { 
-            opacity: 0; 
+        body.fade-out {
+            opacity: 0;
         }
 
         .layout-container {
             display: grid;
             grid-template-columns: 300px 1fr;
-            grid-template-rows: auto 1fr; /* Removed 'auto' for controls-panel */
+            grid-template-rows: auto 1fr;
+            /* Removed 'auto' for controls-panel */
             gap: 10px;
             height: 95vh;
             width: 100%;
             padding: 20px;
             box-sizing: border-box;
-            background: rgba(255, 255, 255, 0.5); backdrop-filter: blur(10px);
-            border-radius: 20px; padding: 20px; box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.05);
+            background: rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.05);
             opacity: 0;
             animation: contentFadeIn 0.5s ease-in 0.2s forwards;
             transition: opacity 0.5s ease-out;
         }
 
-        .layout-container.content-fade-out { 
-            opacity: 0; 
+        .layout-container.content-fade-out {
+            opacity: 0;
         }
-        
-        .layout-container > * {
+
+        .layout-container>* {
             opacity: 0;
             animation: innerElementFadeIn 0.5s ease-in 0.7s forwards;
         }
 
-        @keyframes contentFadeIn { 
-            to { opacity: 1; } 
+        @keyframes contentFadeIn {
+            to {
+                opacity: 1;
+            }
         }
 
-        @keyframes innerElementFadeIn { 
-            to { opacity: 1; } 
+        @keyframes innerElementFadeIn {
+            to {
+                opacity: 1;
+            }
         }
 
         .header-panel {
@@ -192,7 +209,8 @@
             padding: 20px;
             backdrop-filter: blur(10px);
             display: grid;
-            grid-template-columns: auto 1fr auto; /* Added 'auto' for controls-panel */
+            grid-template-columns: auto 1fr auto;
+            /* Added 'auto' for controls-panel */
             gap: 20px;
             position: relative;
             overflow: hidden;
@@ -266,104 +284,119 @@
             justify-content: center;
         }
 
-.controls-panel {
-    background: transparent;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end; /* Align items to the bottom */
-    gap: 15px;
-}
+        .controls-panel {
+            background: transparent;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            /* Align items to the bottom */
+            gap: 15px;
+        }
 
-.btn {
-    padding: 15px;
-    border: none;
-    border-radius: 18px; /* Slightly more rounded */
-    font-family: 'Poppins', sans-serif;
-    font-weight: 600;
-    font-size: 1rem;
-    cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
-}
+        .btn {
+            padding: 15px;
+            border: none;
+            border-radius: 18px;
+            /* Slightly more rounded */
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        }
 
-.side-actions {
-    display: flex;
-    gap: 10px;
-}
+        .side-actions {
+            display: flex;
+            gap: 10px;
+        }
 
-.btn-side-action {
-    flex: 1;
-    background: rgba(255, 255, 255, 0.7);
-    backdrop-filter: blur(8px);
-    color: var(--text-dark);
-    border: 1px solid rgba(0, 0, 0, 0.05);
-}
+        .btn-side-action {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(8px);
+            color: var(--text-dark);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
 
-.btn-side-action:hover {
-    background: white;
-    border-color: var(--primary-color);
-    color: var(--primary-color);
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-}
+        .btn-side-action:hover {
+            background: white;
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        }
 
-.btn-continue {
-    background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
-    color: white;
-    font-family: 'Fredoka One', cursive;
-    font-size: 1.2rem;
-    padding: 10px;
-}
-.btn-continue:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 10px 25px rgba(255, 127, 80, 0.4);
-}
+        .btn-continue {
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            font-family: 'Fredoka One', cursive;
+            font-size: 1.2rem;
+            padding: 10px;
+        }
 
-.btn:disabled {
-    background: #e0e0e0;
-    color: #9e9e9e;
-    cursor: not-allowed;
-    transform: none;
-    box-shadow: none;
-}
+        .btn-continue:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(255, 127, 80, 0.4);
+        }
 
-.progress-indicator {
-    background: rgba(255,255,255,0.7);
-    padding: 15px;
-    border-radius: 18px;
-    backdrop-filter: blur(8px);
-    text-align: center;
-    border: 1px solid rgba(0, 0, 0, 0.05);
-    margin-bottom: auto; /* Push to the top */
-}
+        .btn-secondary {
+            background: linear-gradient(45deg, #4CAF50, #8BC34A);
+            color: white;
+            font-weight: 600;
+        }
 
-#progress-text {
-    font-weight: 600;
-    color: var(--text-dark);
-    font-size: 0.9rem;
-    margin-bottom: 10px;
-    display: block;
-}
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(76, 175, 80, 0.4);
+        }
 
-.progress-bar {
-    width: 100%;
-    height: 8px;
-    background: rgba(0,0,0,0.08);
-    border-radius: 4px;
-    overflow: hidden;
-}
+        .btn:disabled {
+            background: #e0e0e0;
+            color: #9e9e9e;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
 
-.progress-fill {
-    height: 100%;
-    background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
-    border-radius: 4px;
-    width: 0%;
-    transition: width 0.5s ease;
-}
+        .progress-indicator {
+            background: rgba(255, 255, 255, 0.7);
+            padding: 15px;
+            border-radius: 18px;
+            backdrop-filter: blur(8px);
+            text-align: center;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            margin-bottom: auto;
+            /* Push to the top */
+        }
+
+        #progress-text {
+            font-weight: 600;
+            color: var(--text-dark);
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(0, 0, 0, 0.08);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            border-radius: 4px;
+            width: 0%;
+            transition: width 0.5s ease;
+        }
 
         .empty-state {
             text-align: center;
@@ -386,11 +419,11 @@
             transition: transform 0.3s ease;
             backdrop-filter: blur(10px);
         }
-        
+
         .notification.show {
             transform: translateX(0);
         }
-        
+
         .notification.error {
             background: rgba(244, 67, 54, 0.95);
         }
@@ -411,12 +444,12 @@
             opacity: 0;
             transition: opacity 0.3s ease;
         }
-        
+
         .preview-modal.show {
             display: flex;
             opacity: 1;
         }
-        
+
         .preview-content {
             background: white;
             border-radius: 20px;
@@ -429,11 +462,11 @@
             transform: scale(0.8);
             transition: transform 0.3s ease;
         }
-        
+
         .preview-modal.show .preview-content {
             transform: scale(1);
         }
-        
+
         .preview-header {
             display: flex;
             justify-content: space-between;
@@ -442,14 +475,14 @@
             padding-bottom: 15px;
             border-bottom: 2px solid #f0f0f0;
         }
-        
+
         .preview-header h2 {
             font-family: 'Fredoka One', cursive;
             color: var(--primary-color);
             margin: 0;
             font-size: 1.8rem;
         }
-        
+
         .close-preview {
             background: var(--secondary-color);
             color: white;
@@ -464,22 +497,22 @@
             justify-content: center;
             transition: all 0.3s ease;
         }
-        
+
         .close-preview:hover {
             background: #ff4757;
             transform: scale(1.1);
         }
-        
+
         .print-preview-container {
             display: flex;
             flex-direction: column;
             align-items: center;
             gap: 20px;
         }
-        
+
         .photostrip-paper {
             background: white;
-            box-shadow: 
+            box-shadow:
                 0 10px 30px rgba(0, 0, 0, 0.2),
                 inset 0 0 0 1px #e0e0e0;
             border-radius: 8px;
@@ -491,7 +524,7 @@
             max-height: 80vh;
             overflow: auto;
         }
-        
+
         .photostrip-paper::before {
             content: '';
             position: absolute;
@@ -503,7 +536,7 @@
             border-radius: 50%;
             opacity: 0.6;
         }
-        
+
         .photostrip-image {
             width: 200px;
             height: 600px;
@@ -511,21 +544,21 @@
             object-fit: contain;
             border: 1px solid #e0e0e0;
         }
-        
+
         .print-info {
             text-align: center;
             color: #666;
             font-size: 0.9rem;
             max-width: 400px;
         }
-        
+
         .preview-actions {
             display: flex;
             gap: 15px;
             justify-content: center;
             margin-top: 20px;
         }
-        
+
         .btn-close {
             position: absolute;
             top: 15px;
@@ -545,7 +578,7 @@
             justify-content: center;
             backdrop-filter: blur(5px);
         }
-        
+
         .btn-close:hover {
             background: #ff5757;
             color: white;
@@ -563,12 +596,13 @@
                 order: 2;
             }
 
-                        .workspace {
+            .workspace {
                 order: 3;
                 grid-template-columns: 1fr;
-                grid-template-rows: auto 1fr auto; /* Added 'auto' for controls-panel */
+                grid-template-rows: auto 1fr auto;
+                /* Added 'auto' for controls-panel */
             }
-            
+
             .frame-tabs {
                 flex-direction: row;
                 overflow-x: auto;
@@ -577,17 +611,17 @@
             .controls-panel {
                 order: 4;
             }
-            
+
             .preview-content {
                 padding: 20px;
                 margin: 10px;
             }
-            
+
             .photostrip-image {
                 width: 150px;
                 height: 450px;
             }
-            
+
             .preview-actions {
                 flex-direction: column;
                 gap: 10px;
@@ -595,17 +629,19 @@
         }
     </style>
 </head>
+
 <body>
     <div class="layout-container">
         <div class="header-panel">
             <h1>✨ Editor Layout Photostrip</h1>
-            </div>
+        </div>
 
         <div class="photos-panel">
             <h3>📸 Galeri Foto Sesi (<?= count($data['photos']) ?>)</h3>
             <div class="photo-source" id="photo-source">
                 <?php foreach ($data['photos'] as $photo): ?>
-                    <div class="draggable-photo" draggable="true" data-photo-id="<?= $photo->id ?>" data-photo-path="<?= $photo->file_path ?>">
+                    <div class="draggable-photo" draggable="true" data-photo-id="<?= $photo->id ?>"
+                        data-photo-path="<?= $photo->file_path ?>">
                         <img src="<?= URLROOT . $photo->file_path ?>" alt="Foto Sesi">
                     </div>
                 <?php endforeach; ?>
@@ -636,30 +672,53 @@
                 <?php endif; ?>
             </div>
 
-<div class="controls-panel">
-    <div class="progress-indicator">
-        <span id="progress-text">Lengkapi semua slot foto!</span>
-        <div class="progress-bar">
-            <div class="progress-fill" id="progress-fill"></div>
-        </div>
-    </div>
-    
-    <div class="side-actions">
-        <button class="btn btn-side-action" onclick="clearAllSlots()">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-            <span>Bersihkan</span>
-        </button>
-        <button class="btn btn-side-action" onclick="previewPhotostrips()">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-            <span>Preview</span>
-        </button>
-    </div>
+            <div class="controls-panel">
+                <div class="progress-indicator">
+                    <span id="progress-text">Lengkapi semua slot foto!</span>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progress-fill"></div>
+                    </div>
+                </div>
 
-    <button class="btn btn-continue" id="continue-btn" onclick="saveLayouts()" disabled>
-        <span>Lanjut ke Dekorasi</span>
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="M12 5l7 7-7 7"></path></svg>
-    </button>
-</div>
+                <div class="side-actions">
+                    <button class="btn btn-side-action" onclick="clearAllSlots()">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="3 6 5 6 21 6"></polyline>
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2">
+                            </path>
+                        </svg>
+                        <span>Bersihkan</span>
+                    </button>
+                    <button class="btn btn-side-action" onclick="previewPhotostrips()">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                        <span>Preview</span>
+                    </button>
+
+                    <button class="btn btn-secondary" id="autofill-btn" onclick="autoFillPhotos()">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                            <line x1="12" y1="8" x2="12" y2="16"></line>
+                            <line x1="8" y1="12" x2="16" y2="12"></line>
+                        </svg>
+                        <span>Otomatis</span>
+                    </button>
+                </div>
+
+                <button class="btn btn-continue" id="continue-btn" onclick="saveLayouts()" disabled>
+                    <span>Lanjut ke Dekorasi</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M5 12h14"></path>
+                        <path d="M12 5l7 7-7 7"></path>
+                    </svg>
+                </button>
+            </div>
         </div>
     </div>
 
@@ -683,12 +742,12 @@
             console.log('DOM loaded, initializing fabric.js layout editor...');
             console.log('Available frames:', FRAMES_DATA);
             console.log('Total slots:', totalSlots);
-            
+
             if (!FRAMES_DATA || FRAMES_DATA.length === 0) {
                 alert('Error: No frames available for layout editing!');
                 return;
             }
-            
+
             try {
                 // Initialize frame data for all frames
                 FRAMES_DATA.forEach((frame, index) => {
@@ -706,13 +765,13 @@
                 initializeFrameTabs();
                 initializeDragAndDrop();
                 loadCurrentFrame();
-                
+
                 console.log('Fabric.js layout editor initialized successfully');
             } catch (error) {
                 console.error('Error initializing layout editor:', error);
                 alert('Error initializing layout editor: ' + error.message);
             }
-            
+
             // Update used status on photos in the gallery
             updatePhotoUsedStatus();
         });
@@ -720,7 +779,7 @@
         function updatePhotoUsedStatus() {
             // Remove all 'used' classes first
             document.querySelectorAll('.draggable-photo.used').forEach(el => el.classList.remove('used'));
-            
+
             // Re-apply 'used' status based on current frame data
             frameData.forEach(frame => {
                 if (frame.images) {
@@ -739,7 +798,7 @@
         function initializeMainCanvas() {
             const container = document.getElementById('photostrip-container');
             const canvasEl = document.getElementById('main-canvas');
-            
+
             if (!container || !canvasEl) {
                 console.error('Canvas elements not found');
                 return;
@@ -753,7 +812,7 @@
                     const entry = entries[0];
                     const containerRect = entry.contentRect;
                     let canvasWidth, canvasHeight;
-                    
+
                     const targetAspectRatio = 1 / 3; // 2:6 ratio
                     const containerAspectRatio = containerRect.width / containerRect.height;
 
@@ -771,7 +830,7 @@
                         width: canvasWidth,
                         height: canvasHeight
                     });
-                    
+
                     // Reload frame to redraw background and slots with new dimensions
                     loadCurrentFrame();
 
@@ -800,15 +859,15 @@
                 selection: true,
                 stopContextMenu: true
             });
-            
+
             mainCanvas.allowTouchScrolling = true;
-            
-            mainCanvas.on('dragover', function(opt) {
+
+            mainCanvas.on('dragover', function (opt) {
                 opt.e.preventDefault();
                 opt.e.dataTransfer.dropEffect = 'copy';
             });
 
-            mainCanvas.on('drop', function(opt) {
+            mainCanvas.on('drop', function (opt) {
                 opt.e.preventDefault();
                 if (!draggedItemData) {
                     console.log('❌ No dragged item data');
@@ -896,7 +955,7 @@
 
             // Create slot rectangles from current frame data
             const slotCoords = currentFrame.slots;
-            
+
             // Default slots if none provided
             const defaultSlots = [
                 { left: 8.33, top: 6.67, width: 83.33, height: 20 },
@@ -904,7 +963,7 @@
                 { left: 8.33, top: 53.33, width: 83.33, height: 20 },
                 { left: 8.33, top: 76.67, width: 83.33, height: 20 }
             ];
-            
+
             const slotsToUse = slotCoords.length > 0 ? slotCoords : defaultSlots;
 
             // Create slot rectangles
@@ -927,7 +986,7 @@
                     rx: 10,
                     ry: 10
                 });
-                
+
                 console.log(`Created slot ${slotIndex}:`, {
                     left: slotRect.left,
                     top: slotRect.top,
@@ -935,11 +994,11 @@
                     height: slotRect.height
                 });
                 mainCanvas.add(slotRect);
-                
+
                 // Add slot number text
                 const slotText = new fabric.Text(`📷 ${slotIndex + 1}`, {
-                    left: slotRect.left + slotRect.width/2,
-                    top: slotRect.top + slotRect.height/2,
+                    left: slotRect.left + slotRect.width / 2,
+                    top: slotRect.top + slotRect.height / 2,
                     fontSize: 16,
                     fill: '#6C63FF',
                     textAlign: 'center',
@@ -950,7 +1009,7 @@
                     fontWeight: 'bold'
                 });
                 mainCanvas.add(slotText);
-                
+
                 // Store slot reference in frame data
                 if (!currentFrame.slotObjects) {
                     currentFrame.slotObjects = {};
@@ -960,7 +1019,7 @@
 
             // Drag and drop handled by HTML5 events in initializeMainCanvas
             console.log('✅ Frame loaded with slot objects:', Object.keys(currentFrame.slotObjects || {}));
-            
+
             // Load any saved images for this frame
             if (currentFrame.images) {
                 Object.keys(currentFrame.images).forEach(slotIndex => {
@@ -990,9 +1049,9 @@
                                 lockScalingY: true,
                                 lockRotation: true
                             });
-                            
+
                             // Add panning constraints for restored image
-                            img.on('moving', function() {
+                            img.on('moving', function () {
                                 const slotWidth = slot.width;
                                 const slotHeight = slot.height;
                                 const rightBound = slot.left;
@@ -1007,14 +1066,14 @@
                             });
 
                             // Save position when restored photo stops moving
-                            img.on('modified', function() {
+                            img.on('modified', function () {
                                 // Update position in frame data
                                 if (currentFrame.images[slotIndex]) {
                                     currentFrame.images[slotIndex].left = this.left;
                                     currentFrame.images[slotIndex].top = this.top;
                                 }
                             });
-                            
+
                             mainCanvas.add(img);
                             // Restore the fabricImage reference
                             imageData.fabricImage = img;
@@ -1034,7 +1093,7 @@
 
         function initializeDragAndDrop() {
             console.log('Initializing drag and drop...');
-            
+
             const photoSource = document.getElementById('photo-source');
             if (!photoSource) {
                 console.error('Photo source element not found');
@@ -1044,17 +1103,17 @@
             // Add event listeners to each draggable photo individually
             const draggablePhotos = photoSource.querySelectorAll('.draggable-photo');
             console.log('Found draggable photos:', draggablePhotos.length);
-            
+
             draggablePhotos.forEach((photo, index) => {
                 console.log(`Setting up photo ${index}:`, photo.dataset);
-                
+
                 // Test if photo is actually draggable
                 console.log('Photo draggable attribute:', photo.getAttribute('draggable'));
                 console.log('Photo element:', photo);
-                
+
                 photo.addEventListener('dragstart', (e) => {
                     console.log('🚀 DRAGSTART EVENT TRIGGERED!', e);
-                    
+
                     draggedItemData = {
                         photoSrc: URLROOT + photo.dataset.photoPath,
                         photoId: photo.dataset.photoId,
@@ -1062,7 +1121,7 @@
                     };
                     console.log('✅ Drag started:', draggedItemData);
                     photo.classList.add('dragging');
-                    
+
                     // Set drag effect
                     if (e.dataTransfer) {
                         e.dataTransfer.effectAllowed = 'copy';
@@ -1077,32 +1136,32 @@
                     photo.classList.remove('dragging');
                     console.log('Drag ended for photo:', photo.dataset.photoId);
                 });
-                
+
                 // Ensure draggable attribute is set
                 photo.setAttribute('draggable', 'true');
                 photo.style.cursor = 'grab';
-                
+
                 // Test click event to ensure element is interactive
                 photo.addEventListener('click', (e) => {
                     console.log('📸 Photo clicked!', photo.dataset.photoId);
                 });
-                
+
                 // Add hover effects
                 photo.addEventListener('mousedown', () => {
                     photo.style.cursor = 'grabbing';
                 });
-                
+
                 photo.addEventListener('mouseup', () => {
                     photo.style.cursor = 'grab';
                 });
-                
+
                 photo.addEventListener('mouseover', () => {
                     if (!photo.classList.contains('dragging')) {
                         photo.style.transform = 'scale(1.05)';
                         photo.style.boxShadow = '0 8px 25px rgba(108, 99, 255, 0.4)';
                     }
                 });
-                
+
                 photo.addEventListener('mouseout', () => {
                     if (!photo.classList.contains('dragging')) {
                         photo.style.transform = '';
@@ -1113,7 +1172,7 @@
 
             console.log('Drag and drop initialized');
         }
-        
+
         function handleDrop(canvas, slot) {
             if (!draggedItemData) return;
 
@@ -1123,7 +1182,7 @@
             console.log('Drop detected:', { photoSrc, newPhotoId, frameIndex, slotIndex });
 
             const currentFrame = frameData[currentFrameIndex];
-            
+
             // Step 1: Remove old image from target slot (if any)
             const existingImageInTargetSlot = currentFrame.images[slotIndex];
             if (existingImageInTargetSlot) {
@@ -1155,18 +1214,18 @@
                 const slotWidth = slot.width;
                 const slotHeight = slot.height;
                 const scale = Math.max(slotWidth / photoImg.width, slotHeight / photoImg.height);
-                
+
                 photoImg.set({
-                    originX: 'left', originY: 'top', 
+                    originX: 'left', originY: 'top',
                     left: slot.left, top: slot.top,
                     scaleX: scale, scaleY: scale,
                     clipPath: new fabric.Rect({
-                        originX: 'left', originY: 'top', 
+                        originX: 'left', originY: 'top',
                         left: slot.left, top: slot.top,
-                        width: slotWidth, height: slotHeight, 
+                        width: slotWidth, height: slotHeight,
                         absolutePositioned: true
                     }),
-                    selectable: true, 
+                    selectable: true,
                     hasControls: false,
                     hasBorders: true,
                     moveCursor: 'move',
@@ -1181,15 +1240,15 @@
                 photoImg.top -= (photoImg.getScaledHeight() - slotHeight) / 2;
 
                 canvas.add(photoImg);
-                
+
                 // Initialize images object if needed
                 if (!currentFrame.images) {
                     currentFrame.images = {};
                 }
-                
+
                 // Update state after new image is added
-                currentFrame.images[slotIndex] = { 
-                    fabricImage: photoImg, 
+                currentFrame.images[slotIndex] = {
+                    fabricImage: photoImg,
                     photoId: newPhotoId,
                     src: photoSrc,
                     photoPath: newPhotoPath,
@@ -1198,14 +1257,14 @@
                     left: photoImg.left,
                     top: photoImg.top
                 };
-                
+
                 // Update 'used' status in gallery based on latest state
                 updatePhotoUsedStatus();
 
                 checkIfDone();
 
                 // Add panning constraints
-                photoImg.on('moving', function() {
+                photoImg.on('moving', function () {
                     const rightBound = slot.left;
                     const leftBound = slot.left - (this.getScaledWidth() - slotWidth);
                     const bottomBound = slot.top;
@@ -1218,7 +1277,7 @@
                 });
 
                 // Save position when photo stops moving
-                photoImg.on('modified', function() {
+                photoImg.on('modified', function () {
                     // Update position in frame data
                     if (currentFrame.images[slotIndex]) {
                         currentFrame.images[slotIndex].left = this.left;
@@ -1247,38 +1306,38 @@
             console.log('Initializing frame tabs...');
             const frameTabs = document.querySelectorAll('.frame-tab');
             console.log('Found frame tabs:', frameTabs.length);
-            
+
             if (frameTabs.length === 0) {
                 console.error('No frame tabs found!');
                 return;
             }
-            
+
             frameTabs.forEach((tab, index) => {
                 console.log(`Setting up tab ${index}:`, tab.dataset.frameId);
-                
+
                 tab.addEventListener('click', () => {
                     console.log('Frame tab clicked:', tab.dataset.frameId, 'index:', index);
-                    
+
                     try {
                         // Remove active class from all tabs
                         frameTabs.forEach(t => t.classList.remove('active'));
                         // Add active class to clicked tab
                         tab.classList.add('active');
-                        
+
                         // Switch to the selected frame
                         currentFrameIndex = index;
                         console.log('Frame switched to index:', currentFrameIndex);
-                        
+
                         // Load the new frame
                         loadCurrentFrame();
-                        
+
                         checkIfDone();
                     } catch (error) {
                         console.error('Error switching frame:', error);
                     }
                 });
             });
-            
+
             console.log('Frame tabs initialized');
         }
 
@@ -1287,17 +1346,17 @@
             frameData.forEach(state => {
                 filledSlots += Object.keys(state.images).length;
             });
-            
+
             const continueBtn = document.getElementById('continue-btn');
             const progressFill = document.getElementById('progress-fill');
             const progressText = document.getElementById('progress-text');
-            
+
             const progress = totalSlots > 0 ? Math.round((filledSlots / totalSlots) * 100) : 0;
-            
+
             if (progressFill) progressFill.style.width = `${progress}%`;
             if (progressText) progressText.textContent = `${progress}%`;
             if (continueBtn) continueBtn.disabled = filledSlots !== totalSlots;
-            
+
             console.log(`Progress: ${filledSlots}/${totalSlots} slots filled (${progress}%)`);
         }
 
@@ -1320,11 +1379,11 @@
 
             // Clear the images state for the current frame
             currentFrame.images = {};
-            
+
             // Reload the frame to show empty slots
             loadCurrentFrame();
             checkIfDone();
-            
+
             showNotification('🗑️ Layout dibersihkan!', 'success');
         }
 
@@ -1334,16 +1393,16 @@
             if (existing) {
                 existing.remove();
             }
-            
+
             // Create new notification
             const notification = document.createElement('div');
             notification.className = `notification ${type === 'error' ? 'error' : ''}`;
             notification.textContent = message;
             document.body.appendChild(notification);
-            
+
             // Show notification
             setTimeout(() => notification.classList.add('show'), 100);
-            
+
             // Hide after 3 seconds
             setTimeout(() => {
                 notification.classList.remove('show');
@@ -1395,19 +1454,185 @@
             // Show modal
             var modal = document.getElementById('previewModal');
             modal.style.display = 'flex';
-            setTimeout(function() {
+            setTimeout(function () {
                 modal.style.opacity = '1';
             }, 10);
-            
+
             showNotification('👁️ Preview photostrip siap!', 'success');
         }
 
         function closePreview() {
             var modal = document.getElementById('previewModal');
             modal.style.opacity = '0';
-            setTimeout(function() {
+            setTimeout(function () {
                 modal.style.display = 'none';
             }, 300);
+        }
+
+        function autoFillPhotos() {
+            const canvas = mainCanvas;
+            const currentFrame = frameData[currentFrameIndex];
+
+            if (!currentFrame.slotObjects) {
+                showNotification('Tidak ada slot di frame ini!', 'error');
+                return;
+            }
+
+            // Get all available photos (not used yet)
+            const availablePhotos = [];
+            document.querySelectorAll('.draggable-photo:not(.used)').forEach(photoEl => {
+                availablePhotos.push({
+                    photoId: photoEl.getAttribute('data-photo-id'),
+                    photoPath: photoEl.getAttribute('data-photo-path'),
+                    photoSrc: photoEl.querySelector('img').src
+                });
+            });
+
+            if (availablePhotos.length === 0) {
+                showNotification('Tidak ada foto tersedia!', 'error');
+                return;
+            }
+
+            // Get all empty slots
+            const emptySlots = [];
+            Object.keys(currentFrame.slotObjects).forEach(slotIndex => {
+                if (!currentFrame.images || !currentFrame.images[slotIndex]) {
+                    const slot = currentFrame.slotObjects[slotIndex];
+                    emptySlots.push({
+                        index: slotIndex,
+                        element: slot,
+                        left: slot.left,
+                        top: slot.top,
+                        width: slot.width,
+                        height: slot.height
+                    });
+                }
+            });
+
+            if (emptySlots.length === 0) {
+                showNotification('Semua slot sudah terisi!', 'success');
+                return;
+            }
+
+            // Fill slots with available photos
+            const photosToUse = availablePhotos.slice(0, emptySlots.length);
+            let filledCount = 0;
+
+            photosToUse.forEach((photo, idx) => {
+                if (idx >= emptySlots.length) return;
+
+                const slot = emptySlots[idx];
+                const { photoSrc, photoId: newPhotoId, photoPath: newPhotoPath } = photo;
+
+                // Step 1: Remove old image from target slot (if any)
+                const existingImageInTargetSlot = currentFrame.images[slot.index];
+                if (existingImageInTargetSlot) {
+                    const oldPhotoId = existingImageInTargetSlot.photoId;
+                    document.querySelector(`.draggable-photo[data-photo-id="${oldPhotoId}"]`)?.classList.remove('used');
+                    canvas.remove(existingImageInTargetSlot.fabricImage);
+                }
+
+                // Step 2: Remove same photo from other slots
+                frameData.forEach((frame, fIdx) => {
+                    if (!frame.images) return;
+                    Object.entries(frame.images).forEach(([sIdx, imgData]) => {
+                        if (imgData && imgData.photoId === newPhotoId) {
+                            if (fIdx === currentFrameIndex) {
+                                canvas.remove(imgData.fabricImage);
+                            }
+                            delete frame.images[sIdx];
+                        }
+                    });
+                });
+
+                // Step 3: Add new image to slot
+                fabric.Image.fromURL(photoSrc, (photoImg) => {
+                    const slotWidth = slot.width;
+                    const slotHeight = slot.height;
+                    const scale = Math.max(slotWidth / photoImg.width, slotHeight / photoImg.height);
+
+                    photoImg.set({
+                        originX: 'left',
+                        originY: 'top',
+                        left: slot.left,
+                        top: slot.top,
+                        scaleX: scale,
+                        scaleY: scale,
+                        clipPath: new fabric.Rect({
+                            originX: 'left',
+                            originY: 'top',
+                            left: slot.left,
+                            top: slot.top,
+                            width: slotWidth,
+                            height: slotHeight,
+                            absolutePositioned: true
+                        }),
+                        selectable: true,
+                        hasControls: false,
+                        hasBorders: true,
+                        moveCursor: 'move',
+                        hoverCursor: 'move',
+                        lockScalingX: true,
+                        lockScalingY: true,
+                        lockRotation: true
+                    });
+
+                    // Center the image in the slot
+                    photoImg.left -= (photoImg.getScaledWidth() - slotWidth) / 2;
+                    photoImg.top -= (photoImg.getScaledHeight() - slotHeight) / 2;
+
+                    canvas.add(photoImg);
+
+                    // Initialize images object if needed
+                    if (!currentFrame.images) {
+                        currentFrame.images = {};
+                    }
+
+                    // Update state
+                    currentFrame.images[slot.index] = {
+                        fabricImage: photoImg,
+                        photoId: newPhotoId,
+                        src: photoSrc,
+                        photoPath: newPhotoPath,
+                        scaleX: scale,
+                        scaleY: scale,
+                        left: photoImg.left,
+                        top: photoImg.top
+                    };
+
+                    // Update 'used' status
+                    updatePhotoUsedStatus();
+                    filledCount++;
+
+                    // Check if all slots are filled
+                    checkIfDone();
+
+                    // Add panning constraints
+                    photoImg.on('moving', function () {
+                        const rightBound = slot.left;
+                        const leftBound = slot.left - (this.getScaledWidth() - slotWidth);
+                        const bottomBound = slot.top;
+                        const topBound = slot.top - (this.getScaledHeight() - slotHeight);
+
+                        if (this.left > rightBound) this.left = rightBound;
+                        if (this.left < leftBound) this.left = leftBound;
+                        if (this.top > bottomBound) this.top = bottomBound;
+                        if (this.top < topBound) this.top = topBound;
+                    });
+
+                    canvas.renderAll();
+
+                    // Show notification after filling all
+                    if (filledCount === photosToUse.length) {
+                        showNotification(`✅ Berisi ${filledCount} slot otomatis!`, 'success');
+                    }
+                }, { crossOrigin: 'anonymous' });
+            });
+
+            // If not enough photos for all slots
+            if (photosToUse.length < emptySlots.length) {
+                showNotification(`⚠️ Hanya ${photosToUse.length} foto tersedia untuk ${emptySlots.length} slot kosong`, 'warning');
+            }
         }
 
 
@@ -1417,26 +1642,26 @@
                 alert('Lengkapi semua slot sebelum melanjutkan!');
                 return;
             }
-            
+
             continueBtn.disabled = true;
             continueBtn.textContent = 'Menyimpan...';
-            
+
             const finalImages = [];
             const payloadFrameData = [];
-            
+
             // Generate final images for each frame
             for (let frameIndex = 0; frameIndex < frameData.length; frameIndex++) {
                 const frame = frameData[frameIndex];
-                
+
                 // Switch to this frame if not current
                 if (frameIndex !== currentFrameIndex) {
                     currentFrameIndex = frameIndex;
                     loadCurrentFrame();
-                    
+
                     // Wait a bit for frame to fully load and render
                     await new Promise(resolve => setTimeout(resolve, 100));
                 }
-                
+
                 // Hide slots before generating final image
                 if (frame.slotObjects) {
                     Object.values(frame.slotObjects).forEach(slot => slot.set({ visible: false }));
@@ -1467,7 +1692,7 @@
 
                 // Generate final image with exact 600x1800 size
                 finalImages.push(mainCanvas.toDataURL({ format: 'png', quality: 0.9, multiplier: multiplier }));
-                
+
                 // Show slots again
                 if (frame.slotObjects) {
                     Object.values(frame.slotObjects).forEach(slot => slot.set({ visible: true }));
@@ -1478,7 +1703,7 @@
                 const photos = frame.images ? Object.entries(frame.images).map(([slotIndex, imageData]) => {
                     const fabricImage = imageData.fabricImage;
                     const slot = frame.slotObjects[slotIndex];
-                    
+
                     let panX = 0.5;
                     let panY = 0.5;
 
@@ -1490,7 +1715,7 @@
 
                         const rightBoundX = slot.left;
                         const leftBoundX = slot.left - (scaledWidth - slotWidth);
-                        
+
                         const bottomBoundY = slot.top;
                         const topBoundY = slot.top - (scaledHeight - slotHeight);
 
@@ -1532,41 +1757,41 @@
                     frame_data: payloadFrameData
                 })
             })
-            .then(response => {
-                if (!response.ok) {
-                    // Try to get error message from body
-                    return response.json().then(err => { 
-                        throw new Error(err.message || `HTTP error! status: ${response.status}`);
-                    }).catch(() => {
-                        // If body is not json or empty
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    });
-                }
-                return response.json();
-            })
-            .then(data => {
-                if (data.success) {
-                    // Allow navigation for successful save
-                    <?php if (ENABLE_SESSION_REFRESH_BACK): ?>
-                    allowNavigation = true;
-                    <?php endif; ?>
+                .then(response => {
+                    if (!response.ok) {
+                        // Try to get error message from body
+                        return response.json().then(err => {
+                            throw new Error(err.message || `HTTP error! status: ${response.status}`);
+                        }).catch(() => {
+                            // If body is not json or empty
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        // Allow navigation for successful save
+                        <?php if (ENABLE_SESSION_REFRESH_BACK): ?>
+                            allowNavigation = true;
+                        <?php endif; ?>
 
-                    // Same fade-out animation as select-frame
-                    document.body.classList.add('fade-out');
+                        // Same fade-out animation as select-frame
+                        document.body.classList.add('fade-out');
 
-                    setTimeout(() => {
-                        window.location.href = `${URLROOT}/photo/decoration/${sessionId}`;
-                    }, 500);
-                } else {
-                    throw new Error(data.message || 'An unknown error occurred.');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Tidak bisa Lanjut ke Dekorasi: ' + error.message);
-                continueBtn.disabled = false;
-                continueBtn.textContent = '🎨 Lanjut ke Dekorasi';
-            });
+                        setTimeout(() => {
+                            window.location.href = `${URLROOT}/photo/decoration/${sessionId}`;
+                        }, 500);
+                    } else {
+                        throw new Error(data.message || 'An unknown error occurred.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Tidak bisa Lanjut ke Dekorasi: ' + error.message);
+                    continueBtn.disabled = false;
+                    continueBtn.textContent = '🎨 Lanjut ke Dekorasi';
+                });
         }
     </script>
 
@@ -1588,40 +1813,41 @@
     <script>
         // Simple back/refresh protection with popup
         <?php if (ENABLE_SESSION_REFRESH_BACK): ?>
-        let allowNavigation = false;
+            let allowNavigation = false;
 
-        // Handle refresh attempts
-        window.addEventListener('beforeunload', function(e) {
-            if (allowNavigation) {
-                return;
-            }
+            // Handle refresh attempts
+            window.addEventListener('beforeunload', function (e) {
+                if (allowNavigation) {
+                    return;
+                }
 
-            e.preventDefault();
-            e.returnValue = '';
-            return '';
-        });
+                e.preventDefault();
+                e.returnValue = '';
+                return '';
+            });
 
-        // Handle browser back button
-        let currentUrl = window.location.href;
-        window.history.pushState({}, '', currentUrl);
+            // Handle browser back button
+            let currentUrl = window.location.href;
+            window.history.pushState({}, '', currentUrl);
 
-        window.addEventListener('popstate', function(e) {
-            if (allowNavigation) {
-                return;
-            }
+            window.addEventListener('popstate', function (e) {
+                if (allowNavigation) {
+                    return;
+                }
 
-            // Show confirmation for back button
-            if (confirm('⚠️ PERINGATAN!\n\nAnda mencoba kembali ke halaman sebelumnya. Layout yang belum disimpan akan hilang.\n\nApakah Anda yakin ingin melanjutkan?')) {
-                allowNavigation = true;
-                window.history.go(-1);
-            } else {
-                // Stay on current page
-                window.history.pushState({}, '', currentUrl);
-            }
-        });
+                // Show confirmation for back button
+                if (confirm('⚠️ PERINGATAN!\n\nAnda mencoba kembali ke halaman sebelumnya. Layout yang belum disimpan akan hilang.\n\nApakah Anda yakin ingin melanjutkan?')) {
+                    allowNavigation = true;
+                    window.history.go(-1);
+                } else {
+                    // Stay on current page
+                    window.history.pushState({}, '', currentUrl);
+                }
+            });
 
-        console.log('Simple back/refresh protection loaded for layout editor');
+            console.log('Simple back/refresh protection loaded for layout editor');
         <?php endif; ?>
     </script>
 </body>
+
 </html>
