@@ -4,6 +4,7 @@ namespace App\Services;
 
 use Imagick;
 use ImagickException;
+use ImagickPixel;
 
 class ImageProcessingService
 {
@@ -88,10 +89,12 @@ class ImageProcessingService
                 error_log('ImageProcessing Error: Frame path or slot coordinates are missing.');
                 return false;
             }
-            $frame = new Imagick($framePath);
-            $frame->resizeImage(600, 1800, Imagick::FILTER_LANCZOS, 1);
-            $frameWidth = $frame->getImageWidth();
-            $frameHeight = $frame->getImageHeight();
+
+            // Load and resize the frame
+            $frameOriginal = new Imagick($framePath);
+            $frameOriginal->resizeImage(600, 1800, Imagick::FILTER_LANCZOS, 1);
+            $frameWidth = $frameOriginal->getImageWidth();
+            $frameHeight = $frameOriginal->getImageHeight();
 
             $targetRatio = 1 / 3;
             $currentRatio = $frameWidth / $frameHeight;
@@ -99,11 +102,20 @@ class ImageProcessingService
             if (abs($currentRatio - $targetRatio) > 0.01) {
                 $standardWidth = 400;
                 $standardHeight = $standardWidth * 3;
-                $frame->resizeImage($standardWidth, $standardHeight, Imagick::FILTER_LANCZOS, 1);
-                $frameWidth = $frame->getImageWidth();
-                $frameHeight = $frame->getImageHeight();
+                $frameOriginal->resizeImage($standardWidth, $standardHeight, Imagick::FILTER_LANCZOS, 1);
+                $frameWidth = $frameOriginal->getImageWidth();
+                $frameHeight = $frameOriginal->getImageHeight();
             }
 
+            // Create a new canvas with transparent background
+            $canvas = new Imagick();
+            $canvas->newImage($frameWidth, $frameHeight, new ImagickPixel('transparent'));
+            $canvas->setImageFormat('png');
+
+            // Composite the frame at the bottom (background layer)
+            $canvas->compositeImage($frameOriginal, Imagick::COMPOSITE_OVER, 0, 0);
+
+            // Composite each photo onto the canvas (underneath where the frame will be placed again)
             foreach ($photosData as $index => $photoData) {
                 if (!isset($slotCoordinates[$index])) {
                     continue;
@@ -144,16 +156,21 @@ class ImageProcessingService
 
                 $photo->cropImage($targetWidth, $targetHeight, $cropX, $cropY);
 
-                $frame->compositeImage($photo, Imagick::COMPOSITE_OVER, $targetX, $targetY);
+                // Composite photo onto canvas (will be under the top frame layer)
+                $canvas->compositeImage($photo, Imagick::COMPOSITE_OVER, $targetX, $targetY);
 
                 $photo->clear();
             }
 
-            $frame->setImageFormat('png');
-            $frame->setImageCompressionQuality(100);
-            $frame->setOption('png:compression-level', 0);
-            $frame->writeImage($outputPath);
-            $frame->clear();
+            // Composite the frame AGAIN on top (this ensures frame stickers/decorations are on top of photos)
+            $canvas->compositeImage($frameOriginal, Imagick::COMPOSITE_OVER, 0, 0);
+
+            $canvas->setImageFormat('png');
+            $canvas->setImageCompressionQuality(100);
+            $canvas->setOption('png:compression-level', 0);
+            $canvas->writeImage($outputPath);
+            $canvas->clear();
+            $frameOriginal->clear();
 
             // Set Windows permissions for the saved file
             if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {

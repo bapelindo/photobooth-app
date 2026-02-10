@@ -257,17 +257,17 @@
             left: 0;
             width: 100%;
             height: 100%;
-            z-index: 1;
+            z-index: 2; /* Frame on top of photos */
         }
 
         .photo-layer {
             position: relative;
-            z-index: 2;
+            z-index: 1; /* Photos below frame */
             display: block;
         }
 
         .photo-slot-container {
-            z-index: 2;
+            z-index: 1; /* Photos below frame */
         }
 
         .decoration-layer {
@@ -276,7 +276,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            z-index: 3;
+            z-index: 3; /* User-added stickers on top of everything */
             pointer-events: none;
         }
 
