@@ -1216,15 +1216,28 @@
             photoPreview.style.display = 'none';
             currentPhotoBlob = null;
             URL.revokeObjectURL(previewImage.src);
-            
+
             // Reset saving flag
             isSaving = false;
-            
+
             // Re-enable capture button
             const captureBtn = document.getElementById('capture-btn');
             captureBtn.disabled = false;
             captureBtn.style.opacity = '1';
             captureBtn.innerHTML = '📸 Ambil Foto';
+
+            // Auto-start next capture if max photos not reached and not viewing gallery photo
+            if (!isMaxPhotosReached() && !viewingGalleryPhoto) {
+                captureBtn.innerHTML = '⏳ Memulai...';
+                setTimeout(() => {
+                    // Check again before starting (user might have pressed SELESAI during delay)
+                    if (!isMaxPhotosReached() && !viewingGalleryPhoto && photoPreview.style.display === 'none') {
+                        capturePhoto();
+                    } else {
+                        captureBtn.innerHTML = '📸 Ambil Foto';
+                    }
+                }, 800); // Slightly longer delay for better UX
+            }
         }
 
         // Save current photo
@@ -1380,6 +1393,9 @@
             // Add click handler to show preview (skip if clicking on action buttons)
             photoElement.addEventListener('click', (e) => {
                 if (!e.target.classList.contains('photo-action-btn')) {
+                    // Set flag to prevent auto-capture when returning to camera
+                    viewingGalleryPhoto = true;
+
                     const previewImage = document.getElementById('preview-image');
                     const photoPreview = document.getElementById('photo-preview');
                     const previewActions = document.getElementById('preview-actions');
@@ -1809,7 +1825,12 @@
         // Gallery photo action functions
 
         // Return to camera function for gallery back button
+        let viewingGalleryPhoto = false; // Flag to track if viewing saved photo from gallery
+
         function returnToCamera() {
+            // Set flag to prevent auto-capture
+            viewingGalleryPhoto = true;
+
             // Hide any open preview modal
             const photoPreview = document.getElementById('photo-preview');
             if (photoPreview.style.display === 'flex') {
@@ -1836,6 +1857,11 @@
                     URL.revokeObjectURL(previewImage.src);
                 }
             }
+
+            // Clear flag after a delay to allow normal auto-capture to resume
+            setTimeout(() => {
+                viewingGalleryPhoto = false;
+            }, 1000);
         }
 
         function deleteFromGallery(btn, photoId) {
