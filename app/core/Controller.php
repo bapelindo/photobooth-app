@@ -5,9 +5,11 @@ namespace App\Core;
 use Exception;
 use App\Core\Session; // Add this line to import Session class
 
-class Controller {
+class Controller
+{
 
-    public function __construct() {
+    public function __construct()
+    {
         Session::start(); // Ensure session is started for all controllers
 
         // Define pages that do not require an active workflow session
@@ -15,7 +17,7 @@ class Controller {
             '/packages', // The packages page itself
             '/login', // Login page
             '/admin/login', // Allow admin login to be accessed without workflow_step
-            
+
             '/payment/process', // Allow payment process to initiate workflow
             '/photo/send_email', // Allow send_email to be accessed without workflow_step
             '/photo/ajax_print_photo', // Allow ajax_print_photo to be accessed without workflow_step
@@ -58,21 +60,23 @@ class Controller {
         // If workflow_step is not set, redirect to packages
         if (ENABLE_SESSION_REFRESH_BACK && !Session::get('workflow_step')) {
             error_log('Controller __construct: workflow_step not set, redirecting to packages.');
-            header('Location: /photobooth-app/public/packages');
+            header('Location: /packages');
             exit();
         }
     }
-    protected function model($model) {
+    protected function model($model)
+    {
         $model = 'App\\Models\\' . $model;
         return new $model();
     }
 
-    protected function view($view, $data = []) {
+    protected function view($view, $data = [])
+    {
         $viewFile = '../app/views/' . $view . '.php';
         if (file_exists($viewFile)) {
             // Ekstrak data agar bisa diakses sebagai variabel di view
             extract($data);
-            
+
             require_once $viewFile;
         } else {
             throw new \Exception("View {$view} not found.");
@@ -80,33 +84,36 @@ class Controller {
     }
 
     // Metode baru untuk view admin dengan layout
-    protected function adminView($view, $data = []) {
+    protected function adminView($view, $data = [])
+    {
         $viewFile = '../app/views/' . $view . '.php';
         if (file_exists($viewFile)) {
             extract($data);
-            
+
             ob_start();
             require_once $viewFile;
             $content = ob_get_clean();
-            
+
             require_once '../app/views/admin/layout.php';
         } else {
             throw new \Exception("View {$view} not found.");
         }
     }
 
-    protected function redirect($url) {
+    protected function redirect($url)
+    {
         header('Location: ' . \URLROOT . '/' . $url);
         exit();
     }
-    
+
     /**
      * Menyimpan pesan flash ke sesi dan mengalihkan pengguna.
      * @param string $url Tujuan redirect.
      * @param string $message Pesan yang akan ditampilkan.
      * @param string $type Tipe pesan (success, error, info)
      */
-    protected function flashAndRedirect($url, $message, $type = 'info') {
+    protected function flashAndRedirect($url, $message, $type = 'info')
+    {
         // Check if this is an admin controller by checking the URL
         if (strpos($url, 'admin/') === 0) {
             // Admin flash message

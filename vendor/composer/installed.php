@@ -3,7 +3,7 @@
         'name' => 'project/photobooth-app',
         'pretty_version' => 'dev-main',
         'version' => 'dev-main',
-        'reference' => '493b85f11ef964c0811f8c87d85917282c2949e7',
+        'reference' => 'e0253a44599dadf33d2f3da5d5f73bf984c08dae',
         'type' => 'library',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -31,7 +31,7 @@
         'project/photobooth-app' => array(
             'pretty_version' => 'dev-main',
             'version' => 'dev-main',
-            'reference' => '493b85f11ef964c0811f8c87d85917282c2949e7',
+            'reference' => 'e0253a44599dadf33d2f3da5d5f73bf984c08dae',
             'type' => 'library',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),

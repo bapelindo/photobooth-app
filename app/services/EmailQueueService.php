@@ -4,27 +4,113 @@ namespace App\Services;
 
 use App\Models\EmailQueue;
 use App\Services\EmailService;
+use App\Core\Database;
 
 class EmailQueueService
 {
     private $emailQueue;
     private $emailService;
+    private $db;
 
     public function __construct()
     {
         $this->emailQueue = new EmailQueue();
         $this->emailService = new EmailService();
+        $this->db = new Database();
     }
 
     /**
-     * Add email to queue for background processing
+     * Add email to queue for background processing with compression
      */
     public function queueSessionEmail($recipientEmail, $attachments)
     {
+        // Compress attachments to reduce size
+        $compressedAttachments = $this->compressAttachments($attachments);
+
+        // Calculate total size
+        $totalSize = 0;
+        foreach ($compressedAttachments as $att) {
+            if (file_exists($att['path'])) {
+                $totalSize += filesize($att['path']);
+            }
+        }
+
+        $totalMB = round($totalSize / 1024 / 1024, 2);
+
+        // Skip if still too large (>20MB)
+        if ($totalMB > 20) {
+            error_log("EmailQueueService: Skipping email to $recipientEmail - attachments too large ({$totalMB}MB)");
+            return false; // Don't queue oversized emails
+        }
+
         $subject = 'Foto-foto Menakjubkan dari Sesi Photobooth Anda!';
         $body = $this->getSessionEmailBody();
-        
-        return $this->emailQueue->add($recipientEmail, 'Photobooth User', $subject, $body, $attachments);
+
+        error_log("EmailQueueService: Queueing email to $recipientEmail with {$totalMB}MB attachments");
+
+        return $this->emailQueue->add($recipientEmail, 'Photobooth User', $subject, $body, $compressedAttachments);
+    }
+
+    /**
+     * Compress attachments to reduce email size
+     */
+    private function compressAttachments($attachments)
+    {
+        $imageService = new \App\Services\ImageProcessingService();
+        $compressedAttachments = [];
+
+        foreach ($attachments as $attachment) {
+            $originalPath = $attachment['path'];
+
+            // Skip if file doesn't exist
+            if (!file_exists($originalPath)) {
+                error_log("EmailQueueService: Attachment not found: $originalPath");
+                continue;
+            }
+
+            // Create compressed version
+            $pathInfo = pathinfo($originalPath);
+            $compressedPath = $pathInfo['dirname'] . '/compressed_' . $pathInfo['filename'] . '.jpg';
+
+            $compressedSize = $imageService->compressImage($originalPath, $compressedPath, 85);
+
+            if ($compressedSize !== false) {
+                // Use compressed version
+                $compressedAttachments[] = [
+                    'path' => $compressedPath,
+                    'name' => $pathInfo['filename'] . '.jpg'
+                ];
+            } else {
+                // Fallback to original if compression fails
+                error_log("EmailQueueService: Compression failed for $originalPath, using original");
+                $compressedAttachments[] = $attachment;
+            }
+        }
+
+        return $compressedAttachments;
+    }
+
+    /**
+     * Reset stuck emails that have been processing for too long
+     */
+    private function resetStuckEmails()
+    {
+        // Reset emails that have been in 'processing' status for more than 5 minutes
+        // Use created_at since there's no updated_at column
+        $query = "UPDATE email_queue 
+                  SET status = 'pending' 
+                  WHERE status = 'processing' 
+                  AND created_at < DATE_SUB(NOW(), INTERVAL 5 MINUTE)";
+
+        $this->db->query($query);
+        $this->db->execute();
+
+        $resetCount = $this->db->rowCount();
+        if ($resetCount > 0) {
+            error_log("Reset $resetCount stuck emails from 'processing' to 'pending'");
+        }
+
+        return $resetCount;
     }
 
     /**
@@ -32,16 +118,24 @@ class EmailQueueService
      */
     public function processPendingEmails($limit = 5)
     {
+        // First, reset any stuck emails
+        $this->resetStuckEmails();
+
         $pendingEmails = $this->emailQueue->getPending($limit);
         $processed = 0;
 
+        error_log("Found " . count($pendingEmails) . " pending emails to process");
+
         foreach ($pendingEmails as $emailJob) {
             try {
+                error_log("Processing email #{$emailJob->id} to {$emailJob->email}");
+
                 // Mark as processing
                 $this->emailQueue->markProcessing($emailJob->id);
 
                 // Decode attachments
                 $attachments = json_decode($emailJob->attachments ?: '[]', true);
+                error_log("Email #{$emailJob->id} has " . count($attachments) . " attachments");
 
                 // Send email
                 $success = $this->emailService->sendSessionPhotos(
@@ -52,13 +146,16 @@ class EmailQueueService
                 if ($success) {
                     $this->emailQueue->markSent($emailJob->id);
                     $processed++;
+                    error_log("✅ Email #{$emailJob->id} sent successfully");
                 } else {
                     $this->emailQueue->markFailed($emailJob->id, 'Email service returned false');
+                    error_log("❌ Email #{$emailJob->id} failed: Email service returned false");
                 }
 
             } catch (\Exception $e) {
                 $this->emailQueue->markFailed($emailJob->id, $e->getMessage());
-                error_log('Email queue processing error: ' . $e->getMessage());
+                error_log("❌ Email #{$emailJob->id} failed with exception: " . $e->getMessage());
+                error_log("Stack trace: " . $e->getTraceAsString());
             }
         }
 

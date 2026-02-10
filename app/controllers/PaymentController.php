@@ -37,15 +37,17 @@ class PaymentController extends Controller
                 'order_id' => $order_id,
                 'gross_amount' => $package->price,
             ],
-            'item_details' => [[
-                'id' => $package->id,
-                'price' => $package->price,
-                'quantity' => 1,
-                'name' => $package->name,
-            ]],
+            'item_details' => [
+                [
+                    'id' => $package->id,
+                    'price' => $package->price,
+                    'quantity' => 1,
+                    'name' => $package->name,
+                ]
+            ],
         ];
 
-                $paymentService = new PaymentService();
+        $paymentService = new PaymentService();
         $paymentInfo = $paymentService->createTransaction($transactionDetails);
 
         $transactionModel->updatePaymentInfo($transactionId, $paymentInfo['token'], $paymentInfo['redirect_url']);
@@ -58,15 +60,15 @@ class PaymentController extends Controller
     {
         // Start with basic error logging
         error_log('PaymentController::getSnapToken called with package_id: ' . $package_id);
-        
+
         // Suppress any unexpected output and ensure clean JSON response
         error_reporting(E_ALL);
         ini_set('display_errors', 0);
-        
+
         try {
             ob_clean();
             header('Content-Type: application/json');
-            
+
             // Basic validation
             if (empty($package_id) || !is_numeric($package_id)) {
                 error_log('PaymentController::getSnapToken - Invalid package ID');
@@ -77,12 +79,12 @@ class PaymentController extends Controller
                 ]);
                 return;
             }
-            
+
             error_log('PaymentController::getSnapToken - Package ID validation passed');
-            
+
             error_log('PaymentController::getSnapToken - Loading Package model');
             $packageModel = $this->model('Package');
-            
+
             error_log('PaymentController::getSnapToken - Finding package with ID: ' . $package_id);
             $package = $packageModel->find($package_id);
             if (!$package) {
@@ -94,7 +96,7 @@ class PaymentController extends Controller
                 ]);
                 return;
             }
-            
+
             error_log('PaymentController::getSnapToken - Package found: ' . $package->name);
 
             // Load models with error checking
@@ -104,7 +106,7 @@ class PaymentController extends Controller
                 error_log('PaymentController::getSnapToken - Failed to load Transaction model');
                 throw new Exception('Failed to load Transaction model');
             }
-            
+
             $order_id = 'PHOTOBOOT-' . time() . '-' . $package_id;
             $transactionId = $transactionModel->create([
                 'package_id' => $package_id,
@@ -122,14 +124,16 @@ class PaymentController extends Controller
             $transactionDetails = [
                 'transaction_details' => [
                     'order_id' => $order_id,
-                    'gross_amount' => (int)$package->price, // Ensure integer
+                    'gross_amount' => (int) $package->price, // Ensure integer
                 ],
-                'item_details' => [[
-                    'id' => (string)$package->id,
-                    'price' => (int)$package->price,
-                    'quantity' => 1,
-                    'name' => (string)$package->name,
-                ]],
+                'item_details' => [
+                    [
+                        'id' => (string) $package->id,
+                        'price' => (int) $package->price,
+                        'quantity' => 1,
+                        'name' => (string) $package->name,
+                    ]
+                ],
                 'customer_details' => [
                     'first_name' => 'Customer',
                     'last_name' => 'Photobooth',
@@ -146,7 +150,7 @@ class PaymentController extends Controller
                 error_log('PaymentController::getSnapToken - PaymentService creation failed: ' . $serviceException->getMessage());
                 throw new Exception('PaymentService initialization failed: ' . $serviceException->getMessage());
             }
-            
+
             error_log('PaymentController::getSnapToken - Calling createTransaction');
             $paymentInfo = $paymentService->createTransaction($transactionDetails);
             error_log('PaymentController::getSnapToken - Transaction created successfully');
@@ -163,7 +167,7 @@ class PaymentController extends Controller
         } catch (\Throwable $e) {
             error_log('PaymentController::getSnapToken Error: ' . $e->getMessage());
             error_log('PaymentController::getSnapToken Stack trace: ' . $e->getTraceAsString());
-            
+
             // Make sure we send a response even if there's an error
             try {
                 ob_clean();
@@ -196,44 +200,46 @@ class PaymentController extends Controller
     {
         ob_clean();
         header('Content-Type: application/json');
-        
+
         try {
-            // Simple test transaction
-            $testOrderId = 'TEST-' . time();
-            $testTransaction = [
-                'transaction_details' => [
-                    'order_id' => $testOrderId,
-                    'gross_amount' => 10000,
-                ],
-                'item_details' => [[
-                    'id' => 'test-item',
-                    'price' => 10000,
-                    'quantity' => 1,
-                    'name' => 'Test Item',
-                ]],
-                'customer_details' => [
-                    'first_name' => 'Test',
-                    'last_name' => 'Customer',
-                    'email' => 'test@example.com',
-                    'phone' => '08123456789',
-                ],
-            ];
-            
             $paymentService = new PaymentService();
-            $result = $paymentService->createTransaction($testTransaction);
-            
-            echo json_encode([
-                'success' => true,
-                'message' => 'Midtrans test successful',
-                'snap_token' => substr($result['token'], 0, 20) . '...',
-                'redirect_url' => $result['redirect_url']
-            ]);
-            
+
+            // First test connection
+            $connectionTest = $paymentService->testConnection();
+
+            if ($connectionTest['success']) {
+                echo json_encode([
+                    'success' => true,
+                    'message' => 'Midtrans API connection successful',
+                    'mode' => $connectionTest['details']['mode'],
+                    'token_generated' => true,
+                    'token_length' => $connectionTest['details']['token_length'],
+                    'test_order_id' => $connectionTest['details']['test_order_id'],
+                    'timestamp' => date('Y-m-d H:i:s'),
+                ]);
+            } else {
+                http_response_code(500);
+                echo json_encode([
+                    'success' => false,
+                    'message' => $connectionTest['message'],
+                    'mode' => $connectionTest['details']['mode'],
+                    'error' => $connectionTest['details']['error'],
+                    'error_code' => $connectionTest['details']['error_code'],
+                    'is_ssl_error' => $connectionTest['details']['is_ssl_error'],
+                    'suggestion' => $connectionTest['details']['is_ssl_error']
+                        ? 'SSL/Network error detected. Check server connectivity and SSL certificates.'
+                        : 'Check Midtrans credentials and account activation status.',
+                    'timestamp' => date('Y-m-d H:i:s'),
+                ]);
+            }
+
         } catch (Exception $e) {
+            http_response_code(500);
             echo json_encode([
                 'success' => false,
                 'error' => $e->getMessage(),
-                'code' => $e->getCode()
+                'code' => $e->getCode(),
+                'timestamp' => date('Y-m-d H:i:s'),
             ]);
         }
     }
@@ -241,17 +247,17 @@ class PaymentController extends Controller
     public function getTransactionByOrder($order_id)
     {
         header('Content-Type: application/json');
-        
+
         try {
             $transactionModel = $this->model('Transaction');
             $transaction = $transactionModel->findByOrderId($order_id);
-            
+
             if ($transaction) {
                 // Update payment status to success if not already
                 if ($transaction->payment_status !== 'success') {
                     $transactionModel->updateStatusByOrderId($order_id, 'success');
                 }
-                
+
                 // Set session workflow step
                 Session::start();
                 Session::set('workflow_step', 'frame_selection_unlocked');
@@ -262,7 +268,7 @@ class PaymentController extends Controller
                     Session::set('payment_finish_token', uniqid('finish_', true));
                     Session::set('frame_selection_token', uniqid('frame_', true));
                 }
-                
+
                 echo json_encode([
                     'success' => true,
                     'transaction_id' => $transaction->id
@@ -273,7 +279,7 @@ class PaymentController extends Controller
                     'error' => 'Transaction not found'
                 ]);
             }
-            
+
         } catch (Exception $e) {
             http_response_code(500);
             echo json_encode([
@@ -306,7 +312,7 @@ class PaymentController extends Controller
         $transaction_status = $_GET['transaction_status'] ?? null;
 
         $transactionModel = $this->model('Transaction');
-        
+
         // If transaction_id is provided as parameter, use it
         if ($transaction_id) {
             $transaction = $transactionModel->find($transaction_id);
@@ -318,10 +324,10 @@ class PaymentController extends Controller
         } elseif ($order_id) {
             $transaction = $transactionModel->findByOrderId($order_id);
         } else {
-            header('Location: /photobooth-app/public/packages');
+            header('Location: /packages');
             exit();
         }
-        
+
         // Process a pending transaction
         if ($transaction && $transaction->payment_status === 'pending' && ($transaction_status === 'capture' || $transaction_status === 'settlement')) {
             if ($order_id) {
@@ -331,7 +337,7 @@ class PaymentController extends Controller
                 $transactionModel->updateStatus($transaction->id, 'success');
             }
             $transaction->payment_status = 'success'; // Update local object for view
-            
+
             Session::set('workflow_step', 'frame_selection_unlocked');
             Session::set('current_transaction_id', $transaction->id);
 
@@ -412,5 +418,80 @@ class PaymentController extends Controller
         }
 
         http_response_code(200);
+    }
+
+    /**
+     * Bypass payment for testing purposes
+     * Only works when ENABLE_PAYMENT_BYPASS is true
+     */
+    public function bypassPayment($package_id)
+    {
+        // Check if bypass is enabled
+        if (!defined('ENABLE_PAYMENT_BYPASS') || !ENABLE_PAYMENT_BYPASS) {
+            header('Content-Type: application/json');
+            http_response_code(403);
+            echo json_encode([
+                'success' => false,
+                'error' => 'Payment bypass is not enabled'
+            ]);
+            return;
+        }
+
+        try {
+            ob_clean();
+            header('Content-Type: application/json');
+
+            // Validate package
+            $packageModel = $this->model('Package');
+            $package = $packageModel->find($package_id);
+
+            if (!$package) {
+                http_response_code(404);
+                echo json_encode([
+                    'success' => false,
+                    'error' => 'Package not found'
+                ]);
+                return;
+            }
+
+            // Create transaction with success status
+            $transactionModel = $this->model('Transaction');
+            $order_id = 'BYPASS-' . time() . '-' . $package_id;
+            $transactionId = $transactionModel->create([
+                'package_id' => $package_id,
+                'amount' => $package->price,
+                'payment_status' => 'success', // Directly set to success
+                'order_id' => $order_id,
+            ]);
+
+            // Set session for workflow
+            Session::start();
+            Session::unset('payment_finished_displayed');
+            Session::set('workflow_step', 'frame_selection_unlocked');
+            Session::set('current_transaction_id', $transactionId);
+
+            // Generate tokens for next steps if needed
+            if (ENABLE_SESSION_REFRESH_BACK) {
+                Session::set('payment_finish_token', uniqid('finish_', true));
+                Session::set('frame_selection_token', uniqid('frame_', true));
+            }
+
+            error_log("Payment bypassed for package {$package_id}, transaction ID: {$transactionId}");
+
+            echo json_encode([
+                'success' => true,
+                'transaction_id' => $transactionId,
+                'order_id' => $order_id,
+                'message' => 'Payment bypassed successfully'
+            ]);
+
+        } catch (Exception $e) {
+            error_log('Bypass payment error: ' . $e->getMessage());
+            http_response_code(500);
+            echo json_encode([
+                'success' => false,
+                'error' => 'Failed to bypass payment: ' . $e->getMessage()
+            ]);
+        }
     }
 }

@@ -16,7 +16,13 @@ define('APPROOT', dirname(dirname(__FILE__)) . '/app'); // -> .../photobooth-app
 
 // URL Root
 // Ganti 'http://localhost/photobooth-app' sesuai dengan URL proyek Anda
-define('URLROOT', 'http://localhost/photobooth-app/public'); 
+// Detect environment and set URLROOT accordingly
+// Checks if host contains 'localhost' or '127.0.0.1' to handle ports (e.g. localhost:8080)
+if (strpos($_SERVER['HTTP_HOST'], 'localhost') !== false || strpos($_SERVER['HTTP_HOST'], '127.0.0.1') !== false) {
+    define('URLROOT', 'http://' . $_SERVER['HTTP_HOST'] . '/photobooth-app');
+} else {
+    define('URLROOT', 'https://photobooth.bapel.my.id');
+}
 
 // Site Name
 define('SITENAME', 'Photobooth App');
@@ -50,7 +56,10 @@ define('EMAIL_FROM_ADDRESS', 'bapelhacker@gmail.com');
 define('EMAIL_FROM_NAME', 'Photobooth App');
 
 // Enable/Disable Session Refresh and Back Functionality
-define('ENABLE_SESSION_REFRESH_BACK', true);
+define('ENABLE_SESSION_REFRESH_BACK', false);
+
+// Enable/Disable Payment Bypass (for testing only - set to false in production)
+define('ENABLE_PAYMENT_BYPASS', true);
 
 // --- PHOTOBOOTH SESSION SETTINGS ---
 // Default session duration in seconds

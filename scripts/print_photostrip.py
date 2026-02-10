@@ -7,8 +7,9 @@ import io
 
 def print_image(file_path):
     """
-    Menggabungkan gambar menjadi tata letak 4x6 dan mengirimkannya langsung
-    ke printer default Windows menggunakan raw data.
+    Menggabungkan gambar menjadi tata letak 4x6 dan mengirimkannya ke printer
+    default Windows menggunakan GDI (Graphics Device Interface) untuk kompatibilitas
+    yang lebih baik dengan printer seperti Epson L3110.
     """
     try:
         printer_name = win32print.GetDefaultPrinter()
@@ -20,16 +21,20 @@ def print_image(file_path):
         STRIP_HEIGHT_IN = 6
 
         with Image.open(file_path) as img:
+            # Buat device context untuk printer
             hDC = win32ui.CreateDC()
             hDC.CreatePrinterDC(printer_name)
+
+            # Dapatkan DPI printer
             DPI_X = hDC.GetDeviceCaps(88) # LOGPIXELSX
             DPI_Y = hDC.GetDeviceCaps(90) # LOGPIXELSY
-            
+
             paper_width_px = int(PAPER_WIDTH_IN * DPI_X)
             paper_height_px = int(PAPER_HEIGHT_IN * DPI_Y)
             strip_width_px = int(STRIP_WIDTH_IN * DPI_X)
             strip_height_px = int(STRIP_HEIGHT_IN * DPI_Y)
 
+            # Resize dan buat photostrip layout
             strip1 = img.resize((strip_width_px, strip_height_px), Image.Resampling.LANCZOS)
             strip2 = strip1.copy()
 
@@ -37,24 +42,21 @@ def print_image(file_path):
             final_image.paste(strip1, (0, 0))
             final_image.paste(strip2, (strip_width_px, 0))
 
-            # Simpan gambar yang telah diproses ke buffer memori sebagai BMP
-            # BMP adalah format sederhana yang lebih mudah diterima oleh printer
-            buffered = io.BytesIO()
-            final_image.save(buffered, format="BMP")
-            bmp_data = buffered.getvalue()
+            # Gunakan GDI untuk mencetak gambar
+            dib = ImageWin.Dib(final_image)
 
-            # Mulai proses pencetakan raw
-            hPrinter = win32print.OpenPrinter(printer_name)
-            try:
-                hJob = win32print.StartDocPrinter(hPrinter, 1, ("Photobooth Print", None, "RAW"))
-                try:
-                    win32print.StartPagePrinter(hPrinter)
-                    win32print.WritePrinter(hPrinter, bmp_data)
-                    win32print.EndPagePrinter(hPrinter)
-                finally:
-                    win32print.EndDocPrinter(hPrinter)
-            finally:
-                win32print.ClosePrinter(hPrinter)
+            # Mulai job pencetakan menggunakan device context
+            hDC.StartDoc("Photobooth Print")
+            hDC.StartPage()
+
+            # Gambar image ke printer dengan ukuran yang sesuai
+            dib.draw(hDC.GetHandleOutput(), (0, 0, paper_width_px, paper_height_px))
+
+            hDC.EndPage()
+            hDC.EndDoc()
+
+            # Cleanup
+            hDC.DeleteDC()
 
             print(f"Success: Image '{os.path.basename(file_path)}' sent to printer.")
 

@@ -1,12 +1,14 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Editor Dekorasi - Hias Photostrip</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Poppins:wght@400;600;700&display=swap"
+        rel="stylesheet">
     <style>
         :root {
             --primary-color: #6C63FF;
@@ -18,14 +20,17 @@
 
         /* Firefox Scrollbar */
         html {
-            scrollbar-width: thin; /* "auto" or "thin" */
-            scrollbar-color: rgba(252, 182, 159, 1) rgba(255, 255, 255, 0.95); /* thumb and track color */
+            scrollbar-width: thin;
+            /* "auto" or "thin" */
+            scrollbar-color: rgba(252, 182, 159, 1) rgba(255, 255, 255, 0.95);
+            /* thumb and track color */
         }
 
         /* Exact same animation as select-frame */
-        html, body {
-            height: 100%; 
-            margin: 0; 
+        html,
+        body {
+            height: 100%;
+            margin: 0;
             overflow: hidden;
         }
 
@@ -35,46 +40,55 @@
             background: var(--bg-gradient);
             user-select: none;
             display: flex;
-            justify-content: center; align-items: center;box-sizing: border-box;
+            justify-content: center;
+            align-items: center;
+            box-sizing: border-box;
             opacity: 1;
             transition: opacity 0.4s ease-out;
         }
 
-        body.fade-out { 
-            opacity: 0; 
+        body.fade-out {
+            opacity: 0;
         }
 
         .decoration-container {
             display: grid;
             grid-template-columns: 200px 150px 1fr 200px;
-            grid-template-rows: auto 0.6fr 0.4fr;
+            grid-template-rows: auto 1fr auto;
             gap: 10px;
             height: 95vh;
             width: 100%;
             padding: 20px;
             box-sizing: border-box;
-            background: rgba(255, 255, 255, 0.5); backdrop-filter: blur(10px);
-            border-radius: 20px; padding: 20px; box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.05);
+            background: rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.05);
             opacity: 0;
             animation: contentFadeIn 0.5s ease-in 0.2s forwards;
             transition: opacity 0.5s ease-out;
         }
 
-        .decoration-container.content-fade-out { 
-            opacity: 0; 
+        .decoration-container.content-fade-out {
+            opacity: 0;
         }
-        
-        .decoration-container > * {
+
+        .decoration-container>* {
             opacity: 0;
             animation: innerElementFadeIn 0.5s ease-in 0.7s forwards;
         }
 
-        @keyframes contentFadeIn { 
-            to { opacity: 1; } 
+        @keyframes contentFadeIn {
+            to {
+                opacity: 1;
+            }
         }
 
-        @keyframes innerElementFadeIn { 
-            to { opacity: 1; } 
+        @keyframes innerElementFadeIn {
+            to {
+                opacity: 1;
+            }
         }
 
         .header-panel {
@@ -224,7 +238,8 @@
             position: relative;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
             /* 2:6 inch ratio = 1:3 */
-            height: calc(95vh - 180px); /* Adjust to fit workspace */
+            height: calc(95vh - 180px);
+            /* Adjust to fit workspace */
             aspect-ratio: 1 / 3;
         }
 
@@ -492,6 +507,7 @@
         }
     </style>
 </head>
+
 <body>
     <div class="decoration-container">
         <div class="header-panel">
@@ -508,7 +524,8 @@
                     </p>
                 <?php else: ?>
                     <?php foreach ($data['stickers'] as $sticker): ?>
-                        <div class="sticker-item" data-sticker-id="<?= $sticker->id ?>" data-sticker-path="<?= $sticker->path ?>">
+                        <div class="sticker-item" data-sticker-id="<?= $sticker->id ?>"
+                            data-sticker-path="<?= $sticker->path ?>">
                             <img src="<?= URLROOT . $sticker->path ?>" alt="<?= $sticker->name ?>">
                         </div>
                     <?php endforeach; ?>
@@ -517,15 +534,19 @@
         </div>
 
         <div class="layout-manager">
-            <h3 style="margin: 0 0 10px 0; font-family: 'Fredoka One', cursive; color: var(--primary-color); font-size: 1rem;">📋 Layer Manager</h3>
+            <h3
+                style="margin: 0 0 10px 0; font-family: 'Fredoka One', cursive; color: var(--primary-color); font-size: 1rem;">
+                📋 Layer Manager</h3>
             <div class="layer-list" id="layer-list"></div>
         </div>
 
         <div class="tabs-panel">
             <div class="photostrip-tabs" id="photostrip-tabs">
                 <?php foreach ($data['photostrips'] as $index => $photostrip): ?>
-                    <div class="photostrip-tab <?= $index === 0 ? 'active' : '' ?>" data-photostrip-id="<?= $photostrip->id ?>">
-                        <img src="<?= URLROOT . $photostrip->frame_path ?>" alt="<?= $photostrip->frame_name ?>" class="frame-thumb">
+                    <div class="photostrip-tab <?= $index === 0 ? 'active' : '' ?>"
+                        data-photostrip-id="<?= $photostrip->id ?>">
+                        <img src="<?= URLROOT . $photostrip->frame_path ?>" alt="<?= $photostrip->frame_name ?>"
+                            class="frame-thumb">
                         <span><?= $photostrip->frame_name ?></span>
                     </div>
                 <?php endforeach; ?>
@@ -536,16 +557,16 @@
 
             <div id="photostrip-container">
                 <?php foreach ($data['photostrips'] as $index => $photostrip): ?>
-                    <div class="photostrip-canvas" id="canvas-<?= $photostrip->id ?>" 
-                         style="display: <?= $index === 0 ? 'block' : 'none' ?>;">
+                    <div class="photostrip-canvas" id="canvas-<?= $photostrip->id ?>"
+                        style="display: <?= $index === 0 ? 'block' : 'none' ?>;">
                         <div class="canvas-inner">
                             <img src="<?= URLROOT . $photostrip->frame_path ?>" alt="Frame" class="photostrip-background">
-                            
-                            <?php 
+
+                            <?php
                             $layoutData = json_decode($photostrip->layout_data, true) ?: [];
                             // Get actual slot coordinates from frame asset
                             $frameSlotCoordinates = json_decode($photostrip->slot_coordinates ?? '[]', true);
-                            
+
                             // Default slots as fallback if no coordinates in database
                             $defaultSlots = [
                                 0 => ['left' => 8.33, 'top' => 6.67, 'width' => 83.33, 'height' => 20],
@@ -553,21 +574,21 @@
                                 2 => ['left' => 8.33, 'top' => 53.33, 'width' => 83.33, 'height' => 20],
                                 3 => ['left' => 8.33, 'top' => 76.67, 'width' => 83.33, 'height' => 20]
                             ];
-                            
+
                             // Use actual coordinates or fallback to defaults
                             $slotsToUse = count($frameSlotCoordinates) > 0 ? $frameSlotCoordinates : $defaultSlots;
-                            
+
                             foreach ($layoutData as $slotIndex => $photo):
                                 $slotCoordData = $slotsToUse[$slotIndex] ?? $defaultSlots[0];
-                                
+
                                 // Use percentage positioning for responsive design
                                 $slot = [
                                     'left' => $slotCoordData['left'],
-                                    'top' => $slotCoordData['top'], 
+                                    'top' => $slotCoordData['top'],
                                     'width' => $slotCoordData['width'],
                                     'height' => $slotCoordData['height']
                                 ];
-                                
+
                                 // Calculate object-position for panning
                                 $objectPosition = '50% 50%'; // Default center
                                 if (isset($photo['panX']) && isset($photo['panY'])) {
@@ -585,21 +606,20 @@
                                     // Clamp values between 0 and 100
                                     $posX = max(0, min(100, $posX));
                                     $posY = max(0, min(100, $posY));
-                                    
+
                                     $objectPosition = $posX . '% ' . $posY . '%';
                                 }
-                            ?>
-                                <div class="photo-slot-container" style="position: absolute; left: <?= $slot['left'] ?>%; top: <?= $slot['top'] ?>%; width: <?= $slot['width'] ?>%; height: <?= $slot['height'] ?>%; overflow: hidden; border-radius: 6px;">
-                                    <img src="<?= URLROOT . $photo['photoPath'] ?>" 
-                                         class="photo-layer"
-                                         style="width: 100%; height: 100%;
+                                ?>
+                                <div class="photo-slot-container"
+                                    style="position: absolute; left: <?= $slot['left'] ?>%; top: <?= $slot['top'] ?>%; width: <?= $slot['width'] ?>%; height: <?= $slot['height'] ?>%; overflow: hidden; border-radius: 6px;">
+                                    <img src="<?= URLROOT . $photo['photoPath'] ?>" class="photo-layer" style="width: 100%; height: 100%;
                                                 object-fit: cover; 
                                                 object-position: <?= $objectPosition ?>;">
                                 </div>
                             <?php endforeach; ?>
-                            
+
                             <div class="decoration-layer" id="decoration-<?= $photostrip->id ?>">
-                                </div>
+                            </div>
                         </div>
                     </div>
                 <?php endforeach; ?>
@@ -614,15 +634,16 @@
                 <button class="tool-btn" onclick="sendToBack()">⬇️ Ke Belakang</button>
                 <button class="tool-btn danger" onclick="deleteSelected()">🗑️ Hapus</button>
             </div>
-            
+
             <div class="tool-group">
                 <h4>Reset & Clear</h4>
                 <button class="tool-btn danger" onclick="clearCurrentPhotostrip()">🧹 Bersihkan</button>
                 <button class="tool-btn danger" onclick="clearAllDecorations()">💥 Reset</button>
             </div>
-            
+
             <div class="tool-group">
-                <button class="btn btn-finish" id="finish-btn" onclick="finishDecorations()" style="width: 100%; margin: 0; padding: 12px; font-size: 0.9rem;">
+                <button class="btn btn-finish" id="finish-btn" onclick="finishDecorations()"
+                    style="width: 100%; margin: 0; padding: 12px; font-size: 0.9rem;">
                     ✨ Cetak!
                 </button>
             </div>
@@ -638,7 +659,7 @@
         let stickerCounter = 0;
         let isDragging = false;
         let isResizing = false;
-        
+
         // Initialize decorations for each photostrip
         photostrips.forEach(photostrip => {
             decorations[photostrip.id] = [];
@@ -667,16 +688,16 @@
                     // Remove active from all tabs
                     tabs.forEach(t => t.classList.remove('active'));
                     tab.classList.add('active');
-                    
+
                     // Hide all canvases
                     document.querySelectorAll('.photostrip-canvas').forEach(canvas => {
                         canvas.style.display = 'none';
                     });
-                    
+
                     // Show selected canvas
                     currentPhotostripId = tab.dataset.photostripId;
                     document.getElementById(`canvas-${currentPhotostripId}`).style.display = 'block';
-                    
+
                     // Deselect any selected sticker
                     deselectAllStickers();
                     updateLayerList();
@@ -715,7 +736,7 @@
                 rotation: 0,
                 zIndex: stickerCounter
             };
-            
+
             decorations[currentPhotostripId].push(sticker);
             renderSticker(sticker);
             selectSticker(sticker.id);
@@ -733,59 +754,59 @@
             stickerElement.style.height = sticker.height + 'px';
             stickerElement.style.transform = `rotate(${sticker.rotation}deg)`;
             stickerElement.style.zIndex = sticker.zIndex;
-            
+
             stickerElement.innerHTML = `
                 <img src="<?= URLROOT ?>${sticker.stickerPath}" alt="Sticker">
                 <div class="resize-handle"></div>
                 <div class="delete-handle">×</div>
             `;
-            
+
             // Add event listeners
             stickerElement.addEventListener('mousedown', startDrag);
             stickerElement.addEventListener('click', (e) => {
                 e.stopPropagation();
                 selectSticker(sticker.id);
             });
-            
+
             const resizeHandle = stickerElement.querySelector('.resize-handle');
             resizeHandle.addEventListener('mousedown', (e) => {
                 e.stopPropagation();
                 startResize(e, sticker.id);
             });
-            
+
             const deleteHandle = stickerElement.querySelector('.delete-handle');
             deleteHandle.addEventListener('click', (e) => {
                 e.stopPropagation();
                 deleteSticker(sticker.id);
             });
-            
+
             decorationLayer.appendChild(stickerElement);
         }
 
         function startDrag(e) {
             if (isResizing) return;
-            
+
             isDragging = true;
             const stickerId = e.currentTarget.id;
             const stickerElement = e.currentTarget;
             const decorationLayer = stickerElement.parentElement;
-            
+
             selectSticker(stickerId);
-            
+
             const rect = stickerElement.getBoundingClientRect();
             const parentRect = decorationLayer.getBoundingClientRect();
             const offsetX = e.clientX - rect.left;
             const offsetY = e.clientY - rect.top;
-            
+
             function drag(e) {
                 if (!isDragging) return;
-                
+
                 const newX = e.clientX - parentRect.left - offsetX;
                 const newY = e.clientY - parentRect.top - offsetY;
-                
+
                 stickerElement.style.left = Math.max(0, Math.min(decorationLayer.offsetWidth - stickerElement.offsetWidth, newX)) + 'px';
                 stickerElement.style.top = Math.max(0, Math.min(decorationLayer.offsetHeight - stickerElement.offsetHeight, newY)) + 'px';
-                
+
                 // Update sticker data
                 const sticker = decorations[currentPhotostripId].find(s => s.id === stickerId);
                 if (sticker) {
@@ -793,13 +814,13 @@
                     sticker.y = parseInt(stickerElement.style.top);
                 }
             }
-            
+
             function stopDrag() {
                 isDragging = false;
                 document.removeEventListener('mousemove', drag);
                 document.removeEventListener('mouseup', stopDrag);
             }
-            
+
             document.addEventListener('mousemove', drag);
             document.addEventListener('mouseup', stopDrag);
         }
@@ -811,18 +832,18 @@
             const startY = e.clientY;
             const startWidth = stickerElement.offsetWidth;
             const startHeight = stickerElement.offsetHeight;
-            
+
             function resize(e) {
                 if (!isResizing) return;
-                
+
                 const deltaX = e.clientX - startX;
                 const deltaY = e.clientY - startY;
                 const newWidth = Math.max(20, startWidth + deltaX);
                 const newHeight = Math.max(20, startHeight + deltaY);
-                
+
                 stickerElement.style.width = newWidth + 'px';
                 stickerElement.style.height = newHeight + 'px';
-                
+
                 // Update sticker data
                 const sticker = decorations[currentPhotostripId].find(s => s.id === stickerId);
                 if (sticker) {
@@ -830,13 +851,13 @@
                     sticker.height = newHeight;
                 }
             }
-            
+
             function stopResize() {
                 isResizing = false;
                 document.removeEventListener('mousemove', resize);
                 document.removeEventListener('mouseup', stopResize);
             }
-            
+
             document.addEventListener('mousemove', resize);
             document.addEventListener('mouseup', stopResize);
         }
@@ -889,7 +910,7 @@
                         y: originalSticker.y + 20,
                         zIndex: stickerCounter
                     };
-                    
+
                     decorations[currentPhotostripId].push(newSticker);
                     renderSticker(newSticker);
                     selectSticker(newSticker.id);
@@ -947,17 +968,17 @@
         function updateLayerList() {
             const layerList = document.getElementById('layer-list');
             const currentDecorations = decorations[currentPhotostripId] || [];
-            
+
             layerList.innerHTML = '';
-            
+
             if (currentDecorations.length === 0) {
                 layerList.innerHTML = '<div style="text-align: center; color: #999; font-style: italic;">Tidak ada stiker</div>';
                 return;
             }
-            
+
             // Sort by z-index (highest first)
             const sortedDecorations = [...currentDecorations].sort((a, b) => b.zIndex - a.zIndex);
-            
+
             sortedDecorations.forEach(sticker => {
                 const layerItem = document.createElement('div');
                 layerItem.className = 'layer-item';
@@ -973,7 +994,7 @@
             });
         }
 
-function finishDecorations() {
+        function finishDecorations() {
             const decorationData = {};
             const activeCanvas = document.querySelector('.photostrip-canvas:not([style*="display: none"])');
             if (!activeCanvas) {
@@ -992,19 +1013,29 @@ function finishDecorations() {
             const onScreenWidth = contentArea.offsetWidth;
             const onScreenHeight = contentArea.offsetHeight;
 
+            // Debug logging
+            console.log('=== DECORATION FINALIZE DEBUG ===');
+            console.log('Canvas dimensions:', onScreenWidth, 'x', onScreenHeight);
+            console.log('Content area:', contentArea);
+
             photostrips.forEach(photostrip => {
                 const decorationsForStrip = decorations[photostrip.id] || [];
-                
+
+                // Log sticker data for debugging
+                if (decorationsForStrip.length > 0) {
+                    console.log(`Photostrip ${photostrip.id} stickers:`, decorationsForStrip);
+                }
+
                 // Kirim data mentah beserta konteks ukuran kanvas yang sudah SANGAT AKURAT
                 decorationData[photostrip.id] = {
                     canvas_context: {
                         width: onScreenWidth,
                         height: onScreenHeight
                     },
-                    stickers: decorationsForStrip 
+                    stickers: decorationsForStrip
                 };
             });
-            
+
             // Proses pengiriman (fetch) tidak perlu diubah
             fetch('<?= URLROOT ?>/photo/save-decorations', {
                 method: 'POST',
@@ -1014,28 +1045,28 @@ function finishDecorations() {
                     decorations: decorationData
                 })
             })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // Allow navigation for successful save
-                    <?php if (ENABLE_SESSION_REFRESH_BACK): ?>
-                    allowNavigation = true;
-                    <?php endif; ?>
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Allow navigation for successful save
+                        <?php if (ENABLE_SESSION_REFRESH_BACK): ?>
+                            allowNavigation = true;
+                        <?php endif; ?>
 
-                    // Same fade-out animation as select-frame
-                    document.body.classList.add('fade-out');
-                    
-                    setTimeout(() => {
-                        window.location.href = `<?= URLROOT ?>/photo/finalize/${sessionId}`;
-                    }, 500);
-                } else {
-                    alert('Gagal menyimpan dekorasi: ' + data.message);
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Terjadi kesalahan saat menyimpan dekorasi.');
-            });
+                        // Same fade-out animation as select-frame
+                        document.body.classList.add('fade-out');
+
+                        setTimeout(() => {
+                            window.location.href = `<?= URLROOT ?>/photo/finalize/${sessionId}`;
+                        }, 500);
+                    } else {
+                        alert('Gagal menyimpan dekorasi: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Terjadi kesalahan saat menyimpan dekorasi.');
+                });
         }
         // Keyboard shortcuts
         document.addEventListener('keydown', (e) => {
@@ -1088,40 +1119,41 @@ function finishDecorations() {
 
         // Simple back/refresh protection with popup
         <?php if (ENABLE_SESSION_REFRESH_BACK): ?>
-        let allowNavigation = false;
+            let allowNavigation = false;
 
-        // Handle refresh attempts
-        window.addEventListener('beforeunload', function(e) {
-            if (allowNavigation) {
-                return;
-            }
+            // Handle refresh attempts
+            window.addEventListener('beforeunload', function (e) {
+                if (allowNavigation) {
+                    return;
+                }
 
-            e.preventDefault();
-            e.returnValue = '';
-            return '';
-        });
+                e.preventDefault();
+                e.returnValue = '';
+                return '';
+            });
 
-        // Handle browser back button
-        let currentUrl = window.location.href;
-        window.history.pushState({}, '', currentUrl);
+            // Handle browser back button
+            let currentUrl = window.location.href;
+            window.history.pushState({}, '', currentUrl);
 
-        window.addEventListener('popstate', function(e) {
-            if (allowNavigation) {
-                return;
-            }
+            window.addEventListener('popstate', function (e) {
+                if (allowNavigation) {
+                    return;
+                }
 
-            // Show confirmation for back button
-            if (confirm('⚠️ PERINGATAN!\n\nAnda mencoba kembali ke halaman sebelumnya. Dekorasi yang belum disimpan akan hilang.\n\nApakah Anda yakin ingin melanjutkan?')) {
-                allowNavigation = true;
-                window.history.go(-1);
-            } else {
-                // Stay on current page
-                window.history.pushState({}, '', currentUrl);
-            }
-        });
+                // Show confirmation for back button
+                if (confirm('⚠️ PERINGATAN!\n\nAnda mencoba kembali ke halaman sebelumnya. Dekorasi yang belum disimpan akan hilang.\n\nApakah Anda yakin ingin melanjutkan?')) {
+                    allowNavigation = true;
+                    window.history.go(-1);
+                } else {
+                    // Stay on current page
+                    window.history.pushState({}, '', currentUrl);
+                }
+            });
 
-        console.log('Simple back/refresh protection loaded for decoration editor');
+            console.log('Simple back/refresh protection loaded for decoration editor');
         <?php endif; ?>
     </script>
 </body>
+
 </html>

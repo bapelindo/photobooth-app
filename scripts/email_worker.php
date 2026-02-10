@@ -26,24 +26,30 @@ echo "Started at: " . date('Y-m-d H:i:s') . "\n\n";
 // Main processing loop
 while (true) {
     try {
+        // Check queue status first
+        echo "[" . date('H:i:s') . "] Checking email queue...\n";
+
         // Process up to 5 emails per batch
         $processed = $emailQueueService->processPendingEmails(5);
-        
+
         if ($processed > 0) {
-            echo "[" . date('H:i:s') . "] Processed $processed emails\n";
+            echo "[" . date('H:i:s') . "] ✅ Processed $processed emails\n";
+        } else {
+            echo "[" . date('H:i:s') . "] No pending emails in queue\n";
         }
-        
+
         // Wait for 10 seconds before next batch
         sleep(10);
-        
+
         // Optional: Add memory check to prevent memory leaks
         if (memory_get_usage() > 50 * 1024 * 1024) { // 50MB
             echo "[" . date('H:i:s') . "] Memory usage high, restarting worker\n";
             break;
         }
-        
+
     } catch (Exception $e) {
-        echo "[" . date('H:i:s') . "] Worker error: " . $e->getMessage() . "\n";
+        echo "[" . date('H:i:s') . "] ❌ Worker error: " . $e->getMessage() . "\n";
+        echo "[" . date('H:i:s') . "] Stack trace: " . $e->getTraceAsString() . "\n";
         sleep(30); // Wait longer on error
     }
 }

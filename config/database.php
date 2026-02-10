@@ -4,6 +4,6 @@
 return [
     'host' => 'localhost',
     'user' => 'root',
-    'password' => '', // <-- Ganti dengan password Anda jika ada
+    'password' => 'root', // <-- Ganti dengan password Anda jika ada
     'dbname' => 'photobooth_db'
 ];

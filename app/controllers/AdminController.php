@@ -6,7 +6,8 @@ use App\Core\Controller;
 use App\Core\Session;
 use Exception;
 
-class AdminController extends Controller {
+class AdminController extends Controller
+{
     public function __construct()
     {
         // Middleware: Cek apakah admin sudah login
@@ -25,12 +26,12 @@ class AdminController extends Controller {
             error_log('Dashboard error: ' . $e->getMessage());
             // Provide fallback data if database queries fail
             $data = [
-                'summary' => (object)['revenue_today' => 0, 'transactions_today' => 0, 'total_revenue' => 0, 'total_transactions' => 0],
+                'summary' => (object) ['revenue_today' => 0, 'transactions_today' => 0, 'total_revenue' => 0, 'total_transactions' => 0],
                 'popular_packages' => [],
-                'session_stats' => (object)['sessions_today' => 0, 'completed_sessions' => 0, 'avg_photos_per_session' => 0],
+                'session_stats' => (object) ['sessions_today' => 0, 'completed_sessions' => 0, 'avg_photos_per_session' => 0],
                 'recent_sessions' => [],
-                'email_queue_stats' => (object)['pending' => 0, 'completed' => 0, 'failed' => 0],
-                'print_queue_stats' => (object)['pending' => 0, 'completed' => 0, 'failed' => 0],
+                'email_queue_stats' => (object) ['pending' => 0, 'completed' => 0, 'failed' => 0],
+                'print_queue_stats' => (object) ['pending' => 0, 'completed' => 0, 'failed' => 0],
                 'title' => 'Dashboard',
                 'error_message' => 'Unable to load dashboard data. Please check system status.'
             ];
@@ -48,41 +49,41 @@ class AdminController extends Controller {
 
         // Use parallel data fetching where possible
         $data = [];
-        
+
         try {
-            $data['summary'] = $transactionModel->getSummary() ?: (object)['revenue_today' => 0, 'transactions_today' => 0, 'total_revenue' => 0, 'total_transactions' => 0];
+            $data['summary'] = $transactionModel->getSummary() ?: (object) ['revenue_today' => 0, 'transactions_today' => 0, 'total_revenue' => 0, 'total_transactions' => 0];
         } catch (\Exception $e) {
             error_log('Transaction summary error: ' . $e->getMessage());
-            $data['summary'] = (object)['revenue_today' => 0, 'transactions_today' => 0, 'total_revenue' => 0, 'total_transactions' => 0];
+            $data['summary'] = (object) ['revenue_today' => 0, 'transactions_today' => 0, 'total_revenue' => 0, 'total_transactions' => 0];
         }
-        
+
         try {
             $data['popular_packages'] = $packageModel->getPopularPackages(3) ?: [];
         } catch (\Exception $e) {
             error_log('Popular packages error: ' . $e->getMessage());
             $data['popular_packages'] = [];
         }
-        
+
         try {
-            $data['session_stats'] = $photoSessionModel->getSessionStatistics() ?: (object)['sessions_today' => 0, 'completed_sessions' => 0, 'avg_photos_per_session' => 0, 'avg_session_duration_seconds' => 0];
+            $data['session_stats'] = $photoSessionModel->getSessionStatistics() ?: (object) ['sessions_today' => 0, 'completed_sessions' => 0, 'avg_photos_per_session' => 0, 'avg_session_duration_seconds' => 0];
             $data['recent_sessions'] = $photoSessionModel->getRecentSessions(10) ?: [];
             $data['daily_session_stats'] = $photoSessionModel->getDailySessionStats(7) ?: [];
         } catch (\Exception $e) {
             error_log('Session stats error: ' . $e->getMessage());
-            $data['session_stats'] = (object)['sessions_today' => 0, 'completed_sessions' => 0, 'avg_photos_per_session' => 0, 'avg_session_duration_seconds' => 0];
+            $data['session_stats'] = (object) ['sessions_today' => 0, 'completed_sessions' => 0, 'avg_photos_per_session' => 0, 'avg_session_duration_seconds' => 0];
             $data['recent_sessions'] = [];
             $data['daily_session_stats'] = [];
         }
-        
+
         try {
-            $data['email_queue_stats'] = $emailQueueModel->getStats() ?: (object)['pending' => 0, 'completed' => 0, 'failed' => 0];
-            $data['print_queue_stats'] = $printQueueModel->getStats() ?: (object)['pending' => 0, 'completed' => 0, 'failed' => 0];
+            $data['email_queue_stats'] = $emailQueueModel->getStats() ?: (object) ['pending' => 0, 'completed' => 0, 'failed' => 0];
+            $data['print_queue_stats'] = $printQueueModel->getStats() ?: (object) ['pending' => 0, 'completed' => 0, 'failed' => 0];
         } catch (\Exception $e) {
             error_log('Queue stats error: ' . $e->getMessage());
-            $data['email_queue_stats'] = (object)['pending' => 0, 'completed' => 0, 'failed' => 0];
-            $data['print_queue_stats'] = (object)['pending' => 0, 'completed' => 0, 'failed' => 0];
+            $data['email_queue_stats'] = (object) ['pending' => 0, 'completed' => 0, 'failed' => 0];
+            $data['print_queue_stats'] = (object) ['pending' => 0, 'completed' => 0, 'failed' => 0];
         }
-        
+
         return $data;
     }
 
@@ -243,7 +244,7 @@ class AdminController extends Controller {
                 // Check if package is being used in active sessions
                 $photoSessionModel = $this->model('PhotoSession');
                 try {
-                    $activeSessions = method_exists($photoSessionModel, 'getActiveSessionsByPackage') 
+                    $activeSessions = method_exists($photoSessionModel, 'getActiveSessionsByPackage')
                         ? $photoSessionModel->getActiveSessionsByPackage($id)
                         : [];
                     if ($activeSessions && count($activeSessions) > 0) {
@@ -267,43 +268,43 @@ class AdminController extends Controller {
     }
 
     // === QUEUE MANAGEMENT ===
-    
+
     public function queueManagement()
     {
         $emailQueueModel = $this->model('EmailQueue');
         $printQueueModel = $this->model('PrintQueue');
-        
+
         // Get queue jobs with pagination
         $data['email_jobs'] = $emailQueueModel->getPendingJobs(20);
         $data['print_jobs'] = $printQueueModel->getPendingJobs(20);
         $data['email_stats'] = $emailQueueModel->getStats();
         $data['print_stats'] = $printQueueModel->getStats();
-        
+
         $data['title'] = 'Queue Management';
         $this->adminView('admin/queue/index', $data);
     }
-    
+
     public function queueStats()
     {
         header('Content-Type: application/json');
-        
+
         try {
             $emailQueueModel = $this->model('EmailQueue');
             $printQueueModel = $this->model('PrintQueue');
-            
+
             $emailStats = $emailQueueModel->getStats();
             $printStats = $printQueueModel->getStats();
-            
+
             echo json_encode([
-                'email_stats' => $emailStats ?: (object)['total' => 0, 'pending' => 0, 'processing' => 0, 'completed' => 0, 'failed' => 0],
-                'print_stats' => $printStats ?: (object)['total' => 0, 'pending' => 0, 'processing' => 0, 'completed' => 0, 'failed' => 0],
+                'email_stats' => $emailStats ?: (object) ['total' => 0, 'pending' => 0, 'processing' => 0, 'completed' => 0, 'failed' => 0],
+                'print_stats' => $printStats ?: (object) ['total' => 0, 'pending' => 0, 'processing' => 0, 'completed' => 0, 'failed' => 0],
                 'timestamp' => time()
             ]);
         } catch (\Exception $e) {
             echo json_encode([
                 'error' => $e->getMessage(),
-                'email_stats' => (object)['total' => 0, 'pending' => 0, 'processing' => 0, 'completed' => 0, 'failed' => 0],
-                'print_stats' => (object)['total' => 0, 'pending' => 0, 'processing' => 0, 'completed' => 0, 'failed' => 0],
+                'email_stats' => (object) ['total' => 0, 'pending' => 0, 'processing' => 0, 'completed' => 0, 'failed' => 0],
+                'print_stats' => (object) ['total' => 0, 'pending' => 0, 'processing' => 0, 'completed' => 0, 'failed' => 0],
                 'timestamp' => time()
             ]);
         }
@@ -312,41 +313,41 @@ class AdminController extends Controller {
     public function retryQueueJob($queue_type, $job_id)
     {
         header('Content-Type: application/json');
-        
+
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             http_response_code(405);
             echo json_encode(['success' => false, 'message' => 'Method not allowed']);
             return;
         }
-        
+
         try {
             if ($queue_type === 'email') {
                 $emailQueueModel = $this->model('EmailQueue');
                 $job = $emailQueueModel->find($job_id);
-                
+
                 if (!$job) {
                     throw new \Exception('Email job not found');
                 }
-                
+
                 // Reset job to pending status with retry count reset
                 $emailQueueModel->resetJob($job_id);
                 echo json_encode(['success' => true, 'message' => 'Email job queued for retry']);
-                
+
             } elseif ($queue_type === 'print') {
                 $printQueueModel = $this->model('PrintQueue');
                 $job = $printQueueModel->find($job_id);
-                
+
                 if (!$job) {
                     throw new \Exception('Print job not found');
                 }
-                
+
                 $printQueueModel->updateStatus($job_id, 'pending', null);
                 echo json_encode(['success' => true, 'message' => 'Print job queued for retry']);
-                
+
             } else {
                 throw new \Exception('Invalid queue type');
             }
-            
+
         } catch (\Exception $e) {
             http_response_code(500);
             echo json_encode(['success' => false, 'message' => $e->getMessage()]);
@@ -356,38 +357,38 @@ class AdminController extends Controller {
     public function deleteQueueJob($queue_type, $job_id)
     {
         header('Content-Type: application/json');
-        
+
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             http_response_code(405);
             echo json_encode(['success' => false, 'message' => 'Method not allowed']);
             return;
         }
-        
+
         try {
             if ($queue_type === 'email') {
                 $emailQueueModel = $this->model('EmailQueue');
                 $success = $emailQueueModel->delete($job_id);
-                
+
                 if ($success) {
                     echo json_encode(['success' => true, 'message' => 'Email job deleted']);
                 } else {
                     throw new \Exception('Failed to delete email job');
                 }
-                
+
             } elseif ($queue_type === 'print') {
                 $printQueueModel = $this->model('PrintQueue');
                 $success = $printQueueModel->delete($job_id);
-                
+
                 if ($success) {
                     echo json_encode(['success' => true, 'message' => 'Print job deleted']);
                 } else {
                     throw new \Exception('Failed to delete print job');
                 }
-                
+
             } else {
                 throw new \Exception('Invalid queue type');
             }
-            
+
         } catch (\Exception $e) {
             http_response_code(500);
             echo json_encode(['success' => false, 'message' => $e->getMessage()]);
@@ -439,7 +440,7 @@ class AdminController extends Controller {
                     }
 
                     $file = $_FILES['asset_file'];
-                    
+
                     // Validate file type
                     $allowedMimeTypes = ['image/png', 'image/jpeg', 'image/gif', 'image/webp'];
                     if (!in_array($file['type'], $allowedMimeTypes)) {
@@ -479,7 +480,7 @@ class AdminController extends Controller {
                     'type' => $assetType,
                     'file_path' => $dbPath
                 ];
-                
+
                 $assetModel = $this->model('Asset');
                 if ($assetModel->create($data)) {
                     $this->flashAndRedirect('admin/assets', 'Asset berhasil ditambahkan!', 'success');
@@ -532,7 +533,7 @@ class AdminController extends Controller {
     public function ajax_save_frame_data()
     {
         header('Content-Type: application/json');
-        
+
         try {
             if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
                 throw new \Exception('Method Not Allowed', 405);
@@ -626,8 +627,8 @@ class AdminController extends Controller {
 
             if ($photostrip && $photostrip->final_image_path) {
                 // Hapus file dari server
-                $filePath = dirname(APPROOT) . '/public' . $photostrip->final_image_path; 
-                
+                $filePath = dirname(APPROOT) . '/public' . $photostrip->final_image_path;
+
                 // Check if the file exists and is a file (not a directory) before unlinking
                 if (file_exists($filePath) && is_file($filePath)) {
                     unlink($filePath);
@@ -657,7 +658,7 @@ class AdminController extends Controller {
     {
         $photoSessionModel = $this->model('PhotoSession');
         $session = $photoSessionModel->getSessionWithDetails($session_id);
-        
+
         if (!$session) {
             $this->flashAndRedirect('admin/sessions', 'Sesi tidak ditemukan.', 'error');
         }
@@ -681,10 +682,10 @@ class AdminController extends Controller {
     {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $photoSessionModel = $this->model('PhotoSession');
-            
+
             // Delete all related data (photos, photostrips, etc.)
             $this->deleteSessionData($session_id);
-            
+
             if ($photoSessionModel->delete($session_id)) {
                 $this->flashAndRedirect('admin/sessions', 'Sesi berhasil dihapus!', 'success');
             } else {
@@ -729,7 +730,7 @@ class AdminController extends Controller {
     {
         $photostripModel = $this->model('Photostrip');
         $photostrip = $photostripModel->getWithFullDetails($photostrip_id);
-        
+
         if (!$photostrip) {
             $this->flashAndRedirect('admin/photostrips', 'Photostrip tidak ditemukan.', 'error');
         }
@@ -747,26 +748,26 @@ class AdminController extends Controller {
         // Disable error reporting to prevent PHP errors from corrupting JSON
         $old_error_reporting = error_reporting(0);
         ini_set('display_errors', 0);
-        
+
         // Clean any previous output and start output buffering
         while (ob_get_level()) {
             ob_end_clean();
         }
         ob_start();
-        
+
         header('Content-Type: application/json');
-        
+
         try {
             $photostripModel = $this->model('Photostrip');
             $photostrip = $photostripModel->getWithFullDetails($photostrip_id);
-            
+
             if (!$photostrip) {
                 throw new \Exception('Photostrip not found');
             }
 
             // Regenerate the final image (this would use your image processing service)
             $newImagePath = $this->regenerateFinalPhotostrip($photostrip);
-            
+
             if ($newImagePath) {
                 $photostripModel->updateFinalImage($photostrip_id, $newImagePath);
                 ob_clean();
@@ -781,7 +782,7 @@ class AdminController extends Controller {
             http_response_code(500);
             echo json_encode(['success' => false, 'message' => $e->getMessage()]);
         }
-        
+
         // Restore error reporting and exit to prevent any additional output
         error_reporting($old_error_reporting);
         ob_end_flush();
@@ -793,25 +794,25 @@ class AdminController extends Controller {
         try {
             // Suppress any PHP errors/warnings during this operation
             error_reporting(0);
-            
+
             $outputDir = dirname(APPROOT) . '/public/uploads/final_photostrips/';
             if (!is_dir($outputDir)) {
                 @mkdir($outputDir, 0775, true);
             }
-            
+
             $filename = 'regenerated_photostrip_' . $photostrip->id . '_' . uniqid() . '.png';
             $relativePath = '/uploads/final_photostrips/' . $filename;
             $outputPath = $outputDir . $filename;
-            
+
             // Use ImageProcessingService to properly regenerate the photostrip
             $imageProcessingService = new \App\Services\ImageProcessingService();
-            
+
             // Get frame path
             $framePath = dirname(APPROOT) . '/public' . $photostrip->frame_path;
             if (!file_exists($framePath)) {
                 throw new \Exception('Frame file not found: ' . $framePath);
             }
-            
+
             // Get layout data and slot coordinates - handle invalid JSON gracefully
             $layoutData = [];
             if (!empty($photostrip->layout_data)) {
@@ -820,7 +821,7 @@ class AdminController extends Controller {
                     $layoutData = $decoded;
                 }
             }
-            
+
             $slotCoordinates = [];
             if (!empty($photostrip->slot_coordinates)) {
                 $decoded = @json_decode($photostrip->slot_coordinates, true);
@@ -828,11 +829,11 @@ class AdminController extends Controller {
                     $slotCoordinates = $decoded;
                 }
             }
-            
+
             // Get session photos
             $photoModel = $this->model('Photo');
             $photos = $photoModel->getBySession($photostrip->session_id);
-            
+
             // Prepare photo paths array
             $photoPaths = [];
             foreach ($photos as $photo) {
@@ -841,19 +842,19 @@ class AdminController extends Controller {
                     $photoPaths[] = $fullPath;
                 }
             }
-            
+
             // Generate photostrip using ImageProcessingService
             $result = $imageProcessingService->createPhotoStrip($framePath, $photoPaths, $slotCoordinates, $outputPath);
-            
+
             // Restore error reporting
             error_reporting(E_ALL);
-            
+
             if ($result) {
                 return $relativePath;
             }
-            
+
             return null;
-            
+
         } catch (\Exception $e) {
             // Restore error reporting
             error_reporting(E_ALL);
@@ -868,37 +869,37 @@ class AdminController extends Controller {
     {
         $emailQueueService = new \App\Services\EmailQueueService();
         $stats = $emailQueueService->getQueueStats();
-        
+
         $emailQueueModel = new \App\Models\EmailQueue();
         $pendingEmails = $emailQueueModel->getPending(20); // Show latest 20
-        
+
         $data = [
             'title' => 'Email Queue Management',
             'stats' => $stats,
             'pending_emails' => $pendingEmails,
             'active_page' => 'queue'
         ];
-        
+
         $this->adminView('admin/email_queue/index', $data);
     }
 
     public function processEmailQueue()
     {
         header('Content-Type: application/json');
-        
+
         try {
             $emailQueueService = new \App\Services\EmailQueueService();
             $processed = $emailQueueService->processPendingEmails(10);
-            
+
             echo json_encode([
-                'success' => true, 
+                'success' => true,
                 'processed' => $processed,
                 'message' => "Processed $processed emails"
             ]);
         } catch (\Exception $e) {
             http_response_code(500);
             echo json_encode([
-                'success' => false, 
+                'success' => false,
                 'message' => $e->getMessage()
             ]);
         }
@@ -916,7 +917,7 @@ class AdminController extends Controller {
         // Get basic stats
         $sessionStats = $photoSessionModel->getSessionStatistics();
         $revenueStats = $transactionModel->getSummary();
-        
+
         $data = [
             'stats' => (object) [
                 'total_sessions' => $sessionStats->total_sessions ?? 0,
@@ -936,17 +937,17 @@ class AdminController extends Controller {
     private function getDailyStatistics()
     {
         $photoSessionModel = $this->model('PhotoSession');
-        
+
         // Get the actual daily session statistics using the method we created
         $dailyStats = $photoSessionModel->getDailySessionStats(7);
-        
+
         // If no data, return empty array instead of placeholder data
         if (empty($dailyStats)) {
             return [];
         }
-        
+
         // Map the data to match expected field names in the view
-        return array_map(function($stat) {
+        return array_map(function ($stat) {
             return (object) [
                 'date' => $stat->date,
                 'session_count' => $stat->sessions,
@@ -973,7 +974,7 @@ class AdminController extends Controller {
         }
 
         // Sort by usage count
-        usort($result, function($a, $b) {
+        usort($result, function ($a, $b) {
             return $b->usage_count - $a->usage_count;
         });
 
@@ -984,7 +985,7 @@ class AdminController extends Controller {
     {
         $transactionModel = $this->model('Transaction');
         $trends = $transactionModel->getRevenueTrends(30);
-        
+
         $chartData = [];
         foreach ($trends as $trend) {
             $chartData[] = [
@@ -992,7 +993,7 @@ class AdminController extends Controller {
                 'revenue' => floatval($trend->revenue)
             ];
         }
-        
+
         return $chartData;
     }
 
@@ -1004,7 +1005,7 @@ class AdminController extends Controller {
             'settings' => $this->getCurrentSettings(),
             'title' => 'System Settings'
         ];
-        
+
         $this->adminView('admin/settings/index', $data);
     }
 
@@ -1021,7 +1022,7 @@ class AdminController extends Controller {
 
             // Save settings to configuration or database
             $this->saveSettings($settings);
-            
+
             $this->flashAndRedirect('admin/settings', 'Pengaturan berhasil disimpan!', 'success');
         }
     }
@@ -1049,7 +1050,7 @@ class AdminController extends Controller {
     public function systemInfo()
     {
         header('Content-Type: application/json');
-        
+
         try {
             $info = [
                 'php_version' => PHP_VERSION,
@@ -1069,7 +1070,7 @@ class AdminController extends Controller {
                     'zip' => extension_loaded('zip')
                 ]
             ];
-            
+
             echo json_encode($info);
         } catch (\Exception $e) {
             http_response_code(500);
@@ -1094,7 +1095,7 @@ class AdminController extends Controller {
 
         fputs($output, "\xEF\xBB\xBF");
 
-        $first_item = (array)$data[0];
+        $first_item = (array) $data[0];
         $headers = [];
         foreach ($first_item as $key => $value) {
             if (is_array($value) || is_object($value)) {
@@ -1106,7 +1107,7 @@ class AdminController extends Controller {
         fputcsv($output, $headers, ',', '"', '\\');
 
         foreach ($data as $row) {
-            $row = (array)$row;
+            $row = (array) $row;
             $flat_row = [];
             foreach ($row as $key => $value) {
                 if (is_array($value) || is_object($value)) {
@@ -1167,7 +1168,7 @@ class AdminController extends Controller {
                 $zip->addFromString('sessions.csv', $sessionsCsv);
                 $zip->addFromString('packages.csv', $packagesCsv);
                 $zip->addFromString('transactions.csv', $transactionsCsv);
-                
+
                 $zip->close();
 
                 ob_clean();
@@ -1235,7 +1236,7 @@ class AdminController extends Controller {
             }
 
             $result = $this->processBulkAction($action, $ids, $type);
-            
+
             if ($result['success']) {
                 $this->flashAndRedirect($result['redirect'], $result['message'], 'success');
             } else {
@@ -1250,7 +1251,7 @@ class AdminController extends Controller {
     private function processBulkAction($action, $ids, $type)
     {
         $result = ['success' => false, 'message' => '', 'redirect' => 'admin/dashboard'];
-        
+
         switch ($type) {
             case 'sessions':
                 $result = $this->handleSessionBulkAction($action, $ids);
@@ -1259,12 +1260,12 @@ class AdminController extends Controller {
                 $result = $this->handlePackageBulkAction($action, $ids);
                 break;
             case 'photos':
-                $result = $this->handlePhotoBulkAction($action, $sids);
+                $result = $this->handlePhotoBulkAction($action, $ids);
                 break;
             default:
                 $result['message'] = 'Unknown item type for bulk action';
         }
-        
+
         return $result;
     }
 
@@ -1272,7 +1273,7 @@ class AdminController extends Controller {
     {
         $photoSessionModel = $this->model('PhotoSession');
         $count = 0;
-        
+
         switch ($action) {
             case 'delete':
                 foreach ($ids as $id) {
@@ -1297,7 +1298,7 @@ class AdminController extends Controller {
     {
         $packageModel = $this->model('Package');
         $count = 0;
-        
+
         switch ($action) {
             case 'delete':
                 foreach ($ids as $id) {
@@ -1326,7 +1327,7 @@ class AdminController extends Controller {
     {
         $photoModel = $this->model('Photo');
         $count = 0;
-        
+
         switch ($action) {
             case 'delete':
                 foreach ($ids as $id) {
@@ -1365,25 +1366,25 @@ class AdminController extends Controller {
         try {
             $query = $_GET['q'] ?? '';
             $type = $_GET['type'] ?? 'all';
-            
+
             if (strlen($query) < 2) {
                 throw new \Exception('Search query must be at least 2 characters');
             }
 
             $results = [];
-            
+
             if ($type === 'all' || $type === 'sessions') {
                 $photoSessionModel = $this->model('PhotoSession');
                 $sessions = $photoSessionModel->search($query);
                 $results['sessions'] = $sessions;
             }
-            
+
             if ($type === 'all' || $type === 'packages') {
                 $packageModel = $this->model('Package');
                 $packages = $packageModel->search($query);
                 $results['packages'] = $packages;
             }
-            
+
             if ($type === 'all' || $type === 'users') {
                 // Add user search if implemented
                 $results['users'] = [];
@@ -1401,11 +1402,11 @@ class AdminController extends Controller {
     public function clearCache()
     {
         header('Content-Type: application/json');
-        
+
         try {
             $cacheCleared = 0;
             $tempDir = sys_get_temp_dir();
-            
+
             // Clear PHP session files
             $sessionPath = session_save_path() ?: $tempDir;
             if (is_dir($sessionPath)) {
@@ -1418,7 +1419,7 @@ class AdminController extends Controller {
                     }
                 }
             }
-            
+
             // Clear thumbnail cache if exists
             $thumbDir = dirname(APPROOT) . '/public/cache/thumbnails/';
             if (is_dir($thumbDir)) {
@@ -1466,10 +1467,10 @@ class AdminController extends Controller {
                 dirname(APPROOT) . '/app.log',
                 APPROOT . '/logs/app.log'
             ];
-            
+
             $logFile = null;
             $logContent = '';
-            
+
             // Find existing log file
             foreach ($logLocations as $location) {
                 if (file_exists($location) && filesize($location) > 0) {
@@ -1477,7 +1478,7 @@ class AdminController extends Controller {
                     break;
                 }
             }
-            
+
             // If no log file found, create a basic log with system info
             if (!$logFile) {
                 $logContent = "=== PHOTOBOOTH APPLICATION LOG ===\n";
@@ -1487,7 +1488,7 @@ class AdminController extends Controller {
                 $logContent .= "Document Root: " . ($_SERVER['DOCUMENT_ROOT'] ?? 'Unknown') . "\n";
                 $logContent .= "App Root: " . APPROOT . "\n";
                 $logContent .= "\n=== ERROR LOG (if any) ===\n";
-                
+
                 // Try to get PHP error log
                 $phpErrorLog = ini_get('error_log');
                 if ($phpErrorLog && file_exists($phpErrorLog)) {
@@ -1496,15 +1497,15 @@ class AdminController extends Controller {
                 } else {
                     $logContent .= "No PHP error log found.\n";
                 }
-                
+
                 $logContent .= "\n=== SESSION DATA ===\n";
                 $logContent .= "Session ID: " . session_id() . "\n";
                 $logContent .= "Admin logged in: " . (Session::has('admin_id') ? 'Yes' : 'No') . "\n";
-                
+
             } else {
                 $logContent = file_get_contents($logFile);
             }
-            
+
             // Set headers for file download
             header('Content-Type: text/plain');
             header('Content-Disposition: attachment; filename="photobooth_logs_' . date('Y-m-d_H-i-s') . '.log"');
@@ -1512,47 +1513,47 @@ class AdminController extends Controller {
             header('Cache-Control: no-cache, no-store, must-revalidate');
             header('Pragma: no-cache');
             header('Expires: 0');
-            
+
             // Output the log content
             echo $logContent;
             exit; // Important: prevent any additional output
-            
+
         } catch (Exception $e) {
             // If download fails, create an error log content
             $errorLog = "=== LOG DOWNLOAD ERROR ===\n";
             $errorLog .= "Error: " . $e->getMessage() . "\n";
             $errorLog .= "Time: " . date('Y-m-d H:i:s') . "\n";
             $errorLog .= "Attempted locations:\n";
-            
+
             if (isset($logLocations)) {
                 foreach ($logLocations as $location) {
                     $errorLog .= "- $location " . (file_exists($location) ? '(exists)' : '(not found)') . "\n";
                 }
             }
-            
+
             header('Content-Type: text/plain');
             header('Content-Disposition: attachment; filename="photobooth_error_log_' . date('Y-m-d_H-i-s') . '.log"');
             echo $errorLog;
             exit;
         }
     }
-    
-    private function tail($file, $lines = 50) 
+
+    private function tail($file, $lines = 50)
     {
         if (!file_exists($file)) {
             return "File not found: $file\n";
         }
-        
+
         $handle = fopen($file, 'r');
         if (!$handle) {
             return "Could not open file: $file\n";
         }
-        
+
         $linecounter = 0;
         $pos = -2;
         $beginning = false;
         $text = array();
-        
+
         while ($linecounter < $lines) {
             $t = " ";
             while ($t != "\n") {
@@ -1568,7 +1569,8 @@ class AdminController extends Controller {
                 rewind($handle);
             }
             $text[$lines - $linecounter - 1] = fgets($handle);
-            if ($beginning) break;
+            if ($beginning)
+                break;
         }
         fclose($handle);
         return implode('', array_reverse($text));

@@ -47,6 +47,7 @@ $router->get('photo/check-print-status/{session_id}', 'App\Controllers\PhotoCont
 $router->get('payment/process/{package_id}', 'App\Controllers\PaymentController@process');
 $router->get('payment/get-snap-token/{package_id}', 'App\Controllers\PaymentController@getSnapToken');
 $router->get('payment/get-transaction-by-order/{order_id}', 'App\Controllers\PaymentController@getTransactionByOrder');
+$router->get('payment/bypass-payment/{package_id}', 'App\Controllers\PaymentController@bypassPayment');
 $router->get('payment/test-endpoint', 'App\Controllers\PaymentController@testEndpoint');
 $router->get('payment/test-midtrans', 'App\Controllers\PaymentController@testMidtrans');
 $router->get('payment/finish/{transaction_id}', 'App\Controllers\PaymentController@finish');
