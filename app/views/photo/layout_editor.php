@@ -842,7 +842,7 @@
 
             const currentFrame = frameData[currentFrameIndex];
             console.log('Loading frame:', currentFrame.name);
-            
+
             // Clear canvas
             mainCanvas.clear();
             mainCanvas.backgroundColor = 'lightblue';
@@ -850,7 +850,7 @@
             const imageUrl = URLROOT + currentFrame.path;
             console.log('Attempting to load frame from URL:', imageUrl);
 
-            // Load frame background
+            // Load frame as a regular object (not background) so it can be layered
             fabric.Image.fromURL(imageUrl, (img, isError) => {
                 if (isError || !img) {
                     console.error(`Failed to load frame from ${imageUrl}. isError: ${isError}`);
@@ -866,16 +866,31 @@
                     mainCanvas.renderAll();
                     return;
                 }
-                
-                console.log('Image loaded successfully. Setting as background.', img);
 
-                mainCanvas.setBackgroundImage(img, () => {
-                    console.log('setBackgroundImage callback executed. Rendering canvas.');
-                    mainCanvas.renderAll();
-                    console.log('renderAll called after setBackgroundImage.');
-                }, {
+                console.log('Image loaded successfully. Setting as background layer.', img);
+
+                // Add frame as bottom layer
+                img.set({
                     scaleX: mainCanvas.width / img.width,
                     scaleY: mainCanvas.height / img.height,
+                    selectable: false,
+                    evented: false,
+                    id: 'frame-bottom'
+                });
+                mainCanvas.add(img);
+                mainCanvas.sendToBack(img);
+
+                // Clone and add frame as top layer (will be on top of photos)
+                img.clone((clonedImg) => {
+                    clonedImg.set({
+                        id: 'frame-top',
+                        selectable: false,
+                        evented: false
+                    });
+                    mainCanvas.add(clonedImg);
+                    mainCanvas.bringToFront(clonedImg);
+                    mainCanvas.renderAll();
+                    console.log('Frame layers added: bottom and top');
                 });
             }, { crossOrigin: 'anonymous' });
 
@@ -1007,6 +1022,14 @@
                     }
                 });
             }
+
+            // CRITICAL: Ensure frame-top is always on top after restoring images
+            mainCanvas.getObjects().forEach(obj => {
+                if (obj.id === 'frame-top') {
+                    mainCanvas.bringToFront(obj);
+                }
+            });
+            mainCanvas.renderAll();
         }
 
         function initializeDragAndDrop() {
@@ -1204,6 +1227,14 @@
                 });
 
                 canvas.setActiveObject(photoImg);
+
+                // CRITICAL: Ensure frame-top is always on top after adding new image
+                canvas.getObjects().forEach(obj => {
+                    if (obj.id === 'frame-top') {
+                        canvas.bringToFront(obj);
+                    }
+                });
+
                 canvas.renderAll();
 
                 console.log('Image added successfully to slot', slotIndex);
@@ -1331,6 +1362,15 @@
             if (frame.slotObjects) {
                 Object.values(frame.slotObjects).forEach(slot => slot.set({ visible: false }));
             }
+
+            // CRITICAL: Ensure frame-top is on top for preview
+            const objects = mainCanvas.getObjects();
+            for (const obj of objects) {
+                if (obj.id === 'frame-top') {
+                    mainCanvas.bringToFront(obj);
+                    break;
+                }
+            }
             mainCanvas.renderAll();
 
             const dataURL = mainCanvas.toDataURL({ format: 'png', quality: 0.9 });
@@ -1401,15 +1441,32 @@
                 if (frame.slotObjects) {
                     Object.values(frame.slotObjects).forEach(slot => slot.set({ visible: false }));
                 }
-                
+
+                // CRITICAL: Ensure frame-top is always on top before saving
+                const objects = mainCanvas.getObjects();
+                for (const obj of objects) {
+                    if (obj.id === 'frame-top') {
+                        mainCanvas.bringToFront(obj);
+                        console.log('Brought frame-top to front before saving');
+                        break;
+                    }
+                }
+
                 // Force render multiple times to ensure all elements are properly positioned
                 mainCanvas.renderAll();
                 await new Promise(resolve => setTimeout(resolve, 50));
                 mainCanvas.renderAll();
                 await new Promise(resolve => setTimeout(resolve, 50));
-                
-                // Generate final image
-                finalImages.push(mainCanvas.toDataURL({ format: 'png', quality: 0.9, multiplier: 2 }));
+
+                // Calculate multiplier to get exactly 600x1800 output (important for sticker positioning!)
+                const targetWidth = 600;
+                const currentWidth = mainCanvas.width;
+                const multiplier = targetWidth / currentWidth;
+
+                console.log(`Canvas: ${currentWidth}x${mainCanvas.height}, multiplier for 600px width: ${multiplier.toFixed(2)}`);
+
+                // Generate final image with exact 600x1800 size
+                finalImages.push(mainCanvas.toDataURL({ format: 'png', quality: 0.9, multiplier: multiplier }));
                 
                 // Show slots again
                 if (frame.slotObjects) {

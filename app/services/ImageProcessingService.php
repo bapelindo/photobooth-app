@@ -48,11 +48,11 @@ class ImageProcessingService
                             $afterHeight = $stickerImage->getImageHeight();
                             error_log("Sticker #{$idx} AFTER: resized to {$afterWidth}x{$afterHeight}");
                         }
-                        // [FIXED] Tambah +1px offset ke Y untuk render yang benar
+                        // Apply offset yang sudah disesuaikan oleh user
                         $finalX = $stickerData['x'] + 11;
-                        $finalY = $stickerData['y'] + 9; // +1px ke bawah
+                        $finalY = $stickerData['y'] + 9;
                         $baseImage->compositeImage($stickerImage, Imagick::COMPOSITE_OVER, $finalX, $finalY);
-                        error_log("Sticker #{$idx} COMPOSITED at x={$finalX}, y={$finalY} (original Y: {$stickerData['y']}, +1px offset)");
+                        error_log("Sticker #{$idx} COMPOSITED at x={$finalX}, y={$finalY} (original: x={$stickerData['x']}, y={$stickerData['y']}, offset: +11, +9)");
                         $stickerImage->clear();
                     }
                 }

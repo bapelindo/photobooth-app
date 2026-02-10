@@ -8,6 +8,7 @@ use App\Services\ImageProcessingService; // Pastikan service ini ada dan benar
 use Exception;
 use Throwable;
 use PHPMailer\PHPMailer\Exception as PHPMailerException;
+use Imagick;
 
 class PhotoController extends Controller
 {
@@ -745,40 +746,114 @@ class PhotoController extends Controller
             $relativePath = '/uploads/final_photostrips/' . $filename;
             $outputPath = $outputDir . $filename;
 
-            // --- Bagian Pembuatan Gambar Dasar (Tidak perlu diubah) ---
-            $layoutData = json_decode($photostrip->layout_data ?: '[]', true) ?: [];
-            $slotCoordinates = json_decode($photostrip->slot_coordinates ?: '[]', true) ?: [];
-            $photosData = [];
-            if (!empty($layoutData)) {
-                foreach ($layoutData as $slotIndex => $photo) {
-                    if (!is_array($photo))
-                        continue;
-                    $photoPathKey = null;
-                    $possibleKeys = ['photoPath', 'path', 'file_path', 'photo_path'];
-                    foreach ($possibleKeys as $key) {
-                        if (isset($photo[$key])) {
-                            $photoPathKey = $key;
-                            break;
+            $imageService = new \App\Services\ImageProcessingService();
+
+            // --- SIMPLIFIED APPROACH: Always prefer original layout file first ---
+            // Priority 1: Find original layout file (photostrip_layout_*.png) - always fresh from layout editor
+            $photostripsDir = dirname(APPROOT) . '/public/uploads/photostrips/';
+            $pattern = 'photostrip_layout_' . $photostrip->session_id . '_' . $photostrip->frame_id . '_*.png';
+            $layoutFiles = glob($photostripsDir . $pattern);
+
+            if (!empty($layoutFiles)) {
+                // Use the first (and should be only) matching file
+                $sourcePath = $layoutFiles[0];
+
+                // Load with Imagick to resize to 600x1800 (decoration editor uses 600x1800 coordinate system)
+                $imagick = new Imagick($sourcePath);
+                $currentWidth = $imagick->getImageWidth();
+                $currentHeight = $imagick->getImageHeight();
+                error_log("Layout file original size: {$currentWidth}x{$currentHeight}");
+
+                // Resize to 600x1800 to match decoration editor coordinate system
+                $imagick->resizeImage(600, 1800, Imagick::FILTER_LANCZOS, 1);
+                $imagick->setImageFormat('png');
+                $imagick->writeImage($outputPath);
+                $imagick->clear();
+
+                error_log("Resized layout file from {$currentWidth}x{$currentHeight} to 600x1800: {$outputPath}");
+
+                // CRITICAL: Composite frame again on top to ensure it covers photos
+                $framePath = dirname(APPROOT) . '/public' . $photostrip->frame_path;
+                if (file_exists($framePath)) {
+                    $baseImage = new Imagick($outputPath);
+                    $frameImage = new Imagick($framePath);
+                    $frameImage->resizeImage(600, 1800, Imagick::FILTER_LANCZOS, 1);
+                    $baseImage->compositeImage($frameImage, Imagick::COMPOSITE_OVER, 0, 0);
+                    $baseImage->setImageFormat('png');
+                    $baseImage->writeImage($outputPath);
+                    $baseImage->clear();
+                    $frameImage->clear();
+                    error_log("Composited frame on top to ensure proper layering");
+                }
+
+                // Set Windows permissions
+                if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+                    exec('icacls "' . $outputPath . '" /grant Users:F');
+                    exec('icacls "' . $outputPath . '" /grant IUSR:F');
+                    exec('icacls "' . $outputPath . '" /grant IIS_IUSRS:F');
+                }
+            }
+            // Priority 2: Try final_image_path from database if layout file not found
+            elseif ($photostrip->final_image_path) {
+                $sourcePath = dirname(APPROOT) . '/public' . $photostrip->final_image_path;
+                if (file_exists($sourcePath)) {
+                    if (copy($sourcePath, $outputPath)) {
+                        error_log("Copied from database final_image_path: {$sourcePath} -> {$outputPath}");
+                        // Set Windows permissions
+                        if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+                            exec('icacls "' . $outputPath . '" /grant Users:F');
+                            exec('icacls "' . $outputPath . '" /grant IUSR:F');
+                            exec('icacls "' . $outputPath . '" /grant IIS_IUSRS:F');
                         }
+                    } else {
+                        error_log("Failed to copy final_image_path: {$sourcePath}");
                     }
-                    if ($photoPathKey) {
-                        $photoPath = dirname(APPROOT) . '/public' . $photo[$photoPathKey];
-                        if (file_exists($photoPath)) {
-                            $photosData[(int) ($photo['slot'] ?? $slotIndex)] = ['path' => $photoPath, 'panX' => $photo['panX'] ?? 0.5, 'panY' => $photo['panY'] ?? 0.5];
+                } else {
+                    error_log("final_image_path file not found: {$sourcePath}");
+                }
+            }
+
+            // If output file still doesn't exist, try fallback method (createPhotoStrip)
+            if (!file_exists($outputPath)) {
+                error_log("Output file still not created, trying fallback method...");
+                $layoutData = json_decode($photostrip->layout_data ?: '[]', true) ?: [];
+                $slotCoordinates = json_decode($photostrip->slot_coordinates ?: '[]', true) ?: [];
+                $photosData = [];
+                if (!empty($layoutData)) {
+                    foreach ($layoutData as $slotIndex => $photo) {
+                        if (!is_array($photo))
+                            continue;
+                        $photoPathKey = null;
+                        $possibleKeys = ['photoPath', 'path', 'file_path', 'photo_path'];
+                        foreach ($possibleKeys as $key) {
+                            if (isset($photo[$key])) {
+                                $photoPathKey = $key;
+                                break;
+                            }
+                        }
+                        if ($photoPathKey) {
+                            $photoPath = dirname(APPROOT) . '/public' . $photo[$photoPathKey];
+                            if (file_exists($photoPath)) {
+                                $photosData[(int) ($photo['slot'] ?? $slotIndex)] = ['path' => $photoPath, 'panX' => $photo['panX'] ?? 0.5, 'panY' => $photo['panY'] ?? 0.5];
+                            }
                         }
                     }
                 }
+                $framePath = dirname(APPROOT) . '/public' . $photostrip->frame_path;
+                if (!file_exists($framePath))
+                    return null;
+                $imageService->createPhotoStrip($photosData, $framePath, $outputPath, $slotCoordinates, 'none');
             }
-            $framePath = dirname(APPROOT) . '/public' . $photostrip->frame_path;
-            if (!file_exists($framePath))
-                return null;
-            $imageService = new \App\Services\ImageProcessingService();
-            $imageService->createPhotoStrip($photosData, $framePath, $outputPath, $slotCoordinates, 'none');
-            // --- Akhir Bagian Pembuatan Gambar Dasar ---
 
             // [FIXED] Koordinat sudah dalam 600x1800 dari decoration editor
             // Tidak perlu scaling - langsung pakai koordinat dari data
             $decorationPayload = json_decode($photostrip->decoration_data ?: '[]', true) ?: [];
+
+            error_log("=== DECORATION DEBUG (Photostrip ID #{$photostrip->id}) ===");
+            error_log("Decoration data exists: " . (!empty($photostrip->decoration_data) ? 'YES' : 'NO'));
+            error_log("Decoration payload: " . json_encode($decorationPayload));
+            error_log("Has canvas_context: " . (isset($decorationPayload['canvas_context']) ? 'YES' : 'NO'));
+            error_log("Has stickers: " . (isset($decorationPayload['stickers']) ? 'YES' : 'NO'));
 
             if (isset($decorationPayload['canvas_context']) && isset($decorationPayload['stickers'])) {
                 $ctx = $decorationPayload['canvas_context'];
@@ -810,11 +885,22 @@ class PhotoController extends Controller
                     error_log("═══════════════════════════════════════════════════════════");
 
                     if (!empty($stickers)) {
+                        error_log("Applying " . count($stickers) . " stickers to {$outputPath}");
                         $tempPath = $outputDir . 'temp_' . $filename;
-                        $imageService->applyOverlays($outputPath, null, $stickers, $tempPath);
+                        error_log("Temp path: {$tempPath}");
+                        $result = $imageService->applyOverlays($outputPath, null, $stickers, $tempPath);
+                        error_log("applyOverlays result: " . ($result ? 'SUCCESS' : 'FAILED'));
+                        error_log("Temp file exists: " . (file_exists($tempPath) ? 'YES' : 'NO'));
+
                         if (file_exists($tempPath)) {
+                            error_log("Renaming temp file to output path");
                             rename($tempPath, $outputPath);
+                            error_log("Final file exists after rename: " . (file_exists($outputPath) ? 'YES' : 'NO'));
+                        } else {
+                            error_log("ERROR: Temp file was not created!");
                         }
+                    } else {
+                        error_log("No stickers to apply (stickers array is empty)");
                     }
                 }
             }
