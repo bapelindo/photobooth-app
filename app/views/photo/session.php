@@ -1250,7 +1250,25 @@
                 method: 'POST',
                 body: formData
             })
-                .then(response => response.json())
+                .then(response => {
+                    // Log response status
+                    console.log('Response status:', response.status);
+
+                    // Try to parse JSON
+                    return response.json().then(data => {
+                        // Attach status to data for error handling
+                        data.httpStatus = response.status;
+                        return data;
+                    }).catch(err => {
+                        // If JSON parsing fails, return generic error
+                        console.error('JSON parse error:', err);
+                        return {
+                            success: false,
+                            error: 'Server response is not valid JSON',
+                            httpStatus: response.status
+                        };
+                    });
+                })
                 .then(data => {
                     if (data.success) {
                         savedPhotos.push(data.photo);
@@ -1304,7 +1322,25 @@
                             saveBtn.style.opacity = '1';
                             saveBtn.innerHTML = '💾 Simpan';
                         }
-                        alert('Gagal menyimpan foto: ' + (data.error || 'Unknown error'));
+
+                        // Show detailed error message
+                        let errorMsg = data.error || data.message || 'Unknown error';
+
+                        // Add debug info if available
+                        if (data.debug) {
+                            console.error('Upload debug info:', data.debug);
+                            errorMsg += '\n\nCek console browser untuk detail debug.';
+                        }
+
+                        if (data.error_code) {
+                            errorMsg += `\n(Error code: ${data.error_code})`;
+                        }
+
+                        if (data.httpStatus) {
+                            errorMsg += `\n(HTTP ${data.httpStatus})`;
+                        }
+
+                        alert('Gagal menyimpan foto: ' + errorMsg);
                     }
                 })
                 .catch(error => {
@@ -1316,7 +1352,7 @@
                         saveBtn.style.opacity = '1';
                         saveBtn.innerHTML = '💾 Simpan';
                     }
-                    alert('Gagal menyimpan foto. Coba lagi.');
+                    alert('Gagal menyimpan foto: ' + error.message + '\n\nCek koneksi internet dan coba lagi.');
                 });
         }
 

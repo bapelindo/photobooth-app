@@ -1,7 +1,13 @@
 {
   "permissions": {
     "allow": [
-      "Bash(php -l:*)"
+      "Bash(php -l:*)",
+      "Bash(dir:*)",
+      "Bash(icacls:*)",
+      "Bash(powershell:*)",
+      "Bash(sc query:*)",
+      "Bash(findstr:*)",
+      "Bash(mysql:*)"
     ],
     "deny": [],
     "ask": []

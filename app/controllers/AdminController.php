@@ -453,10 +453,17 @@ class AdminController extends Controller
                     }
 
                     // Create upload directory
-                    $uploadDir = "../public/assets/{$assetType}s/";
+                    $uploadDir = dirname(APPROOT) . '/public/assets/' . $assetType . 's/';
                     if (!is_dir($uploadDir)) {
                         if (!mkdir($uploadDir, 0755, true)) {
                             throw new \Exception('Failed to create upload directory');
+                        }
+                        // Set Windows permissions for non-admin write access
+                        if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+                            exec('icacls "' . $uploadDir . '" /grant Users:(OI)(CI)F');
+                            exec('icacls "' . $uploadDir . '" /grant IUSR:(OI)(CI)F');
+                            exec('icacls "' . $uploadDir . '" /grant IIS_IUSRS:(OI)(CI)F');
+                            exec('icacls "' . $uploadDir . '" /grant Everyone:(OI)(CI)RX');
                         }
                     }
 
@@ -464,14 +471,21 @@ class AdminController extends Controller
                     $fileExtension = pathinfo($file['name'], PATHINFO_EXTENSION);
                     $filename = uniqid($assetType . '_', true) . '.' . $fileExtension;
                     $destination = $uploadDir . $filename;
-                    $dbPath = "/assets/{$assetType}s/" . $filename;
+                    $dbPath = '/assets/' . $assetType . 's/' . $filename;
 
                     if (!move_uploaded_file($file['tmp_name'], $destination)) {
                         throw new \Exception('Failed to save uploaded file');
                     }
 
-                    // Set proper file permissions
-                    chmod($destination, 0644);
+                    // Set Windows permissions for the uploaded file
+                    if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+                        exec('icacls "' . $destination . '" /grant Users:F');
+                        exec('icacls "' . $destination . '" /grant IUSR:F');
+                        exec('icacls "' . $destination . '" /grant IIS_IUSRS:F');
+                        exec('icacls "' . $destination . '" /grant Everyone:RX');
+                    } else {
+                        chmod($destination, 0644);
+                    }
                 }
 
                 // Sanitize and prepare data
@@ -503,8 +517,12 @@ class AdminController extends Controller
 
             if ($asset && $asset->type !== 'filter') { // Don't delete file for filters
                 // Hapus file dari server
-                $filePath = '../public' . ($asset->file_path ?? $asset->path ?? '');
+                $filePath = dirname(APPROOT) . '/public' . ($asset->file_path ?? $asset->path ?? '');
                 if (!empty($filePath) && file_exists($filePath)) {
+                    // Make file writable before deletion on Windows
+                    if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+                        exec('icacls "' . $filePath . '" /grant Everyone:F');
+                    }
                     unlink($filePath);
                 }
             }

@@ -18,6 +18,12 @@ class CameraService
             $outputDir = dirname(__DIR__, 2) . '/public/uploads/photo';
             if (!is_dir($outputDir)) {
                 mkdir($outputDir, 0775, true);
+                // Set Windows permissions for non-admin write access
+                if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+                    exec('icacls "' . $outputDir . '" /grant Users:(OI)(CI)F');
+                    exec('icacls "' . $outputDir . '" /grant IUSR:(OI)(CI)F');
+                    exec('icacls "' . $outputDir . '" /grant IIS_IUSRS:(OI)(CI)F');
+                }
             }
         }
 

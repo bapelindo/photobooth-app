@@ -185,19 +185,70 @@ class PhotoController extends Controller
     public function saveSessionPhoto()
     {
         header('Content-Type: application/json');
+        header('Access-Control-Allow-Origin: *');
+        header('Access-Control-Allow-Methods: POST, OPTIONS');
+        header('Access-Control-Allow-Headers: Content-Type');
+
+        // Handle preflight OPTIONS request
+        if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+            http_response_code(200);
+            return;
+        }
 
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             http_response_code(405);
-            echo json_encode(['success' => false, 'message' => 'Method not allowed']);
+            echo json_encode(['success' => false, 'error' => 'Method not allowed']);
             return;
         }
+
+        // Log debug info
+        error_log("=== saveSessionPhoto DEBUG ===");
+        error_log("POST data: " . print_r($_POST, true));
+        error_log("FILES data: " . print_r($_FILES, true));
+        error_log("Server upload max filesize: " . ini_get('upload_max_filesize'));
+        error_log("Server post max size: " . ini_get('post_max_size'));
+        error_log("Server memory limit: " . ini_get('memory_limit'));
 
         $session_id = $_POST['session_id'] ?? null;
         $photoFile = $_FILES['photo'] ?? null;
 
         if (!$session_id || !$photoFile) {
             http_response_code(400);
-            echo json_encode(['success' => false, 'message' => 'Missing data']);
+            echo json_encode([
+                'success' => false,
+                'error' => 'Missing data',
+                'debug' => [
+                    'session_id' => $session_id,
+                    'photo_file' => $photoFile ? 'found' : 'not found',
+                    'post' => $_POST,
+                    'files' => $_FILES
+                ]
+            ]);
+            return;
+        }
+
+        // Check for upload errors
+        if ($photoFile['error'] !== UPLOAD_ERR_OK) {
+            $uploadErrors = [
+                UPLOAD_ERR_INI_SIZE => 'File terlalu besar (melebihi upload_max_filesize)',
+                UPLOAD_ERR_FORM_SIZE => 'File terlalu besar (melebihi MAX_FILE_SIZE)',
+                UPLOAD_ERR_PARTIAL => 'File hanya terupload sebagian',
+                UPLOAD_ERR_NO_FILE => 'Tidak ada file yang diupload',
+                UPLOAD_ERR_NO_TMP_DIR => 'Temporary folder tidak ditemukan',
+                UPLOAD_ERR_CANT_WRITE => 'Gagal menulis file ke disk',
+                UPLOAD_ERR_EXTENSION => 'File upload dihentikan oleh extension'
+            ];
+
+            $errorMsg = $uploadErrors[$photoFile['error']] ?? "Unknown upload error code: {$photoFile['error']}";
+
+            error_log("Upload error: " . $errorMsg);
+
+            http_response_code(400);
+            echo json_encode([
+                'success' => false,
+                'error' => $errorMsg,
+                'error_code' => $photoFile['error']
+            ]);
             return;
         }
 
@@ -209,10 +260,23 @@ class PhotoController extends Controller
                 throw new Exception('Session not found');
             }
 
-            // Create upload directory
+            // Create upload directory with proper permissions
             $uploadDir = dirname(APPROOT) . '/public/uploads/session_photos/';
             if (!is_dir($uploadDir)) {
-                mkdir($uploadDir, 0775, true);
+                if (!mkdir($uploadDir, 0775, true)) {
+                    throw new Exception('Gagal membuat directory upload');
+                }
+                // Set Windows permissions for non-admin write access
+                if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+                    exec('icacls "' . $uploadDir . '" /grant Users:(OI)(CI)F');
+                    exec('icacls "' . $uploadDir . '" /grant IUSR:(OI)(CI)F');
+                    exec('icacls "' . $uploadDir . '" /grant IIS_IUSRS:(OI)(CI)F');
+                }
+            }
+
+            // Check if directory is writable
+            if (!is_writable($uploadDir)) {
+                throw new Exception('Directory upload tidak writable. Cek permission folder.');
             }
 
             // Generate unique filename
@@ -220,10 +284,28 @@ class PhotoController extends Controller
             $filePath = $uploadDir . $filename;
             $relativeFilePath = '/uploads/session_photos/' . $filename;
 
+            error_log("Saving photo to: " . $filePath);
+
             // Move uploaded file
             if (!move_uploaded_file($photoFile['tmp_name'], $filePath)) {
-                throw new Exception('Failed to save file');
+                throw new Exception('Gagal memindahkan file upload. Cek disk space dan permissions.');
             }
+
+            // Set Windows permissions for the uploaded file
+            if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+                exec('icacls "' . $filePath . '" /grant Users:F');
+                exec('icacls "' . $filePath . '" /grant IUSR:F');
+                exec('icacls "' . $filePath . '" /grant IIS_IUSRS:F');
+            } else {
+                @chmod($filePath, 0644);
+            }
+
+            // Verify file was saved
+            if (!file_exists($filePath)) {
+                throw new Exception('File tidak berhasil disimpan ke disk');
+            }
+
+            error_log("File saved successfully: " . $filePath);
 
             // Save to database
             $photoSessionPhotoModel = $this->model('PhotoSessionPhoto');
@@ -242,8 +324,12 @@ class PhotoController extends Controller
             ]);
 
         } catch (Exception $e) {
+            error_log("Error in saveSessionPhoto: " . $e->getMessage());
             http_response_code(500);
-            echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+            echo json_encode([
+                'success' => false,
+                'error' => $e->getMessage()
+            ]);
         }
     }
 
@@ -647,6 +733,12 @@ class PhotoController extends Controller
             $outputDir = dirname(APPROOT) . '/public/uploads/final_photostrips/';
             if (!is_dir($outputDir)) {
                 mkdir($outputDir, 0775, true);
+                // Set Windows permissions for non-admin write access
+                if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+                    exec('icacls "' . $outputDir . '" /grant Users:(OI)(CI)F');
+                    exec('icacls "' . $outputDir . '" /grant IUSR:(OI)(CI)F');
+                    exec('icacls "' . $outputDir . '" /grant IIS_IUSRS:(OI)(CI)F');
+                }
             }
 
             $filename = 'final_photostrip_' . $photostrip->id . '_' . uniqid() . '.png';
@@ -684,59 +776,44 @@ class PhotoController extends Controller
             $imageService->createPhotoStrip($photosData, $framePath, $outputPath, $slotCoordinates, 'none');
             // --- Akhir Bagian Pembuatan Gambar Dasar ---
 
-            // [FIXED] Logika scaling yang akurat tanpa offset hardcoded
+            // [FIXED] Koordinat sudah dalam 600x1800 dari decoration editor
+            // Tidak perlu scaling - langsung pakai koordinat dari data
             $decorationPayload = json_decode($photostrip->decoration_data ?: '[]', true) ?: [];
 
             if (isset($decorationPayload['canvas_context']) && isset($decorationPayload['stickers'])) {
-                $context = $decorationPayload['canvas_context'];
+                $ctx = $decorationPayload['canvas_context'];
                 $decorationData = $decorationPayload['stickers'];
                 $stickers = [];
 
+                error_log("══════════════════ BACKEND (PhotoController) ══════════════════");
+                error_log("Canvas Context: {$ctx['width']}x{$ctx['height']}");
+                error_log("Sticker count: " . count($decorationData));
+
                 if (!empty($decorationData)) {
-                    // Validasi canvas context
-                    $original_w = isset($context['width']) && $context['width'] > 0 ? $context['width'] : 0;
-                    $original_h = isset($context['height']) && $context['height'] > 0 ? $context['height'] : 0;
+                    // Koordinat sudah dalam 600x1800, langsung pakai
+                    foreach ($decorationData as $idx => $decoration) {
+                        $stickerPath = dirname(APPROOT) . '/public' . $decoration['stickerPath'];
+                        if (file_exists($stickerPath)) {
+                            $stickers[] = [
+                                'path' => $stickerPath,
+                                'x' => (int) round($decoration['x']),
+                                'y' => (int) round($decoration['y']),
+                                'width' => (int) round($decoration['width']),
+                                'height' => (int) round($decoration['height'])
+                            ];
 
-                    if ($original_w == 0 || $original_h == 0) {
-                        error_log("WARNING: Invalid canvas_context dimensions (w: $original_w, h: $original_h). Skipping sticker overlay.");
-                    } else {
-                        // Dimensi final output (sesuai dengan createPhotoStrip)
-                        $final_w = 600;
-                        $final_h = 1800;
-
-                        // Hitung scaling factor yang akurat
-                        $scaleX = $final_w / $original_w;
-                        $scaleY = $final_h / $original_h;
-
-                        error_log("Sticker Scaling - Canvas: {$original_w}x{$original_h}, Final: {$final_w}x{$final_h}, Scale: {$scaleX}x{$scaleY}");
-
-                        foreach ($decorationData as $decoration) {
-                            $stickerPath = dirname(APPROOT) . '/public' . $decoration['stickerPath'];
-                            if (file_exists($stickerPath)) {
-                                // Scaling tanpa offset - WYSIWYG
-                                $scaled_x = (int) round($decoration['x'] * $scaleX);
-                                $scaled_y = (int) round($decoration['y'] * $scaleY);
-                                $scaled_width = (int) round($decoration['width'] * $scaleX);
-                                $scaled_height = (int) round($decoration['height'] * $scaleY);
-
-                                $stickers[] = [
-                                    'path' => $stickerPath,
-                                    'x' => $scaled_x,
-                                    'y' => $scaled_y,
-                                    'width' => $scaled_width,
-                                    'height' => $scaled_height
-                                ];
-
-                                error_log("Sticker: Original({$decoration['x']},{$decoration['y']},{$decoration['width']},{$decoration['height']}) -> Scaled($scaled_x,$scaled_y,$scaled_width,$scaled_height)");
-                            }
+                            error_log("Sticker #{$idx}: x={$decoration['x']}, y={$decoration['y']}, w={$decoration['width']}, h={$decoration['height']}");
+                        } else {
+                            error_log("Sticker #{$idx}: FILE NOT FOUND - {$stickerPath}");
                         }
+                    }
+                    error_log("═══════════════════════════════════════════════════════════");
 
-                        if (!empty($stickers)) {
-                            $tempPath = $outputDir . 'temp_' . $filename;
-                            $imageService->applyOverlays($outputPath, null, $stickers, $tempPath);
-                            if (file_exists($tempPath)) {
-                                rename($tempPath, $outputPath);
-                            }
+                    if (!empty($stickers)) {
+                        $tempPath = $outputDir . 'temp_' . $filename;
+                        $imageService->applyOverlays($outputPath, null, $stickers, $tempPath);
+                        if (file_exists($tempPath)) {
+                            rename($tempPath, $outputPath);
                         }
                     }
                 }
@@ -927,6 +1004,12 @@ class PhotoController extends Controller
 
         if (!is_dir($zipDir)) {
             mkdir($zipDir, 0775, true);
+            // Set Windows permissions for non-admin write access
+            if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+                exec('icacls "' . $zipDir . '" /grant Users:(OI)(CI)F');
+                exec('icacls "' . $zipDir . '" /grant IUSR:(OI)(CI)F');
+                exec('icacls "' . $zipDir . '" /grant IIS_IUSRS:(OI)(CI)F');
+            }
         }
 
         $zip = new \ZipArchive();
@@ -997,8 +1080,15 @@ class PhotoController extends Controller
             $outputDir = $basePath . DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR . 'uploads' . DIRECTORY_SEPARATOR . 'captures';
             $scriptPath = $basePath . DIRECTORY_SEPARATOR . 'scripts' . DIRECTORY_SEPARATOR . 'capture_sony.py';
 
-            if (!is_dir($outputDir))
+            if (!is_dir($outputDir)) {
                 mkdir($outputDir, 0775, true);
+                // Set Windows permissions for non-admin write access
+                if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+                    exec('icacls "' . $outputDir . '" /grant Users:(OI)(CI)F');
+                    exec('icacls "' . $outputDir . '" /grant IUSR:(OI)(CI)F');
+                    exec('icacls "' . $outputDir . '" /grant IIS_IUSRS:(OI)(CI)F');
+                }
+            }
             if (!file_exists($scriptPath))
                 throw new Exception('Skrip capture_sony.py tidak ditemukan.');
 
@@ -1009,7 +1099,14 @@ class PhotoController extends Controller
 
             $relativePath = trim($output);
 
-            if (strpos($relativePath, '/uploads/captures/') === 0 && file_exists($outputDir . DIRECTORY_SEPARATOR . $filename)) {
+            $capturedFile = $outputDir . DIRECTORY_SEPARATOR . $filename;
+            if (strpos($relativePath, '/uploads/captures/') === 0 && file_exists($capturedFile)) {
+                // Set Windows permissions for the captured file
+                if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+                    exec('icacls "' . $capturedFile . '" /grant Users:F');
+                    exec('icacls "' . $capturedFile . '" /grant IUSR:F');
+                    exec('icacls "' . $capturedFile . '" /grant IIS_IUSRS:F');
+                }
                 echo json_encode([
                     'success' => true,
                     'photoUrl' => URLROOT . $relativePath
@@ -1044,8 +1141,11 @@ class PhotoController extends Controller
                 $decodedImage = base64_decode($imageData);
 
                 if (file_put_contents($filePath, $decodedImage)) {
+                    // Set Windows permissions for the saved file
                     if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
                         exec('icacls "' . $filePath . '" /grant Users:F');
+                        exec('icacls "' . $filePath . '" /grant IUSR:F');
+                        exec('icacls "' . $filePath . '" /grant IIS_IUSRS:F');
                     } else {
                         @chmod($filePath, 0644);
                     }

@@ -83,7 +83,7 @@ define('PRINT_QUEUE_INTERVAL', 30);
 define('PRINT_METHOD', 'gdi');
 
 // Maximum file size for photo uploads (bytes)
-define('MAX_PHOTO_FILE_SIZE', 10485760); // 10MB
+define('MAX_PHOTO_FILE_SIZE', 20971520); // 20MB
 
 // Supported image formats
 define('SUPPORTED_IMAGE_FORMATS', ['jpg', 'jpeg', 'png', 'gif']);

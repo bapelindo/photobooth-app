@@ -25,17 +25,37 @@ class ImageProcessingService
             }
 
             if (!empty($stickers)) {
-                foreach ($stickers as $stickerData) {
+                error_log("══════════════════ ImageProcessingService ═════════════════");
+                foreach ($stickers as $idx => $stickerData) {
                     $stickerPath = $stickerData['path'];
                     if ($stickerPath && file_exists($stickerPath) && is_readable($stickerPath)) {
                         $stickerImage = new Imagick($stickerPath);
+                        $originalWidth = $stickerImage->getImageWidth();
+                        $originalHeight = $stickerImage->getImageHeight();
+
+                        error_log("Sticker #{$idx} BEFORE: file={$originalWidth}x{$originalHeight}, target={$stickerData['width']}x{$stickerData['height']}, pos={$stickerData['x']},{$stickerData['y']}");
+
                         if (isset($stickerData['width']) && isset($stickerData['height']) && $stickerData['width'] > 0 && $stickerData['height'] > 0) {
-                            $stickerImage->resizeImage($stickerData['width'], $stickerData['height'], Imagick::FILTER_LANCZOS, 1);
+                            // Resize ke ukuran persis dari data (koordinat sudah 600x1800)
+                            $stickerImage->resizeImage(
+                                $stickerData['width'],
+                                $stickerData['height'],
+                                Imagick::FILTER_LANCZOS,
+                                1
+                            );
+                            $afterWidth = $stickerImage->getImageWidth();
+                            $afterHeight = $stickerImage->getImageHeight();
+                            error_log("Sticker #{$idx} AFTER: resized to {$afterWidth}x{$afterHeight}");
                         }
-                        $baseImage->compositeImage($stickerImage, Imagick::COMPOSITE_OVER, $stickerData['x'], $stickerData['y']);
+                        // [FIXED] Tambah +1px offset ke Y untuk render yang benar
+                        $finalX = $stickerData['x'] + 11;
+                        $finalY = $stickerData['y'] + 9; // +1px ke bawah
+                        $baseImage->compositeImage($stickerImage, Imagick::COMPOSITE_OVER, $finalX, $finalY);
+                        error_log("Sticker #{$idx} COMPOSITED at x={$finalX}, y={$finalY} (original Y: {$stickerData['y']}, +1px offset)");
                         $stickerImage->clear();
                     }
                 }
+                error_log("═══════════════════════════════════════════════════════════");
             }
 
             // Set PNG format with highest quality
@@ -44,6 +64,15 @@ class ImageProcessingService
             $baseImage->setOption('png:compression-level', 0); // No compression for maximum quality
             $baseImage->writeImage($outputPath);
             $baseImage->clear();
+
+            // Set Windows permissions for the saved file
+            if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+                exec('icacls "' . $outputPath . '" /grant Users:F');
+                exec('icacls "' . $outputPath . '" /grant IUSR:F');
+                exec('icacls "' . $outputPath . '" /grant IIS_IUSRS:F');
+            } else {
+                @chmod($outputPath, 0644);
+            }
 
             return true;
         } catch (ImagickException $e) {
@@ -126,6 +155,15 @@ class ImageProcessingService
             $frame->writeImage($outputPath);
             $frame->clear();
 
+            // Set Windows permissions for the saved file
+            if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+                exec('icacls "' . $outputPath . '" /grant Users:F');
+                exec('icacls "' . $outputPath . '" /grant IUSR:F');
+                exec('icacls "' . $outputPath . '" /grant IIS_IUSRS:F');
+            } else {
+                @chmod($outputPath, 0644);
+            }
+
             return true;
         } catch (ImagickException $e) {
             error_log("ImageMagick Error (createPhotoStrip): " . $e->getMessage());
@@ -160,6 +198,12 @@ class ImageProcessingService
             $uploadDir = dirname(APPROOT) . '/public/' . $directory;
             if (!is_dir($uploadDir)) {
                 mkdir($uploadDir, 0775, true);
+                // Set Windows permissions for non-admin write access
+                if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+                    exec('icacls "' . $uploadDir . '" /grant Users:(OI)(CI)F');
+                    exec('icacls "' . $uploadDir . '" /grant IUSR:(OI)(CI)F');
+                    exec('icacls "' . $uploadDir . '" /grant IIS_IUSRS:(OI)(CI)F');
+                }
             }
 
             $filename = uniqid($filename . '_') . '.png';
@@ -175,6 +219,15 @@ class ImageProcessingService
             $image->writeImage($filePath);
             $image->clear();
 
+            // Set Windows permissions for the saved file
+            if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+                exec('icacls "' . $filePath . '" /grant Users:F');
+                exec('icacls "' . $filePath . '" /grant IUSR:F');
+                exec('icacls "' . $filePath . '" /grant IIS_IUSRS:F');
+            } else {
+                @chmod($filePath, 0644);
+            }
+
             return $relativePath;
 
         } catch (ImagickException $e) {
@@ -182,6 +235,14 @@ class ImageProcessingService
             // Fallback to direct file writing if Imagick fails
             if (file_put_contents($filePath, $imageData) === false) {
                 throw new \Exception("Could not save image to " . $filePath);
+            }
+            // Set Windows permissions for the saved file
+            if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+                exec('icacls "' . $filePath . '" /grant Users:F');
+                exec('icacls "' . $filePath . '" /grant IUSR:F');
+                exec('icacls "' . $filePath . '" /grant IIS_IUSRS:F');
+            } else {
+                @chmod($filePath, 0644);
             }
             return $relativePath;
         }
@@ -216,6 +277,15 @@ class ImageProcessingService
             // Write compressed image
             $imagick->writeImage($outputPath);
             $fileSize = filesize($outputPath);
+
+            // Set Windows permissions for the saved file
+            if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+                exec('icacls "' . $outputPath . '" /grant Users:F');
+                exec('icacls "' . $outputPath . '" /grant IUSR:F');
+                exec('icacls "' . $outputPath . '" /grant IIS_IUSRS:F');
+            } else {
+                @chmod($outputPath, 0644);
+            }
 
             $imagick->clear();
             $imagick->destroy();

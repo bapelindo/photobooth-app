@@ -994,7 +994,7 @@
             });
         }
 
-        function finishDecorations() {
+        async function finishDecorations() {
             const decorationData = {};
             const activeCanvas = document.querySelector('.photostrip-canvas:not([style*="display: none"])');
             if (!activeCanvas) {
@@ -1018,7 +1018,8 @@
             console.log('Canvas dimensions:', onScreenWidth, 'x', onScreenHeight);
             console.log('Content area:', contentArea);
 
-            photostrips.forEach(photostrip => {
+            // Process each photostrip
+            for (const photostrip of photostrips) {
                 const decorationsForStrip = decorations[photostrip.id] || [];
 
                 // Log sticker data for debugging
@@ -1026,17 +1027,108 @@
                     console.log(`Photostrip ${photostrip.id} stickers:`, decorationsForStrip);
                 }
 
-                // Kirim data mentah beserta konteks ukuran kanvas yang sudah SANGAT AKURAT
+                // Load sticker images dan hitung ukuran actual (maintain aspect ratio)
+                const processedStickers = await Promise.all(decorationsForStrip.map(async (sticker) => {
+                    // Load image untuk mendapatkan ukuran asli
+                    const img = new Image();
+                    img.src = '<?= URLROOT ?>' + sticker.stickerPath;
+                    await new Promise((resolve) => {
+                        img.onload = resolve;
+                        img.onerror = resolve; // Continue even if load fails
+                    });
+
+                    const stickerWidth = img.naturalWidth || 89;  // Fallback ke ukuran diketahui
+                    const stickerHeight = img.naturalHeight || 15;
+
+                    // [FIXED] Konversi position ke 600x1800 DULU sebelum hitung centering
+                    const bboxX_600 = (sticker.x / onScreenWidth) * 600;
+                    const bboxY_600 = (sticker.y / onScreenHeight) * 1800;
+                    const bboxWidth_600 = (sticker.width / onScreenWidth) * 600;
+                    const bboxHeight_600 = (sticker.height / onScreenHeight) * 1800;
+
+                    // Hitung ukuran actual sticker (maintain aspect ratio) dalam bounding box (600x1800)
+                    // Ini simulates CSS object-fit: contain
+                    const stickerRatio = stickerWidth / stickerHeight;
+                    const bboxRatio_600 = bboxWidth_600 / bboxHeight_600;
+
+                    let actualWidth_600, actualHeight_600;
+                    if (stickerRatio > bboxRatio_600) {
+                        // Width is constraint - sticker lebih lebar dari box
+                        actualWidth_600 = bboxWidth_600;
+                        actualHeight_600 = bboxWidth_600 / stickerRatio;
+                    } else {
+                        // Height is constraint - sticker lebih tinggi dari box
+                        actualHeight_600 = bboxHeight_600;
+                        actualWidth_600 = bboxHeight_600 * stickerRatio;
+                    }
+
+                    // [FIXED] Hitung centering offset LANGSUNG di 600x1800 coordinate system
+                    const centerOffsetX_600 = (bboxWidth_600 - actualWidth_600) / 2;
+                    const centerOffsetY_600 = (bboxHeight_600 - actualHeight_600) / 2;
+
+                    // [FIXED] Position akhir di 600x1800 (bbox position + centering offset)
+                    const finalX_600 = bboxX_600 + centerOffsetX_600;
+                    const finalY_600 = bboxY_600 + centerOffsetY_600;
+
+                    console.log(`═══════════════════════════════════════════════════════════`);
+                    console.log(`Sticker ID: ${sticker.id}`);
+                    console.log(`File natural size: ${stickerWidth} x ${stickerHeight} px`);
+                    console.log(`File aspect ratio: ${stickerRatio.toFixed(4)}`);
+                    console.log(``);
+                    console.log(`VIEWPORT (on-screen):`);
+                    console.log(`  Canvas size: ${Math.round(onScreenWidth)} x ${Math.round(onScreenHeight)} px`);
+                    console.log(`  Bounding box: x=${Math.round(sticker.x)}, y=${Math.round(sticker.y)}, w=${Math.round(sticker.width)} x ${Math.round(sticker.height)}`);
+                    console.log(`  Bounding box ratio: ${(sticker.width/sticker.height).toFixed(4)}`);
+                    console.log(``);
+                    console.log(`600x1800 OUTPUT (final):`);
+                    console.log(`  Bounding box: x=${Math.round(bboxX_600)}, y=${Math.round(bboxY_600)}, w=${Math.round(bboxWidth_600)} x ${Math.round(bboxHeight_600)}`);
+                    console.log(`  Bounding box ratio: ${bboxRatio_600.toFixed(4)}`);
+                    console.log(`  Actual sticker: w=${Math.round(actualWidth_600)} x ${Math.round(actualHeight_600)}`);
+                    console.log(`  Centering offset: x=${Math.round(centerOffsetX_600)}, y=${Math.round(centerOffsetY_600)}`);
+                    console.log(`  FINAL POSITION: x=${Math.round(finalX_600)}, y=${Math.round(finalY_600)}`);
+                    console.log(`═══════════════════════════════════════════════════════════`);
+
+                    return {
+                        ...sticker,
+                        // Semua koordinat LANGSUNG dalam 600x1800
+                        x: finalX_600,
+                        y: finalY_600,
+                        width: actualWidth_600,
+                        height: actualHeight_600,
+                        // DEBUG INFO - simpan calculation details
+                        _debug: {
+                            natural_size: `${stickerWidth}x${stickerHeight}`,
+                            viewport_canvas: `${Math.round(onScreenWidth)}x${Math.round(onScreenHeight)}`,
+                            viewport_bbox: `x=${Math.round(sticker.x)}, y=${Math.round(sticker.y)}, w=${Math.round(sticker.width)}x${Math.round(sticker.height)}`,
+                            bbox_600: `x=${Math.round(bboxX_600)}, y=${Math.round(bboxY_600)}, w=${Math.round(bboxWidth_600)}x${Math.round(bboxHeight_600)}`,
+                            actual_600: `w=${Math.round(actualWidth_600)}x${Math.round(actualHeight_600)}`,
+                            centering_offset_600: `x=${Math.round(centerOffsetX_600)}, y=${Math.round(centerOffsetY_600)}`,
+                            final_pos_600: `x=${Math.round(finalX_600)}, y=${Math.round(finalY_600)}`
+                        }
+                    };
+                }));
+
+                // Kirim data dengan koordinat standar 600x1800 + debug info
                 decorationData[photostrip.id] = {
                     canvas_context: {
-                        width: onScreenWidth,
-                        height: onScreenHeight
+                        width: 600,
+                        height: 1800
                     },
-                    stickers: decorationsForStrip
+                    _debug_viewport: {
+                        width: Math.round(onScreenWidth),
+                        height: Math.round(onScreenHeight),
+                        timestamp: new Date().toISOString()
+                    },
+                    stickers: processedStickers
                 };
-            });
+            }
 
             // Proses pengiriman (fetch) tidak perlu diubah
+            console.log(`══════════════════ SENDING TO BACKEND ══════════════════`);
+            console.log(`Session ID: ${sessionId}`);
+            console.log(`Decoration Data:`, JSON.stringify(decorationData, null, 2));
+            console.log(`═══════════════════════════════════════════════════════════`);
+
             fetch('<?= URLROOT ?>/photo/save-decorations', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
