@@ -45,7 +45,7 @@ header("Pragma: no-cache");
         /* ========== SOFT BLUE SKY BACKGROUND ========== */
         /* Gentle, airy blue gradient to harmonize with the cards */
         body {
-            background: linear-gradient(120deg, #a1c4fd 0%, #c2e9fb 100%);
+            background: linear-gradient(120deg, #fcc2b2ff 0%, #e2d0cbff 45%, #c2e9fb 100%);
             position: relative;
         }
 
