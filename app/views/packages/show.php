@@ -1,6 +1,5 @@
 <?php
 \App\Core\Session::start();
-// LAPIS 1: MENCEGAH BROWSER MENYIMPAN CACHE
 header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
 header("Cache-Control: post-check=0, pre-check=0", false);
 header("Pragma: no-cache");
@@ -14,15 +13,15 @@ header("Pragma: no-cache");
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <title>Pilih Paket Kecerianmu!</title>
+    <title>Photobooth Airways</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Poppins:wght@400;600;700&display=swap"
+    <link
+        href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;700&family=Roboto+Mono:wght@400;700&family=Orbitron:wght@700;900&display=swap"
         rel="stylesheet">
-    <!-- Midtrans Snap.js -->
+
     <?php
     $paymentConfig = require '../config/payment.php';
-    // Use production or sandbox Snap.js URL based on configuration
     $snapUrl = $paymentConfig['is_production']
         ? 'https://app.midtrans.com/snap/snap.js'
         : 'https://app.sandbox.midtrans.com/snap/snap.js';
@@ -30,567 +29,1180 @@ header("Pragma: no-cache");
     <script src="<?= $snapUrl ?>" data-client-key="<?= $paymentConfig['client_key'] ?>"></script>
 
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         html,
         body {
-            height: 100%;
-            margin: 0;
+            height: 100vh;
             overflow: hidden;
+            font-family: 'Roboto Condensed', sans-serif;
         }
 
+        /* ========== SKY BACKGROUND WITH CLOUDS ========== */
+        /* Bright Cheerful Palette: Sky #64B5F6 | Sunny #FFD54F | Coral #FF8A65 | Mint #4DB6AC | Pink #F48FB1 */
         body {
-            font-family: 'Poppins', sans-serif;
-            background-color: #FDF4F5;
-            text-align: center;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 1vw;
-            box-sizing: border-box;
-            opacity: 1;
-            transition: opacity 0.4s ease-out;
+            background: linear-gradient(to bottom, #81D4FA 0%, #B3E5FC 40%, #E1F5FE 100%);
+            position: relative;
         }
 
-        body.fade-out {
-            opacity: 0;
+        /* Animated Clouds */
+        .clouds {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .cloud {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 100px;
+            animation: float linear infinite;
+        }
+
+        .cloud::before,
+        .cloud::after {
+            content: '';
+            position: absolute;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 100px;
+        }
+
+        /* Cloud 1 */
+        .cloud1 {
+            width: 120px;
+            height: 50px;
+            top: 10%;
+            left: -150px;
+            animation-duration: 45s;
+        }
+
+        .cloud1::before {
+            width: 60px;
+            height: 50px;
+            top: -25px;
+            left: 20px;
+        }
+
+        .cloud1::after {
+            width: 70px;
+            height: 40px;
+            top: -15px;
+            right: 20px;
+        }
+
+        /* Cloud 2 */
+        .cloud2 {
+            width: 100px;
+            height: 40px;
+            top: 25%;
+            left: -120px;
+            animation-duration: 55s;
+            animation-delay: 5s;
+        }
+
+        .cloud2::before {
+            width: 50px;
+            height: 40px;
+            top: -20px;
+            left: 15px;
+        }
+
+        .cloud2::after {
+            width: 60px;
+            height: 35px;
+            top: -12px;
+            right: 15px;
+        }
+
+        /* Cloud 3 */
+        .cloud3 {
+            width: 140px;
+            height: 55px;
+            top: 50%;
+            left: -160px;
+            animation-duration: 50s;
+            animation-delay: 10s;
+        }
+
+        .cloud3::before {
+            width: 70px;
+            height: 55px;
+            top: -28px;
+            left: 25px;
+        }
+
+        .cloud3::after {
+            width: 80px;
+            height: 45px;
+            top: -18px;
+            right: 25px;
+        }
+
+        /* Cloud 4 */
+        .cloud4 {
+            width: 110px;
+            height: 45px;
+            top: 70%;
+            left: -130px;
+            animation-duration: 60s;
+            animation-delay: 15s;
+        }
+
+        .cloud4::before {
+            width: 55px;
+            height: 45px;
+            top: -22px;
+            left: 18px;
+        }
+
+        .cloud4::after {
+            width: 65px;
+            height: 38px;
+            top: -14px;
+            right: 18px;
+        }
+
+        /* Cloud 5 - Bottom */
+        .cloud5 {
+            width: 130px;
+            height: 52px;
+            top: 85%;
+            left: -140px;
+            animation-duration: 48s;
+            animation-delay: 20s;
+        }
+
+        .cloud5::before {
+            width: 65px;
+            height: 52px;
+            top: -26px;
+            left: 22px;
+        }
+
+        .cloud5::after {
+            width: 75px;
+            height: 42px;
+            top: -16px;
+            right: 22px;
+        }
+
+        @keyframes float {
+            0% {
+                left: -200px;
+            }
+
+            100% {
+                left: 110%;
+            }
+        }
+
+        /* Flying Plane */
+        .plane {
+            position: fixed;
+            top: 15%;
+            left: -100px;
+            width: 80px;
+            height: 80px;
+            z-index: 1;
+            animation: flyPlane 40s linear infinite;
+            filter: drop-shadow(2px 2px 8px rgba(0, 0, 0, 0.2));
+        }
+
+        @keyframes flyPlane {
+            0% {
+                left: -100px;
+                top: 15%;
+            }
+
+            50% {
+                top: 20%;
+            }
+
+            100% {
+                left: 110%;
+                top: 15%;
+            }
         }
 
         .main-container {
+            position: relative;
+            z-index: 2;
             width: 100%;
-            max-width: 1100px;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 3vh 2vw;
             opacity: 0;
-            animation: contentFadeIn 0.5s ease-in 0.2s forwards;
-            transition: opacity 0.3s ease-out;
+            animation: fadeIn 0.8s ease-out forwards;
         }
 
-        .main-container.content-fade-out {
-            opacity: 0;
-        }
-
-        @keyframes contentFadeIn {
+        @keyframes fadeIn {
             to {
                 opacity: 1;
             }
         }
 
-        .header-container {
-            margin-bottom: 2vh;
-        }
-
-        .mascot {
-            width: clamp(80px, 12vh, 120px);
-            height: auto;
-            animation: bounce 2s infinite ease-in-out;
-        }
-
-        @keyframes bounce {
-
-            0%,
-            100% {
-                transform: translateY(0);
-            }
-
-            50% {
-                transform: translateY(-10px);
-            }
-        }
-
-        .header-container h1 {
-            font-family: 'Fredoka One', cursive;
-            font-size: clamp(2rem, 5.5vmin, 3.5rem);
-            margin: 1vh 0;
-            text-shadow: 2px 2px #FFD166;
-        }
-
-        .header-container p {
-            font-size: clamp(0.8rem, 2vmin, 1rem);
-            max-width: 600px;
-            margin: 0 auto;
-        }
-
-        .carousel-wrapper {
-            position: relative;
+        /* ========== CAROUSEL SECTION - MAXIMIZED SPACE ========== */
+        .carousel-section {
             width: 100%;
-            max-width: 82vw;
-            /* Lebar tiga kartu + gap */
-            margin: 0 auto;
+            max-width: 1400px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 3vh;
         }
 
-        .packages-container {
+        .passes-container {
             display: flex;
+            gap: 25px;
             overflow-x: auto;
             scroll-behavior: smooth;
+            padding: 15px 20px 20px;
             -ms-overflow-style: none;
-            /* IE and Edge */
             scrollbar-width: none;
-            /* Firefox */
-            padding: 20px;
-            clip-path: inset(0 0 0 0);
+            max-width: 95vw;
+            /* Allow perforation cutouts to be visible */
+            padding-left: 30px;
+            padding-right: 30px;
+            margin: 0 -10px;
         }
 
-        .packages-container::-webkit-scrollbar {
+        .passes-container::-webkit-scrollbar {
             display: none;
-            /* Safari and Chrome */
         }
 
-        .package-card {
-            flex: 0 0 280px;
-            margin-right: 2vw;
-            background-color: #FFFFFF;
-            border: 2px solid #333;
-            border-radius: 15px;
-            padding: 1.5vw;
-            box-shadow: 6px 6px 0px #333;
-            transition: all 0.3s ease;
-            text-align: left;
+        /* ========== BOARDING PASS - BRIGHT & CHEERFUL ========== */
+        /* Color Palette: Sky #4FC3F7 | Sunny #FFD54F | Coral #FF8A65 | Mint #4DB6AC | Pink #F48FB1 */
+        .boarding-pass {
+            flex: 0 0 300px;
+            height: fit-content;
+            background: #FFFFFF;
+            border-radius: 10px;
+            box-shadow:
+                0 15px 40px rgba(79, 195, 247, 0.2),
+                0 5px 15px rgba(79, 195, 247, 0.15);
+            position: relative;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            overflow: visible;
+
+            /* Transparent Cutouts using Mask */
+            -webkit-mask-image: radial-gradient(circle at left 78px, transparent 13px, black 14px),
+                radial-gradient(circle at right 78px, transparent 13px, black 14px);
+            -webkit-mask-composite: source-in, source-in;
+            mask-image: radial-gradient(circle at left 78px, transparent 13px, black 14px),
+                radial-gradient(circle at right 78px, transparent 13px, black 14px);
+            mask-composite: intersect;
         }
 
-        .package-card:last-child {
-            margin-right: 0;
+        .boarding-pass:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow:
+                0 25px 55px rgba(79, 195, 247, 0.3),
+                0 10px 25px rgba(255, 213, 79, 0.2);
         }
 
-        .package-card:hover {
-            box-shadow: 9px 9px 0px #FFD166;
-        }
-
-        .package-card h2 {
-            font-family: 'Fredoka One', cursive;
-            font-size: clamp(1.5rem, 3.5vmin, 1.8rem);
-            color: #6C63FF;
-            margin: 0 0 1vh;
-        }
-
-        .package-card .price {
-            font-family: 'Fredoka One', cursive;
-            font-size: clamp(2rem, 4.5vmin, 2.5rem);
-            color: #FF6584;
-            margin-bottom: 2vh;
-        }
-
-        .package-card p {
-            font-size: clamp(0.75rem, 1.8vmin, 0.9rem);
-            margin-bottom: 2vh;
-            min-height: 3vh;
-        }
-
-        .package-card ul {
-            list-style: none;
-            padding: 0;
-            margin: 0 0 2vh;
-        }
-
-        .package-card ul li {
-            margin-bottom: 1vh;
-            font-weight: 600;
-            font-size: clamp(0.75rem, 1.8vmin, 0.9rem);
-        }
-
-        .package-card ul li::before {
-            content: '⭐';
-            margin-right: 10px;
-        }
-
-        .select-button {
-            display: inline-block;
-            font-family: 'Fredoka One', cursive;
-            font-size: clamp(1rem, 2.2vmin, 1.2rem);
-            background-color: #FFD166;
-            color: #333;
-            padding: 1.5vh 3vw;
-            border: 2px solid #333;
-            border-radius: 50px;
-            text-decoration: none;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            box-shadow: 3px 3px 0 #333;
-            width: auto;
-        }
-
-        .select-button:hover {
-            transform: translate(-2px, -2px);
-            box-shadow: 5px 5px 0 #333;
-        }
-
-        .select-button:active {
-            transform: translate(3px, 3px);
-            box-shadow: none;
-        }
-
-        .bypass-button {
-            background-color: #6C63FF;
+        .pass-stub {
+            background: linear-gradient(135deg, #4FC3F7 0%, #29B6F6 100%);
+            padding: 12px 16px;
             color: white;
-            margin-left: 10px;
-            font-size: clamp(0.85rem, 2vmin, 1rem);
-            padding: 1.2vh 2.5vw;
+            border-radius: 10px 10px 0 0;
+            position: relative;
+            /* Add slight margin at bottom to expose perforation */
+            margin-bottom: 0;
         }
 
-        .bypass-button:hover {
-            background-color: #5a52d5;
-            transform: translate(-2px, -2px);
-            box-shadow: 5px 5px 0 #333;
+        .pass-stub::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #FFD54F, #FFEB3B, #FFD54F);
         }
 
-        .carousel-buttons {
-            text-align: center;
-            margin-top: 20px;
+        .stub-airline {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.6rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            margin-bottom: 4px;
+            opacity: 0.95;
+            color: #FFFFFF;
         }
 
-        .nav-btn {
-            background-color: #FFD166;
-            border: 2px solid #333;
+        .stub-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.2rem;
+            font-weight: 900;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 2px;
+            color: #FFFFFF;
+        }
+
+        .stub-subtitle {
+            font-size: 0.65rem;
+            opacity: 0.95;
+            font-weight: 600;
+            color: #FFEB3B;
+        }
+
+        .perforation {
+            height: 2px;
+            background: repeating-linear-gradient(90deg,
+                    transparent 0px,
+                    transparent 4px,
+                    #CFD8DC 4px,
+                    #CFD8DC 8px);
+            position: relative;
+            z-index: 5;
+        }
+
+        /* Create cutout circles on card edges using boarding-pass pseudo-elements */
+        .boarding-pass::before,
+        .boarding-pass::after {
+            content: '';
+            position: absolute;
+            width: 26px;
+            height: 26px;
             border-radius: 50%;
-            width: 60px;
-            height: 60px;
-            font-size: 30px;
-            font-family: 'Fredoka One', cursive;
-            color: #333;
-            cursor: pointer;
-            box-shadow: 3px 3px 0 #333;
-            transition: all 0.2s ease;
+            z-index: 10;
+            top: 78px;
+            transform: translateY(-50%);
+            pointer-events: none;
+            /* Inner shadow to give depth to the cutout */
+            box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .boarding-pass::before {
+            left: -13px;
+            /* Only show a subtle border/shadow if needed, otherwise keep transparent */
+            border-right: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .boarding-pass::after {
+            right: -13px;
+            border-left: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .pass-main {
+            padding: 16px;
+            background: #FFFFFF;
+        }
+
+        .route-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 14px;
+            padding-bottom: 12px;
+            border-bottom: 2px dashed #E1F5FE;
+        }
+
+        .airport {
+            text-align: center;
+        }
+
+        .airport-code {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2rem;
+            font-weight: 900;
+            color: #0288D1;
+            line-height: 1;
+            margin-bottom: 2px;
+            letter-spacing: -1px;
+        }
+
+        .airport-city {
+            font-size: 0.6rem;
+            color: #FF8A65;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 700;
+        }
+
+        .flight-path {
+            flex: 1;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
             margin: 0 10px;
         }
 
-        .nav-btn:hover {
-            transform: scale(1.05);
-            box-shadow: 5px 5px 0 #333;
+        .flight-line {
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, #4FC3F7, #FFD54F, #4FC3F7);
+            position: relative;
         }
 
-        .nav-btn:active {
-            transform: scale(1.05);
-            box-shadow: none;
+        .flight-number {
+            background: linear-gradient(135deg, #4DB6AC 0%, #26A69A 100%);
+            color: #ffffff;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 0.6rem;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 3px;
+            margin-bottom: 6px;
+            letter-spacing: 1px;
+            box-shadow: 0 2px 8px rgba(77, 182, 172, 0.3);
         }
 
-        /* Popup Styles */
+        .passenger-section {
+            background: linear-gradient(135deg, #E1F5FE 0%, #F1F8E9 100%);
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 12px;
+            border-left: 3px solid #4DB6AC;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .info-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .info-item {
+            flex: 1;
+        }
+
+        .info-label {
+            font-size: 0.55rem;
+            color: #78909C;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 2px;
+            font-weight: 700;
+        }
+
+        .info-value {
+            font-family: 'Roboto Mono', monospace;
+            font-size: 0.7rem;
+            color: #0288D1;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+        }
+
+        .info-value.large {
+            font-size: 0.9rem;
+            color: #FF7043;
+        }
+
+        .details-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .detail-box {
+            text-align: center;
+            padding: 8px 4px;
+            background: linear-gradient(135deg, #F3E5F5 0%, #E1F5FE 100%);
+            border-radius: 6px;
+            border: 1px solid #E1F5FE;
+        }
+
+        .detail-icon {
+            margin-bottom: 4px;
+        }
+
+        .detail-label {
+            font-size: 0.55rem;
+            color: #78909C;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 2px;
+            font-weight: 700;
+        }
+
+        .detail-value {
+            font-family: 'Roboto Mono', monospace;
+            font-size: 0.75rem;
+            color: #0288D1;
+            font-weight: 700;
+        }
+
+        .fare-section {
+            background: linear-gradient(135deg, #FFD54F 0%, #FFEB3B 50%, #FFD54F 100%);
+            color: #0288D1;
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+            margin-bottom: 12px;
+            box-shadow: 0 4px 15px rgba(255, 213, 79, 0.5);
+        }
+
+        .fare-label {
+            font-size: 0.6rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 2px;
+            opacity: 0.8;
+            font-weight: 700;
+            color: #1B365D;
+        }
+
+        .fare-amount {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 900;
+            letter-spacing: 0.5px;
+            color: #1B365D;
+        }
+
+        .book-button {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #E67E22 0%, #F39C12 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-family: 'Roboto Condensed', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(230, 126, 34, 0.4);
+        }
+
+        .book-button:hover {
+            background: linear-gradient(135deg, #D35400 0%, #E67E22 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(230, 126, 34, 0.5);
+        }
+
+        .book-button:active {
+            transform: translateY(0);
+        }
+
+        .pass-footer {
+            background: linear-gradient(135deg, #F8FAFC 0%, #FFFBF5 100%);
+            padding: 12px;
+            border-top: 2px dashed #D4AF37;
+            text-align: center;
+            border-radius: 0 0 10px 10px;
+        }
+
+        .barcode-wrapper {
+            margin-bottom: 6px;
+        }
+
+        .barcode-svg {
+            height: 40px;
+            margin: 0 auto;
+        }
+
+        .booking-ref {
+            font-family: 'Roboto Mono', monospace;
+            font-size: 0.65rem;
+            color: #1B365D;
+            font-weight: 700;
+            letter-spacing: 2px;
+            margin-top: 4px;
+        }
+
+        .boarding-note {
+            font-size: 0.55rem;
+            color: #20B2AA;
+            margin-top: 4px;
+            font-style: italic;
+        }
+
+        /* ========== SIMPLE NAVIGATION ========== */
+        .navigation-section {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .nav-button {
+            width: 55px;
+            height: 55px;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.95);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .nav-button:hover {
+            background: rgba(255, 255, 255, 1);
+            transform: scale(1.12);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .nav-button:active {
+            transform: scale(0.98);
+        }
+
+        .nav-button svg {
+            width: 26px;
+            height: 26px;
+            color: #1B365D;
+        }
+
+        .nav-indicator {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .nav-dot {
+            width: 10px;
+            height: 10px;
+            background: rgba(27, 54, 93, 0.3);
+            border-radius: 50%;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .nav-dot.active {
+            width: 30px;
+            border-radius: 5px;
+            background: linear-gradient(90deg, #20B2AA, #E67E22);
+        }
+
+        /* ========== CLEAN POPUP ========== */
         .popup-overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.6);
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(8px);
             display: none;
-            /* Hidden by default */
             justify-content: center;
             align-items: center;
             z-index: 1000;
+            animation: fadeIn 0.3s ease;
         }
 
         .popup-content {
-            background-color: #fff;
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.2);
+            background: #ffffff;
+            padding: 45px;
+            border-radius: 20px;
+            box-shadow: 0 25px 70px rgba(0, 0, 0, 0.3);
             text-align: center;
-            max-width: 400px;
+            max-width: 480px;
             width: 90%;
-            font-family: 'Poppins', sans-serif;
+            animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
-        .popup-content p {
-            font-size: 1.1rem;
-            color: #333;
-            margin: 0 0 20px 0;
-        }
-
-        #close-popup-btn {
-            font-family: 'Fredoka One', cursive;
-            font-size: 1rem;
-            background-color: #FFD166;
-            color: #333;
-            padding: 10px 25px;
-            border: 2px solid #333;
-            border-radius: 50px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        #close-popup-btn:hover {
-            background-color: #ffc84a;
-        }
-
-        /* Loading overlay */
-        .loading-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.7);
-            display: none;
-            flex-direction: column;
-            /* Stack spinner and text vertically */
-            justify-content: center;
-            align-items: center;
-            z-index: 2000;
-        }
-
-        .loading-spinner {
-            border: 4px solid rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            border-top: 4px solid #FFD166;
-            width: 50px;
-            height: 50px;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
+        @keyframes popIn {
             0% {
-                transform: rotate(0deg);
+                opacity: 0;
+                transform: scale(0.8) translateY(30px);
             }
 
             100% {
-                transform: rotate(360deg);
+                opacity: 1;
+                transform: scale(1) translateY(0);
             }
         }
 
-        .loading-text {
+        .popup-content p {
+            font-size: 1.25rem;
+            color: #2c3e50;
+            margin: 0 0 30px 0;
+            line-height: 1.6;
+            font-weight: 500;
+        }
+
+        #close-popup-btn {
+            font-family: 'Roboto Condensed', sans-serif;
+            font-size: 1.05rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #E67E22, #F39C12);
             color: white;
-            font-family: 'Fredoka One', cursive;
-            font-size: 1.2rem;
-            margin-top: 20px;
+            padding: 15px 45px;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 6px 20px rgba(230, 126, 34, 0.4);
+        }
+
+        #close-popup-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(230, 126, 34, 0.5);
+        }
+
+
+
+        /* ========== RESPONSIVE ========== */
+        @media (max-width: 768px) {
+            .boarding-pass {
+                flex: 0 0 280px;
+            }
+
+            .airport-code {
+                font-size: 1.8rem;
+            }
+
+            .details-grid {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 6px;
+            }
+
+            .nav-indicator {
+                display: none;
+            }
+
+            .plane {
+                width: 60px;
+                height: 60px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .boarding-pass {
+                flex: 0 0 260px;
+            }
+
+            .pass-stub {
+                padding: 10px 14px;
+            }
+
+            .stub-title {
+                font-size: 1rem;
+            }
+
+            .airport-code {
+                font-size: 1.6rem;
+            }
+
+            .fare-amount {
+                font-size: 1.3rem;
+            }
+
+            .pass-main {
+                padding: 12px;
+            }
+
+            .details-grid {
+                gap: 4px;
+            }
+
+            .detail-box {
+                padding: 6px 3px;
+            }
         }
     </style>
 </head>
 
 <body>
-    <div class="main-container">
+    <!-- Sky with Clouds -->
+    <div class="clouds">
+        <div class="cloud cloud1"></div>
+        <div class="cloud cloud2"></div>
+        <div class="cloud cloud3"></div>
+        <div class="cloud cloud4"></div>
+        <div class="cloud cloud5"></div>
+    </div>
 
+    <!-- Flying Plane -->
+    <svg class="plane" viewBox="0 0 24 24" fill="none">
+        <path
+            d="M21 16V14L13 9V3.5C13 2.67 12.33 2 11.5 2C10.67 2 10 2.67 10 3.5V9L2 14V16L10 13.5V19L8 20.5V22L11.5 21L15 22V20.5L13 19V13.5L21 16Z"
+            fill="#1B365D" />
+        <path
+            d="M21 16V14L13 9V3.5C13 2.67 12.33 2 11.5 2C10.67 2 10 2.67 10 3.5V9L2 14V16L10 13.5V19L8 20.5V22L11.5 21L15 22V20.5L13 19V13.5L21 16Z"
+            stroke="#E67E22" stroke-width="0.5" />
+    </svg>
+
+    <div class="main-container">
+        <!-- Flash Message Popup -->
         <?php if (\App\Core\Session::has('flash_message')): ?>
             <div id="flash-popup" class="popup-overlay">
                 <div class="popup-content">
                     <p><?= \App\Core\Session::get('flash_message'); ?></p>
-                    <button id="close-popup-btn">Tutup</button>
+                    <button id="close-popup-btn">Close</button>
                 </div>
             </div>
             <?php \App\Core\Session::unset('flash_message'); ?>
         <?php endif; ?>
 
-        <!-- Loading overlay -->
-        <div id="loading-overlay" class="loading-overlay">
-            <div class="loading-spinner"></div>
-            <div class="loading-text">Memuat pembayaran...</div>
-        </div>
+        
 
-        <script>
-            document.addEventListener('DOMContentLoaded', function () {
-                const popup = document.getElementById('flash-popup');
-                const closeBtn = document.getElementById('close-popup-btn');
 
-                if (popup) {
-                    popup.style.display = 'flex';
-                    closeBtn.addEventListener('click', () => {
-                        popup.style.display = 'none';
-                    });
-                    setTimeout(() => {
-                        if (popup.style.display !== 'none') {
-                            popup.style.display = 'none';
-                        }
-                    }, 5000);
-                }
-            });
-        </script>
+        <!-- Carousel Section -->
+        <div class="carousel-section">
+            <div class="passes-container" id="passes-container">
+                <?php
+                $classTypes = ['ECONOMY', 'BUSINESS', 'FIRST CLASS'];
+                $gates = ['A12', 'B07', 'C15', 'D03'];
+                $seats = ['12A', '8F', '3B', '15C'];
 
-        <div class="header-container">
-            <img src="https://em-content.zobj.net/source/microsoft-teams/363/camera_1f4f7.png" alt="Cute Camera Mascot"
-                class="mascot">
-            <h1>Pilih Paket Kecerianmu!</h1>
-            <p>Setiap foto adalah ledakan tawa yang tak terlupakan. Yuk, pilih paket yang paling seru buat kamu!</p>
-        </div>
+                foreach ($packages as $index => $package):
+                    $flightNumber = 'PBA' . str_pad($package->id * 100, 3, '0', STR_PAD_LEFT);
+                    $bookingRef = strtoupper(substr(md5($package->id), 0, 6));
+                    $classType = $classTypes[$index % 3];
+                    $gate = $gates[$index % 4];
+                    $seat = $seats[$index % 4];
+                    ?>
+                        <div class="boarding-pass">
+                            <div class="pass-stub">
+                                <div class="stub-airline">PHOTOBOOTH AIRWAYS</div>
+                                <div class="stub-title"><?= htmlspecialchars($package->name); ?></div>
+                                <div class="stub-subtitle"><?= $classType ?> CLASS</div>
+                            </div>
 
-        <div class="carousel-wrapper">
-            <div class="packages-container">
-                <?php foreach ($packages as $package): ?>
-                    <div class="package-card">
-                        <h2><?= htmlspecialchars($package->name); ?></h2>
-                        <div class="price">Rp <?= number_format($package->price, 0, ',', '.'); ?></div>
-                        <p><?= htmlspecialchars($package->description); ?></p>
-                        <ul>
-                            <li><b><?= $package->photo_limit ?? 2; ?> Cetak</b> Photostrip</li>
-                            <li><b><?= $package->frame_limit ?? 2; ?> Pilihan</b> Desain Frame</li>
-                            <li><b><?= floor(($package->session_duration ?? 300) / 60); ?> Menit</b> Durasi Sesi Foto</li>
-                            <li><b>Simpan hingga <?= $package->max_save_photos ?? 20; ?></b> foto terbaik</li>
-                        </ul>
-                        <?php if (defined('ENABLE_PAYMENT_BYPASS') && ENABLE_PAYMENT_BYPASS): ?>
-                            <button onclick="bypassPayment(<?= $package->id ?>, '<?= htmlspecialchars($package->name) ?>')"
-                                class="select-button">Pilih Paket Ini!</button>
-                        <?php else: ?>
-                            <button
-                                onclick="payWithSnap(<?= $package->id ?>, '<?= htmlspecialchars($package->name) ?>', <?= $package->price ?>)"
-                                class="select-button">Pilih Paket Ini!</button>
-                        <?php endif; ?>
-                    </div>
+                            <div class="perforation"></div>
+
+                            <div class="pass-main">
+                                <div class="route-section">
+                                    <div class="airport">
+                                        <div class="airport-code">STU</div>
+                                        <div class="airport-city">Studio</div>
+                                    </div>
+
+                                    <div class="flight-path">
+                                        <div class="flight-number"><?= $flightNumber ?></div>
+                                        <div class="flight-line">
+                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+                                                style="position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);">
+                                                <path
+                                                    d="M21 16V14L13 9V3.5C13 2.67 12.33 2 11.5 2C10.67 2 10 2.67 10 3.5V9L2 14V16L10 13.5V19L8 20.5V22L11.5 21L15 22V20.5L13 19V13.5L21 16Z"
+                                                    fill="#E67E22" />
+                                            </svg>
+                                        </div>
+                                    </div>
+
+                                    <div class="airport">
+                                        <div class="airport-code">MEM</div>
+                                        <div class="airport-city">Memories</div>
+                                    </div>
+                                </div>
+
+                                <div class="passenger-section">
+                                    <div class="info-row">
+                                        <div class="info-item">
+                                            <div class="info-label">Passenger</div>
+                                            <div class="info-value">PHOTOBOOTH GUEST</div>
+                                        </div>
+                                        <div class="info-item">
+                                            <div class="info-label">Booking Ref</div>
+                                            <div class="info-value"><?= $bookingRef ?></div>
+                                        </div>
+                                    </div>
+                                    <div class="info-row">
+                                        <div class="info-item">
+                                            <div class="info-label">Gate</div>
+                                            <div class="info-value large"><?= $gate ?></div>
+                                        </div>
+                                        <div class="info-item">
+                                            <div class="info-label">Seat</div>
+                                            <div class="info-value large"><?= $seat ?></div>
+                                        </div>
+                                        <div class="info-item">
+                                            <div class="info-label">Boarding Time</div>
+                                            <div class="info-value">NOW</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="details-grid">
+                                    <div class="detail-box">
+                                        <div class="detail-icon">
+                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                                                <rect x="3" y="3" width="18" height="18" rx="2" stroke="#20B2AA"
+                                                    stroke-width="2" />
+                                                <path d="M9 3V21M15 3V21M3 9H21M3 15H21" stroke="#20B2AA" stroke-width="2" />
+                                            </svg>
+                                        </div>
+                                        <div class="detail-label">Prints</div>
+                                        <div class="detail-value"><?= $package->photo_limit ?? 2; ?></div>
+                                    </div>
+                                    <div class="detail-box">
+                                        <div class="detail-icon">
+                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                                                <circle cx="12" cy="12" r="10" stroke="#E67E22" stroke-width="2" />
+                                                <path d="M12 6V12L16 14" stroke="#E67E22" stroke-width="2"
+                                                    stroke-linecap="round" />
+                                            </svg>
+                                        </div>
+                                        <div class="detail-label">Duration</div>
+                                        <div class="detail-value"><?= floor(($package->session_duration ?? 300) / 60); ?> MIN
+                                        </div>
+                                    </div>
+                                    <div class="detail-box">
+                                        <div class="detail-icon">
+                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                                                <path
+                                                    d="M19 21H5C3.89543 21 3 20.1046 3 19V5C3 3.89543 3.89543 3 5 3H19C20.1046 3 21 3.89543 21 5V19C21 20.1046 20.1046 21 19 21Z"
+                                                    stroke="#1B365D" stroke-width="2" />
+                                                <path d="M3 9H21M9 21V9" stroke="#1B365D" stroke-width="2" />
+                                            </svg>
+                                        </div>
+                                        <div class="detail-label">Save</div>
+                                        <div class="detail-value"><?= $package->max_save_photos ?? 20; ?></div>
+                                    </div>
+                                </div>
+
+                                <div class="fare-section">
+                                    <div class="fare-label">Total Fare</div>
+                                    <div class="fare-amount">Rp <?= number_format($package->price, 0, ',', '.'); ?></div>
+                                </div>
+
+                                <?php if (defined('ENABLE_PAYMENT_BYPASS') && ENABLE_PAYMENT_BYPASS): ?>
+                                        <button onclick="bypassPayment(<?= $package->id ?>, '<?= htmlspecialchars($package->name) ?>')"
+                                            class="book-button">
+                                            Confirm Booking
+                                        </button>
+                                <?php else: ?>
+                                        <button
+                                            onclick="payWithSnap(<?= $package->id ?>, '<?= htmlspecialchars($package->name) ?>', <?= $package->price ?>)"
+                                            class="book-button">
+                                            Confirm Booking
+                                        </button>
+                                <?php endif; ?>
+                            </div>
+
+                            <div class="pass-footer">
+                                <div class="barcode-wrapper">
+                                    <svg class="barcode-svg" viewBox="0 0 250 60">
+                                        <rect x="5" y="5" width="4" height="50" fill="#000" />
+                                        <rect x="13" y="5" width="2" height="50" fill="#000" />
+                                        <rect x="19" y="5" width="5" height="50" fill="#000" />
+                                        <rect x="28" y="5" width="2" height="50" fill="#000" />
+                                        <rect x="34" y="5" width="4" height="50" fill="#000" />
+                                        <rect x="42" y="5" width="2" height="50" fill="#000" />
+                                        <rect x="48" y="5" width="6" height="50" fill="#000" />
+                                        <rect x="58" y="5" width="2" height="50" fill="#000" />
+                                        <rect x="64" y="5" width="4" height="50" fill="#000" />
+                                        <rect x="72" y="5" width="2" height="50" fill="#000" />
+                                        <rect x="78" y="5" width="5" height="50" fill="#000" />
+                                        <rect x="87" y="5" width="2" height="50" fill="#000" />
+                                        <rect x="93" y="5" width="4" height="50" fill="#000" />
+                                        <rect x="101" y="5" width="2" height="50" fill="#000" />
+                                        <rect x="107" y="5" width="6" height="50" fill="#000" />
+                                        <rect x="117" y="5" width="2" height="50" fill="#000" />
+                                        <rect x="123" y="5" width="4" height="50" fill="#000" />
+                                        <rect x="131" y="5" width="2" height="50" fill="#000" />
+                                        <rect x="137" y="5" width="5" height="50" fill="#000" />
+                                        <rect x="146" y="5" width="2" height="50" fill="#000" />
+                                        <rect x="152" y="5" width="4" height="50" fill="#000" />
+                                        <rect x="160" y="5" width="2" height="50" fill="#000" />
+                                        <rect x="166" y="5" width="6" height="50" fill="#000" />
+                                        <rect x="176" y="5" width="2" height="50" fill="#000" />
+                                        <rect x="182" y="5" width="4" height="50" fill="#000" />
+                                        <rect x="190" y="5" width="2" height="50" fill="#000" />
+                                        <rect x="196" y="5" width="5" height="50" fill="#000" />
+                                        <rect x="205" y="5" width="2" height="50" fill="#000" />
+                                        <rect x="211" y="5" width="4" height="50" fill="#000" />
+                                        <rect x="219" y="5" width="2" height="50" fill="#000" />
+                                        <rect x="225" y="5" width="6" height="50" fill="#000" />
+                                        <rect x="235" y="5" width="2" height="50" fill="#000" />
+                                        <rect x="241" y="5" width="4" height="50" fill="#000" />
+                                    </svg>
+                                </div>
+                                <div class="booking-ref"><?= $bookingRef ?></div>
+                                <div class="boarding-note">Please proceed to gate for boarding</div>
+                            </div>
+                        </div>
                 <?php endforeach; ?>
             </div>
-        </div>
-        <div class="carousel-buttons">
-            <button id="prev-btn" class="nav-btn">&lt;</button>
-            <button id="next-btn" class="nav-btn">&gt;</button>
-        </div>
 
+            <!-- Navigation -->
+            <div class="navigation-section">
+                <button class="nav-button" id="prev-btn">
+                    <svg viewBox="0 0 24 24" fill="none">
+                        <path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="3" stroke-linecap="round"
+                            stroke-linejoin="round" />
+                    </svg>
+                </button>
+                <div class="nav-indicator">
+                    <?php for ($i = 0; $i < count($packages); $i++): ?>
+                            <div class="nav-dot <?= $i === 0 ? 'active' : '' ?>"></div>
+                    <?php endfor; ?>
+                </div>
+                <button class="nav-button" id="next-btn">
+                    <svg viewBox="0 0 24 24" fill="none">
+                        <path d="M9 18L15 12L9 6" stroke="currentColor" stroke-width="3" stroke-linecap="round"
+                            stroke-linejoin="round" />
+                    </svg>
+                </button>
+            </div>
+        </div>
     </div>
 
     <script>
-        // Prevent duplicate requests
         let isPaymentInProgress = false;
 
-        // Clear browser cache on page load
         window.addEventListener('pageshow', function (event) {
             if (event.persisted) {
-                // Page is restored from cache, reload it
                 window.location.reload(true);
             }
         });
 
-        // Bypass payment function (for testing)
         function bypassPayment(packageId, packageName) {
-            const loadingOverlay = document.getElementById('loading-overlay');
-            loadingOverlay.style.display = 'flex';
-
             fetch('<?= URLROOT ?>/payment/bypass-payment/' + packageId, {
                 method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                }
+                headers: { 'Content-Type': 'application/json' }
             })
                 .then(response => response.json())
                 .then(data => {
-                    loadingOverlay.style.display = 'none';
-
                     if (data.success) {
-                        console.log('Payment bypassed:', data);
-                        // Redirect to payment finish page
                         window.location.replace('<?= URLROOT ?>/payment/finish/' + data.transaction_id);
                     } else {
-                        alert('Gagal bypass payment: ' + (data.error || 'Unknown error'));
+                        alert('Payment bypass failed: ' + (data.error || 'Unknown error'));
                     }
                 })
                 .catch(error => {
-                    loadingOverlay.style.display = 'none';
                     console.error('Error:', error);
-                    alert('Terjadi kesalahan saat bypass payment');
+                    alert('Error during payment bypass');
                 });
         }
 
-        // Midtrans Snap payment function
         function payWithSnap(packageId, packageName, packagePrice) {
-            // Prevent duplicate payment requests
-            if (isPaymentInProgress) {
-                console.log('Payment already in progress, ignoring request');
-                return;
-            }
+            if (isPaymentInProgress) return;
             isPaymentInProgress = true;
-            const loadingOverlay = document.getElementById('loading-overlay');
-            loadingOverlay.style.display = 'flex';
 
-            // Get snap token from server
             fetch('<?= URLROOT ?>/payment/get-snap-token/' + packageId, {
                 method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                }
+                headers: { 'Content-Type': 'application/json' }
             })
-                .then(response => {
-                    console.log('Raw response status:', response.status);
-                    console.log('Raw response headers:', response.headers);
-                    return response.text().then(text => {
-                        console.log('Raw response text:', text);
-                        try {
-                            return JSON.parse(text);
-                        } catch (e) {
-                            console.error('Failed to parse JSON:', e);
-                            console.error('Response text:', text);
-                            throw new Error('Invalid JSON response: ' + text.substring(0, 100) + '...');
-                        }
-                    });
+                .then(response => response.text())
+                .then(text => {
+                    try {
+                        return JSON.parse(text);
+                    } catch (e) {
+                        throw new Error('Invalid JSON response');
+                    }
                 })
                 .then(data => {
-                    loadingOverlay.style.display = 'none';
-
-                    console.log('Payment response:', data);
-
                     if (data.success && data.snap_token) {
-                        console.log('Snap token received:', data.snap_token);
-                        console.log('Token length:', data.snap_token.length);
-                        console.log('Token format check:', /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(data.snap_token));
-
-                        // Use Midtrans Snap
-                        try {
-                            snap.pay(data.snap_token, {
-                                onSuccess: function (result) {
-                                    console.log('Payment success:', result);
-                                    // Redirect to frame selection with transaction ID
-                                    // We'll need to get the transaction ID from the payment result
-                                    fetch('<?= URLROOT ?>/payment/get-transaction-by-order/' + result.order_id)
-                                        .then(response => response.json())
-                                        .then(transactionData => {
-                                            if (transactionData.success) {
-                                                window.location.replace('<?= URLROOT ?>/payment/finish/' + transactionData.transaction_id);
-                                            } else {
-                                                window.location.replace('<?= URLROOT ?>/packages');
-                                            }
-                                        })
-                                        .catch(() => {
+                        snap.pay(data.snap_token, {
+                            onSuccess: function (result) {
+                                fetch('<?= URLROOT ?>/payment/get-transaction-by-order/' + result.order_id)
+                                    .then(response => response.json())
+                                    .then(transactionData => {
+                                        if (transactionData.success) {
+                                            window.location.replace('<?= URLROOT ?>/payment/finish/' + transactionData.transaction_id);
+                                        } else {
                                             window.location.replace('<?= URLROOT ?>/packages');
-                                        });
-                                },
-                                onPending: function (result) {
-                                    console.log('Payment pending:', result);
-                                    isPaymentInProgress = false;
-                                    alert('Pembayaran sedang diproses. Silakan selesaikan pembayaran Anda.');
-                                },
-                                onError: function (result) {
-                                    console.log('Payment error:', result);
-                                    isPaymentInProgress = false;
-                                    alert('Terjadi kesalahan saat pembayaran. Silakan coba lagi.');
-                                },
-                                onClose: function () {
-                                    console.log('Payment popup closed');
-                                    isPaymentInProgress = false;
-                                }
-                            });
-                        } catch (snapError) {
-                            console.error('Snap.pay error:', snapError);
-                            isPaymentInProgress = false;
-                            alert('Error initializing payment: ' + snapError.message);
-                        }
+                                        }
+                                    });
+                            },
+                            onPending: function (result) {
+                                isPaymentInProgress = false;
+                                alert('Payment is being processed.');
+                            },
+                            onError: function (result) {
+                                isPaymentInProgress = false;
+                                alert('Payment error occurred.');
+                            },
+                            onClose: function () {
+                                isPaymentInProgress = false;
+                            }
+                        });
                     } else {
                         isPaymentInProgress = false;
-                        alert('Gagal memuat pembayaran: ' + (data.error || 'Terjadi kesalahan'));
+                        alert('Failed to load payment');
                     }
                 })
                 .catch(error => {
-                    loadingOverlay.style.display = 'none';
                     isPaymentInProgress = false;
-                    console.error('Error:', error);
-                    alert('Terjadi kesalahan saat memuat pembayaran');
+                    alert('Error loading payment');
                 });
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            // Note: Payment buttons now use onclick payWithSnap() directly
-            // No need for fade animation on payment buttons since they open popup
+            // Flash popup
+            const popup = document.getElementById('flash-popup');
+            const closeBtn = document.getElementById('close-popup-btn');
+            if (popup) {
+                popup.style.display = 'flex';
+                closeBtn.addEventListener('click', () => {
+                    popup.style.display = 'none';
+                });
+                setTimeout(() => {
+                    if (popup.style.display !== 'none') {
+                        popup.style.display = 'none';
+                    }
+                }, 5000);
+            }
 
-            // Carousel script
-            const container = document.querySelector('.packages-container');
+            // Carousel navigation
+            const container = document.getElementById('passes-container');
             const prevBtn = document.getElementById('prev-btn');
             const nextBtn = document.getElementById('next-btn');
+            const dots = document.querySelectorAll('.nav-dot');
+            let currentIndex = 0;
 
-            if (container) {
-                const scrollAmount = container.clientWidth;
+            function updateDots() {
+                dots.forEach((dot, index) => {
+                    dot.classList.toggle('active', index === currentIndex);
+                });
+            }
+
+            if (container && prevBtn && nextBtn) {
+                const scrollAmount = 325;
 
                 nextBtn.addEventListener('click', () => {
+                    const maxIndex = dots.length - 1;
                     const maxScroll = container.scrollWidth - container.clientWidth;
-                    if (container.scrollLeft >= maxScroll - 1) {
+
+                    if (container.scrollLeft >= maxScroll - 10) {
                         container.scrollTo({ left: 0, behavior: 'smooth' });
+                        currentIndex = 0;
                     } else {
                         container.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+                        currentIndex = Math.min(currentIndex + 1, maxIndex);
                     }
+                    updateDots();
                 });
 
                 prevBtn.addEventListener('click', () => {
-                    if (container.scrollLeft < 1) {
+                    const maxIndex = dots.length - 1;
+
+                    if (container.scrollLeft <= 10) {
                         container.scrollTo({ left: container.scrollWidth, behavior: 'smooth' });
+                        currentIndex = maxIndex;
                     } else {
                         container.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
+                        currentIndex = Math.max(currentIndex - 1, 0);
+                    }
+                    updateDots();
+                });
+
+                container.addEventListener('scroll', () => {
+                    const scrollPosition = container.scrollLeft;
+                    const cardWidth = 325;
+                    const newIndex = Math.round(scrollPosition / cardWidth);
+                    if (newIndex !== currentIndex && newIndex < dots.length) {
+                        currentIndex = newIndex;
+                        updateDots();
                     }
                 });
             }
