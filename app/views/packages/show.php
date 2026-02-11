@@ -205,31 +205,63 @@ header("Pragma: no-cache");
             }
         }
 
-        /* Flying Plane */
-        .plane {
+        /* Flying Plane Container and Trail */
+        .plane-container {
             position: fixed;
             top: 15%;
-            left: -100px;
-            width: 80px;
-            height: 80px;
+            left: -300px;
+            display: flex;
+            align-items: center;
             z-index: 1;
-            animation: flyPlane 40s linear infinite;
-            filter: drop-shadow(2px 2px 8px rgba(0, 0, 0, 0.2));
+            animation: flyPlane 45s linear infinite;
+            pointer-events: none;
+        }
+
+        .plane-trail {
+            width: 180px;
+            height: 2px;
+            background: repeating-linear-gradient(90deg, 
+                rgba(255, 255, 255, 0) 0, 
+                rgba(255, 255, 255, 0) 4px, 
+                rgba(255, 255, 255, 0.4) 4px, 
+                rgba(255, 255, 255, 0.4) 10px);
+            margin-right: -10px;
+            border-radius: 2px;
+            opacity: 0.8;
+            filter: blur(0.5px);
+        }
+
+        .plane {
+            width: 70px;
+            height: 70px;
+            filter: drop-shadow(2px 4px 6px rgba(0, 0, 0, 0.1));
+            transform: rotate(90deg); /* Adjust SVG orientation */
         }
 
         @keyframes flyPlane {
             0% {
-                left: -100px;
+                left: -300px;
                 top: 15%;
+                transform: rotate(2deg);
+            }
+
+            25% {
+                top: 18%;
             }
 
             50% {
-                top: 20%;
+                top: 14%;
+                transform: rotate(-1deg);
+            }
+
+            75% {
+                top: 17%;
             }
 
             100% {
                 left: 110%;
                 top: 15%;
+                transform: rotate(1deg);
             }
         }
 
@@ -830,15 +862,18 @@ header("Pragma: no-cache");
         <div class="cloud cloud5"></div>
     </div>
 
-    <!-- Flying Plane -->
-    <svg class="plane" viewBox="0 0 24 24" fill="none">
-        <path
-            d="M21 16V14L13 9V3.5C13 2.67 12.33 2 11.5 2C10.67 2 10 2.67 10 3.5V9L2 14V16L10 13.5V19L8 20.5V22L11.5 21L15 22V20.5L13 19V13.5L21 16Z"
-            fill="#1B365D" />
-        <path
-            d="M21 16V14L13 9V3.5C13 2.67 12.33 2 11.5 2C10.67 2 10 2.67 10 3.5V9L2 14V16L10 13.5V19L8 20.5V22L11.5 21L15 22V20.5L13 19V13.5L21 16Z"
-            stroke="#E67E22" stroke-width="0.5" />
-    </svg>
+    <!-- Flying Plane with Trail -->
+    <div class="plane-container">
+        <div class="plane-trail"></div>
+        <svg class="plane" viewBox="0 0 24 24" fill="none">
+            <path
+                d="M21 16V14L13 9V3.5C13 2.67 12.33 2 11.5 2C10.67 2 10 2.67 10 3.5V9L2 14V16L10 13.5V19L8 20.5V22L11.5 21L15 22V20.5L13 19V13.5L21 16Z"
+                fill="#FFFFFF" />
+            <path
+                d="M21 16V14L13 9V3.5C13 2.67 12.33 2 11.5 2C10.67 2 10 2.67 10 3.5V9L2 14V16L10 13.5V19L8 20.5V22L11.5 21L15 22V20.5L13 19V13.5L21 16Z"
+                stroke="#4FC3F7" stroke-width="0.3" />
+        </svg>
+    </div>
 
     <div class="main-container">
         <!-- Flash Message Popup -->
