@@ -494,10 +494,11 @@
             }
         }
 
-        /* Tablet Landscape - 6-8 frames */
+        /* Tablet Landscape - Optimized for 6-8 frames */
         @media (min-width: 768px) and (max-width: 1023px) and (orientation: landscape) {
             .frames-grid {
                 grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+                /* ~330px height */
                 gap: 15px;
             }
 
@@ -510,28 +511,30 @@
             }
 
             .frame-number {
-                width: 20px;
-                height: 20px;
-                font-size: 0.6rem;
+                width: 22px;
+                height: 22px;
+                font-size: 0.65rem;
             }
 
             .selection-check {
-                width: 40px;
-                height: 40px;
-                font-size: 20px;
+                width: 45px;
+                height: 45px;
+                font-size: 22px;
             }
         }
 
-        /* Mobile Landscape - 6-8 frames */
+        /* Mobile Landscape - Critical Vertical Space (~90px grid) */
         @media (max-width: 767px) and (orientation: landscape) {
             .frames-grid {
-                grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-                gap: 12px;
+                grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+                /* Very compact: ~270px height */
+                gap: 10px;
             }
 
             .airport-header {
                 padding: 4px 10px;
                 gap: 8px;
+                margin-bottom: 8px;
             }
 
             .page-title {
@@ -539,7 +542,7 @@
             }
 
             .selection-counter {
-                padding: 3px 8px;
+                padding: 2px 8px;
                 font-size: 0.6rem;
             }
 
@@ -547,67 +550,78 @@
                 width: 18px;
                 height: 18px;
                 font-size: 0.5rem;
-                top: 5px;
-                left: 5px;
+                top: 4px;
+                left: 4px;
             }
 
             .selection-check {
-                width: 35px;
-                height: 35px;
-                font-size: 18px;
+                width: 30px;
+                height: 30px;
+                font-size: 16px;
                 border: 2px solid white;
             }
 
             .continue-btn {
-                font-size: 0.8rem;
-                padding: 8px 20px;
+                font-size: 0.75rem;
+                padding: 6px 16px;
                 bottom: 10px;
             }
         }
 
         /* ========== PORTRAIT MODE (2-3 FRAMES) ========== */
 
-        /* Tablet Portrait - 2-3 frames */
+        /* Tablet Portrait - Optimized for 2-3 cols (~150px grid) */
         @media (max-width: 768px) and (orientation: portrait) {
             .frames-grid {
-                grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-                /* Keep smaller */
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+                /* ~450px height */
                 gap: 15px;
             }
 
             .page-title {
-                font-size: 0.95rem;
-            }
-        }
-
-        /* Mobile Portrait - 2-3 frames */
-        @media (max-width: 480px) {
-            .airport-header {
-                padding: 6px 12px;
-            }
-
-            .airline-name {
-                font-size: 0.45rem;
-            }
-
-            .page-title {
-                font-size: 0.9rem;
-            }
-
-            .page-subtitle {
-                font-size: 0.65rem;
-            }
-
-            .frames-grid {
-                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-                /* Even smaller on mobile portrait */
-                gap: 12px;
+                font-size: 1rem;
             }
 
             .frame-number {
-                width: 22px;
-                height: 22px;
-                font-size: 0.6rem;
+                width: 28px;
+                height: 28px;
+                font-size: 0.75rem;
+            }
+        }
+
+        /* Mobile Portrait - Optimized for EXACTLY (2 FRAMES) */
+        @media (max-width: 480px) {
+            .frames-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 12px;
+                padding: 10px 8px;
+            }
+
+            .airport-header {
+                flex-wrap: wrap;
+                /* Allow wrapping on very small screens if needed */
+                justify-content: center;
+                gap: 8px;
+            }
+
+            .header-left,
+            .header-right {
+                flex: auto;
+                justify-content: center;
+            }
+
+            .page-title {
+                width: 100%;
+                text-align: center;
+                font-size: 0.9rem;
+                order: -1;
+                /* Title on top for tiny screens */
+            }
+
+            .frame-number {
+                width: 24px;
+                height: 24px;
+                font-size: 0.65rem;
                 top: 6px;
                 left: 6px;
             }
@@ -619,8 +633,9 @@
             }
 
             .continue-btn {
-                font-size: 0.9rem;
-                padding: 10px 25px;
+                font-size: 0.85rem;
+                padding: 10px 24px;
+                bottom: 20px;
             }
         }
     </style>
