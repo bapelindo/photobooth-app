@@ -190,7 +190,7 @@
             height: 95vh;
             padding: 20px;
             box-sizing: border-box;
-            background: rgba(255, 255, 255, 0.5);
+            background: rgba(255, 255, 255, 0.15);
             backdrop-filter: blur(10px);
             border-radius: 20px;
             padding: 20px;
@@ -200,13 +200,23 @@
 
         .header-panel {
             grid-column: 1 / -1;
-            background: rgba(255, 255, 255, 0.95);
+            background: rgba(255, 255, 255, 0.3);
             border-radius: 15px;
             padding: 10px 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             backdrop-filter: blur(10px);
+        }
+
+        .camera-section {
+            background: transparent;
+            border-radius: 20px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            position: relative;
         }
 
         .session-info {
@@ -293,7 +303,7 @@
         }
 
         .camera-section {
-            background: rgba(255, 255, 255, 0.95);
+            background: rgba(255, 255, 255, 0.55);
             border-radius: 15px;
             position: relative;
             display: flex;
@@ -361,14 +371,14 @@
             bottom: 20px;
             left: 50%;
             transform: translateX(-50%);
-            background: rgba(255, 255, 255, 0.95);
+            background: rgba(255, 255, 255, 0.3);
             padding: 8px 16px;
             border-radius: 20px;
             font-weight: 600;
             color: var(--primary-color);
             text-align: center;
             font-size: 0.8rem;
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(5px);
         }
 
         #camera-feed {
@@ -419,7 +429,7 @@
             display: flex;
             align-items: center;
             gap: 10px;
-            background: rgba(255, 255, 255, 0.9);
+            background: rgba(255, 255, 255, 0.3);
             padding: 5px 5px;
             border-radius: 20px;
             backdrop-filter: blur(10px);
@@ -595,7 +605,7 @@
             flex: 1;
             display: flex;
             flex-direction: column;
-            background: rgba(255, 255, 255, 0.95);
+            background: rgba(255, 255, 255, 0.3);
             border-radius: 15px;
             padding: 20px;
             min-height: 0;
@@ -798,7 +808,7 @@
             position: relative;
             display: flex;
             flex-direction: column;
-            background: rgba(0, 191, 255, 0.05);
+            background: transparent;
             padding: 10px;
             border-radius: 20px;
         }
@@ -831,7 +841,7 @@
         }
 
         .selected-frames {
-            background: rgba(255, 255, 255, 0.95);
+            background: rgba(255, 255, 255, 0.3);
             border-radius: 15px;
             padding: 20px;
             display: flex;
