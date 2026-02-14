@@ -7,23 +7,172 @@
     <title>Sesi Foto Interaktif</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Poppins:wght@400;600;700&display=swap"
+    <link
+        href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;700&family=Roboto+Mono:wght@400;700&family=Orbitron:wght@700;900&display=swap"
         rel="stylesheet">
     <style>
         :root {
-            --primary-color: #6C63FF;
-            --secondary-color: #FF6584;
+            --primary-blue: #00BFFF;
+            --secondary-blue: #007FFF;
+            --dark-blue: #1B365D;
+            --primary-peach: #FB9F8B;
+            --secondary-peach: #F58C75;
             --success-color: #4CAF50;
             --warning-color: #FF9800;
-            --accent-color: #FFD166;
-            --bg-gradient: linear-gradient(135deg, #c2e9fb 0%, #fed6e3 100%);
+            --bg-gradient: linear-gradient(to bottom, #87CEEB 0%, #E0F7FA 60%, #FFDAB9 100%);
+        }
+
+        /* ========== ANIMATED CLOUDS ========== */
+        .clouds {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .cloud {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 100px;
+            animation: float linear infinite;
+        }
+
+        .cloud::before,
+        .cloud::after {
+            content: '';
+            position: absolute;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 100px;
+        }
+
+        .cloud1 {
+            width: 120px;
+            height: 50px;
+            top: 10%;
+            left: -150px;
+            animation-duration: 45s;
+        }
+
+        .cloud1::before {
+            width: 60px;
+            height: 50px;
+            top: -25px;
+            left: 20px;
+        }
+
+        .cloud1::after {
+            width: 70px;
+            height: 40px;
+            top: -15px;
+            right: 20px;
+        }
+
+        .cloud2 {
+            width: 100px;
+            height: 40px;
+            top: 75%;
+            left: -120px;
+            animation-duration: 55s;
+            animation-delay: 5s;
+        }
+
+        .cloud2::before {
+            width: 50px;
+            height: 40px;
+            top: -20px;
+            left: 15px;
+        }
+
+        .cloud2::after {
+            width: 60px;
+            height: 35px;
+            top: -12px;
+            right: 15px;
+        }
+
+        @keyframes float {
+            0% {
+                left: -200px;
+            }
+
+            100% {
+                left: 110%;
+            }
+        }
+
+        /* ========== FLYING PLANE ========== */
+        .plane-container {
+            position: fixed;
+            top: 20%;
+            left: -300px;
+            display: flex;
+            align-items: center;
+            z-index: 100;
+            animation: flyPlane 45s linear infinite;
+            cursor: pointer;
+            pointer-events: auto;
+            transition: transform 0.3s ease;
+        }
+
+        .plane-container:hover {
+            transform: scale(1.1);
+        }
+
+        .plane-container.barrel-roll .plane {
+            animation: barrelRoll 1s ease-in-out;
+        }
+
+        .plane-trail {
+            width: 180px;
+            height: 2px;
+            background: repeating-linear-gradient(90deg,
+                    rgba(255, 255, 255, 0) 0,
+                    rgba(255, 255, 255, 0) 4px,
+                    rgba(255, 255, 255, 0.6) 4px,
+                    rgba(255, 255, 255, 0.6) 10px);
+            margin-right: -10px;
+            border-radius: 2px;
+            opacity: 0.8;
+            filter: blur(0.5px);
+        }
+
+        .plane {
+            width: 50px;
+            height: 50px;
+            transform: rotate(90deg);
+            transition: transform 0.3s ease;
+        }
+
+        @keyframes flyPlane {
+            0% {
+                left: -300px;
+                top: 20%;
+            }
+
+            100% {
+                left: 110%;
+                top: 20%;
+            }
+        }
+
+        @keyframes barrelRoll {
+            0% {
+                transform: rotate(90deg);
+            }
+
+            100% {
+                transform: rotate(450deg);
+            }
         }
 
         body {
             height: 100vh;
             margin: 0;
             overflow: hidden;
-            font-family: 'Poppins', sans-serif;
+            font-family: 'Roboto Condensed', sans-serif;
             background: var(--bg-gradient);
             padding: 20px;
             display: flex;
@@ -60,11 +209,41 @@
             backdrop-filter: blur(10px);
         }
 
+        .session-info {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .airline-branding {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .airline-name {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.75rem;
+            color: var(--dark-blue);
+            letter-spacing: 1px;
+            font-weight: 900;
+            line-height: 1;
+        }
+
+        .airline-sub {
+            font-size: 0.55rem;
+            color: var(--primary-blue);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
         .session-info h1 {
-            font-family: 'Fredoka One', cursive;
-            color: var(--primary-color);
+            font-family: 'Orbitron', sans-serif;
+            color: var(--dark-blue);
             margin: 0;
-            font-size: 1.8rem;
+            font-size: 1.4rem;
+            font-weight: 900;
+            text-transform: uppercase;
         }
 
         .session-stats {
@@ -80,7 +259,7 @@
         .stat-value {
             font-size: 1.5rem;
             font-weight: bold;
-            color: var(--secondary-color);
+            color: var(--primary-blue);
         }
 
         .stat-label {
@@ -92,7 +271,8 @@
         .timer {
             font-size: 2rem;
             font-weight: bold;
-            color: var(--primary-color);
+            color: var(--secondary-blue);
+            font-family: 'Roboto Mono', monospace;
         }
 
         .timer.warning {
@@ -247,16 +427,16 @@
 
         .filter-dropdown label {
             font-weight: 600;
-            color: var(--primary-color);
+            color: var(--primary-blue);
             font-size: 0.7rem;
         }
 
         .filter-dropdown select {
             padding: 5px 5px;
-            border: 2px solid var(--primary-color);
+            border: 2px solid var(--primary-blue);
             border-radius: 20px;
             background: white;
-            color: var(--primary-color);
+            color: var(--primary-blue);
             font-weight: 600;
             font-size: 0.7rem;
             cursor: pointer;
@@ -265,16 +445,17 @@
         }
 
         .filter-dropdown select:focus {
-            border-color: var(--secondary-color);
-            box-shadow: 0 0 0 2px rgba(255, 101, 132, 0.2);
+            border-color: var(--secondary-blue);
+            box-shadow: 0 0 0 2px rgba(0, 191, 255, 0.2);
         }
 
         .btn {
             padding: 10px 10px;
             border: none;
             border-radius: 25px;
-            font-family: 'Fredoka One', cursive;
+            font-family: 'Roboto Condensed', sans-serif;
             font-size: 0.7rem;
+            font-weight: 700;
             cursor: pointer;
             transition: all 0.3s ease;
             text-transform: uppercase;
@@ -282,33 +463,32 @@
         }
 
         .btn-capture {
-            background: var(--accent-color);
+            background: linear-gradient(135deg, var(--primary-peach) 0%, var(--secondary-peach) 100%);
             color: white;
             font-size: 0.7rem;
             padding: 10px 10px;
-            var(--accent-color);
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 4px 15px rgba(251, 159, 139, 0.4);
             min-width: 150px;
             text-align: center;
         }
 
         .btn-capture:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 8px 25px rgba(251, 159, 139, 0.5);
         }
 
         .btn-save {
-            background: var(--primary-color);
+            background: linear-gradient(135deg, var(--primary-blue), var(--secondary-blue));
             color: white;
         }
 
         .btn-delete {
-            background: var(--secondary-color);
+            background: linear-gradient(135deg, var(--primary-peach), var(--secondary-peach));
             color: white;
         }
 
         .btn-continue {
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            background: linear-gradient(135deg, var(--primary-blue), var(--secondary-blue));
             color: white;
             font-size: 0.7rem;
         }
@@ -318,7 +498,7 @@
         }
 
         .btn-fullscreen {
-            background: #8A2BE2;
+            background: linear-gradient(135deg, var(--dark-blue), var(--secondary-blue));
             color: white;
         }
 
@@ -423,8 +603,11 @@
 
         .gallery-panel h3 {
             margin: 0 0 15px 0;
-            font-family: 'Fredoka One', cursive;
-            color: var(--primary-color);
+            font-family: 'Orbitron', sans-serif;
+            color: var(--dark-blue);
+            font-weight: 900;
+            font-size: 1rem;
+            text-transform: uppercase;
             flex-shrink: 0;
         }
 
@@ -455,7 +638,7 @@
         }
 
         .photo-gallery::-webkit-scrollbar-thumb {
-            background: var(--primary-color);
+            background: linear-gradient(135deg, var(--primary-blue), var(--secondary-blue));
             border-radius: 3px;
         }
 
@@ -615,7 +798,7 @@
             position: relative;
             display: flex;
             flex-direction: column;
-            background: rgba(108, 99, 255, 0.1);
+            background: rgba(0, 191, 255, 0.05);
             padding: 10px;
             border-radius: 20px;
         }
@@ -631,7 +814,7 @@
 
         .guideline {
             position: absolute;
-            background: rgba(108, 99, 255, 0.3);
+            background: rgba(0, 191, 255, 0.2);
             pointer-events: none;
         }
 
@@ -659,8 +842,11 @@
 
         .selected-frames h3 {
             margin: 0 0 15px 0;
-            font-family: 'Fredoka One', cursive;
-            color: var(--secondary-color);
+            font-family: 'Orbitron', sans-serif;
+            color: var(--dark-blue);
+            font-weight: 900;
+            font-size: 1rem;
+            text-transform: uppercase;
         }
 
         .frames-list {
@@ -676,7 +862,7 @@
             align-items: center;
             gap: 10px;
             padding: 10px;
-            background: rgba(108, 99, 255, 0.1);
+            background: rgba(0, 191, 255, 0.08);
             border-radius: 10px;
         }
 
@@ -685,7 +871,7 @@
             height: 75px;
             object-fit: contain;
             border-radius: 5px;
-            border: 2px solid rgba(108, 99, 255, 0.3);
+            border: 2px solid rgba(0, 191, 255, 0.3);
             flex-shrink: 0;
         }
 
@@ -695,36 +881,38 @@
         }
 
         .frames-list::-webkit-scrollbar-track {
-            background: rgba(108, 99, 255, 0.1);
+            background: rgba(0, 191, 255, 0.05);
             border-radius: 10px;
         }
 
         .frames-list::-webkit-scrollbar-thumb {
-            background: rgba(108, 99, 255, 0.5);
+            background: linear-gradient(135deg, var(--primary-blue), var(--secondary-blue));
             border-radius: 10px;
         }
 
         .frames-list::-webkit-scrollbar-thumb:hover {
-            background: rgba(108, 99, 255, 0.7);
+            background: var(--secondary-blue);
         }
 
 
         .finish-session-btn {
-            background-color: var(--primary-color);
+            background: linear-gradient(135deg, var(--primary-peach), var(--secondary-peach));
             color: white;
             border: none;
             padding: 10px 10px;
-            font-family: 'Fredoka One', cursive;
+            font-family: 'Roboto Condensed', sans-serif;
             font-size: 0.7rem;
+            font-weight: 700;
             border-radius: 25px;
             cursor: pointer;
             transition: all 0.3s ease;
             white-space: nowrap;
+            box-shadow: 0 4px 15px rgba(251, 159, 139, 0.4);
         }
 
         .finish-session-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 8px 25px rgba(251, 159, 139, 0.5);
         }
 
         .session-expired {
@@ -786,10 +974,11 @@
         }
 
         .custom-alert-modal h2 {
-            color: var(--secondary-color);
-            font-family: 'Fredoka One', cursive;
+            color: var(--primary-peach);
+            font-family: 'Orbitron', sans-serif;
             margin-top: 0;
-            font-size: 1.8rem;
+            font-size: 1.5rem;
+            font-weight: 900;
         }
 
         .custom-alert-modal p {
@@ -799,8 +988,7 @@
         }
 
         .custom-alert-modal .btn-continue {
-            background: var(--secondary-color);
-            /* Use secondary color for warning */
+            background: linear-gradient(135deg, var(--primary-peach), var(--secondary-peach));
             font-size: 0.9rem;
             padding: 12px 25px;
         }
@@ -897,10 +1085,10 @@
             backdrop-filter: blur(10px);
             border-radius: 15px;
             padding: 20px;
-            box-shadow: 0 8px 32px rgba(108, 99, 255, 0.3);
+            box-shadow: 0 8px 32px rgba(0, 191, 255, 0.3);
             z-index: 10000;
             min-width: 280px;
-            border: 2px solid var(--primary-color);
+            border: 2px solid var(--primary-blue);
             display: none;
         }
 
@@ -923,9 +1111,10 @@
 
         .upload-progress-dialog h4 {
             margin: 0 0 15px 0;
-            font-family: 'Fredoka One', cursive;
-            color: var(--primary-color);
-            font-size: 1.1rem;
+            font-family: 'Orbitron', sans-serif;
+            color: var(--primary-blue);
+            font-size: 1rem;
+            font-weight: 900;
             display: flex;
             align-items: center;
             gap: 8px;
@@ -942,7 +1131,7 @@
 
         .upload-progress-bar-fill {
             height: 100%;
-            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            background: linear-gradient(90deg, var(--primary-blue), var(--secondary-blue));
             width: 0%;
             border-radius: 10px;
             transition: width 0.3s ease;
@@ -970,11 +1159,33 @@
 
 <body>
 
+    <!-- Animated Clouds -->
+    <div class="clouds">
+        <div class="cloud cloud1"></div>
+        <div class="cloud cloud2"></div>
+    </div>
+
+    <!-- Flying Plane -->
+    <div class="plane-container" onclick="interactivePlane(this)">
+        <div class="plane-trail"></div>
+        <svg class="plane" viewBox="0 0 24 24" fill="none">
+            <path
+                d="M21 16V14L13 9V3.5C13 2.67 12.33 2 11.5 2C10.67 2 10 2.67 10 3.5V9L2 14V16L10 13.5V19L8 20.5V22L11.5 21L15 22V20.5L13 19V13.5L21 16Z"
+                fill="#FFFFFF" />
+            <path
+                d="M21 16V14L13 9V3.5C13 2.67 12.33 2 11.5 2C10.67 2 10 2.67 10 3.5V9L2 14V16L10 13.5V19L8 20.5V22L11.5 21L15 22V20.5L13 19V13.5L21 16Z"
+                stroke="#4FC3F7" stroke-width="0.3" />
+        </svg>
+    </div>
+
     <div class="session-container">
         <div class="header-panel">
             <div class="session-info">
-                <h1>Sesi Foto Interaktif</h1>
-                <p>Ambil foto sebanyak-banyaknya, simpan yang terbaik!</p>
+                <div class="airline-branding">
+                    <div class="airline-name">PHOTOBOOTH</div>
+                    <div class="airline-sub">AIRWAYS</div>
+                </div>
+                <h1>Photo Session</h1>
             </div>
             <div class="session-stats">
                 <div class="stat-item">
@@ -2249,6 +2460,16 @@
 
             console.log('Simple back/refresh protection loaded for photo session');
         <?php endif; ?>
+    </script>
+    <script>
+        function interactivePlane(container) {
+            if (!container.classList.contains('barrel-roll')) {
+                container.classList.add('barrel-roll');
+                setTimeout(() => {
+                    container.classList.remove('barrel-roll');
+                }, 1000);
+            }
+        }
     </script>
 </body>
 

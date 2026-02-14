@@ -125,9 +125,19 @@
             left: -300px;
             display: flex;
             align-items: center;
-            z-index: 1;
+            z-index: 100;
             animation: flyPlane 45s linear infinite;
-            pointer-events: none;
+            cursor: pointer;
+            pointer-events: auto;
+            transition: transform 0.3s ease;
+        }
+
+        .plane-container:hover {
+            transform: scale(1.1);
+        }
+
+        .plane-container.barrel-roll .plane {
+            animation: barrelRoll 1s ease-in-out;
         }
 
         .plane-trail {
@@ -148,6 +158,7 @@
             width: 50px;
             height: 50px;
             transform: rotate(90deg);
+            transition: transform 0.3s ease;
         }
 
         @keyframes flyPlane {
@@ -159,6 +170,16 @@
             100% {
                 left: 110%;
                 top: 20%;
+            }
+        }
+
+        @keyframes barrelRoll {
+            0% {
+                transform: rotate(90deg);
+            }
+
+            100% {
+                transform: rotate(450deg);
             }
         }
 
@@ -648,8 +669,8 @@
         <div class="cloud cloud1"></div>
         <div class="cloud cloud2"></div>
     </div>
-
-    <div class="plane-container">
+    <!-- Flying Plane -->
+    <div class="plane-container" onclick="interactivePlane(this)">
         <div class="plane-trail"></div>
         <svg class="plane" viewBox="0 0 24 24" fill="none">
             <path
@@ -820,6 +841,16 @@
         });
     </script>
 
+    <script>
+        function interactivePlane(container) {
+            if (!container.classList.contains('barrel-roll')) {
+                container.classList.add('barrel-roll');
+                setTimeout(() => {
+                    container.classList.remove('barrel-roll');
+                }, 1000);
+            }
+        }
+    </script>
 </body>
 
 </html>
