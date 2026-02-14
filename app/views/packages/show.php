@@ -290,25 +290,25 @@ header("Pragma: no-cache");
         /* ========== CAROUSEL SECTION - MAXIMIZED SPACE ========== */
         .carousel-section {
             width: 100%;
-            max-width: 1400px;
+            max-width: 1100px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 3vh;
+            gap: 1.5vh;
         }
 
         .passes-container {
             display: flex;
-            gap: 25px;
+            gap: 15px;
             overflow-x: auto;
             scroll-behavior: smooth;
-            padding: 15px 20px 20px;
+            padding: 10px 12px 12px;
             -ms-overflow-style: none;
             scrollbar-width: none;
             max-width: 95vw;
             /* Allow perforation cutouts to be visible */
-            padding-left: 30px;
-            padding-right: 30px;
+            padding-left: 20px;
+            padding-right: 20px;
             margin: 0 -10px;
         }
 
@@ -318,10 +318,10 @@ header("Pragma: no-cache");
 
         /* ========== BOARDING PASS ========== */
         .boarding-pass {
-            flex: 0 0 300px;
+            flex: 0 0 170px;
             height: fit-content;
             background: #FFFFFF;
-            border-radius: 12px;
+            border-radius: 8px;
             /* Softer shadow for lighter background */
             box-shadow:
                 0 15px 35px rgba(50, 50, 93, 0.1),
@@ -330,12 +330,12 @@ header("Pragma: no-cache");
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             overflow: visible;
 
-            /* Transparent Cutouts using Mask */
-            -webkit-mask-image: radial-gradient(circle at left 78px, transparent 13px, black 14px),
-                radial-gradient(circle at right 78px, transparent 13px, black 14px);
+            /* Transparent Cutouts using Mask - adjusted for 170px slim card */
+            -webkit-mask-image: radial-gradient(circle at left 46px, transparent 9.5px, black 10.5px),
+                radial-gradient(circle at right 46px, transparent 9.5px, black 10.5px);
             -webkit-mask-composite: source-in, source-in;
-            mask-image: radial-gradient(circle at left 78px, transparent 13px, black 14px),
-                radial-gradient(circle at right 78px, transparent 13px, black 14px);
+            mask-image: radial-gradient(circle at left 46px, transparent 9.5px, block 10.5px),
+                radial-gradient(circle at right 46px, transparent 9.5px, black 10.5px);
             mask-composite: intersect;
         }
 
@@ -348,9 +348,9 @@ header("Pragma: no-cache");
 
         .pass-stub {
             background: linear-gradient(135deg, #00BFFF 0%, #007FFF 100%);
-            padding: 12px 16px;
+            padding: 8px 12px;
             color: white;
-            border-radius: 10px 10px 0 0;
+            border-radius: 6px 6px 0 0;
             position: relative;
             margin-bottom: 0;
         }
@@ -361,32 +361,32 @@ header("Pragma: no-cache");
             bottom: 0;
             left: 0;
             right: 0;
-            height: 3px;
+            height: 2px;
             background: linear-gradient(90deg, #A3E8FD, #C6C7DA, #A3E8FD);
         }
 
         .stub-airline {
             font-family: 'Orbitron', sans-serif;
-            font-size: 0.6rem;
+            font-size: 0.45rem;
             font-weight: 700;
-            letter-spacing: 2px;
-            margin-bottom: 4px;
+            letter-spacing: 1.2px;
+            margin-bottom: 2px;
             opacity: 0.95;
             color: #E3E0EC;
         }
 
         .stub-title {
             font-family: 'Orbitron', sans-serif;
-            font-size: 1.2rem;
+            font-size: 0.85rem;
             font-weight: 900;
-            letter-spacing: 1px;
+            letter-spacing: 0.6px;
             text-transform: uppercase;
             margin-bottom: 2px;
             color: #FFFFFF;
         }
 
         .stub-subtitle {
-            font-size: 0.65rem;
+            font-size: 0.5rem;
             opacity: 0.95;
             font-weight: 600;
             color: #A3E8FD;
@@ -408,11 +408,11 @@ header("Pragma: no-cache");
         .boarding-pass::after {
             content: '';
             position: absolute;
-            width: 26px;
-            height: 26px;
+            width: 19px;
+            height: 19px;
             border-radius: 50%;
             z-index: 10;
-            top: 78px;
+            top: 46px;
             transform: translateY(-50%);
             pointer-events: none;
             /* Inner shadow to give depth to the cutout */
@@ -420,17 +420,17 @@ header("Pragma: no-cache");
         }
 
         .boarding-pass::before {
-            left: -13px;
+            left: -9.5px;
             border-right: 1px solid rgba(0, 0, 0, 0.03);
         }
 
         .boarding-pass::after {
-            right: -13px;
+            right: -9.5px;
             border-left: 1px solid rgba(0, 0, 0, 0.03);
         }
 
         .pass-main {
-            padding: 16px;
+            padding: 10px;
             background: #FFFFFF;
         }
 
@@ -438,8 +438,8 @@ header("Pragma: no-cache");
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 14px;
-            padding-bottom: 12px;
+            margin-bottom: 8px;
+            padding-bottom: 6px;
             border-bottom: 2px dashed #E3E0EC;
         }
 
@@ -449,19 +449,19 @@ header("Pragma: no-cache");
 
         .airport-code {
             font-family: 'Orbitron', sans-serif;
-            font-size: 2rem;
+            font-size: 1.3rem;
             font-weight: 900;
             color: #007FFF;
             line-height: 1;
             margin-bottom: 2px;
-            letter-spacing: -1px;
+            letter-spacing: -0.5px;
         }
 
         .airport-city {
-            font-size: 0.6rem;
+            font-size: 0.45rem;
             color: #78909C;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.3px;
             font-weight: 700;
         }
 
@@ -485,21 +485,21 @@ header("Pragma: no-cache");
             background: linear-gradient(135deg, #26C6F8 0%, #00BDFE 100%);
             color: #ffffff;
             font-family: 'Roboto Mono', monospace;
-            font-size: 0.6rem;
+            font-size: 0.45rem;
             font-weight: 700;
-            padding: 3px 8px;
-            border-radius: 3px;
-            margin-bottom: 6px;
-            letter-spacing: 1px;
+            padding: 2px 5px;
+            border-radius: 2px;
+            margin-bottom: 3px;
+            letter-spacing: 0.6px;
             box-shadow: 0 2px 8px rgba(38, 198, 248, 0.2);
         }
 
         .passenger-section {
             background: linear-gradient(135deg, #F5F7FA 0%, #E8ECF1 100%);
-            padding: 10px;
-            border-radius: 6px;
-            margin-bottom: 12px;
-            border-left: 3px solid #00BFFF;
+            padding: 6px;
+            border-radius: 4px;
+            margin-bottom: 8px;
+            border-left: 2px solid #00BFFF;
         }
 
         .info-row {
@@ -517,58 +517,58 @@ header("Pragma: no-cache");
         }
 
         .info-label {
-            font-size: 0.55rem;
+            font-size: 0.42rem;
             color: #90A4AE;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 2px;
+            letter-spacing: 0.3px;
+            margin-bottom: 1px;
             font-weight: 700;
         }
 
         .info-value {
             font-family: 'Roboto Mono', monospace;
-            font-size: 0.7rem;
+            font-size: 0.55rem;
             color: #007FFF;
             font-weight: 700;
-            letter-spacing: 0.3px;
+            letter-spacing: 0.2px;
         }
 
         .info-value.large {
-            font-size: 0.9rem;
+            font-size: 0.65rem;
             color: #00BFFF;
         }
 
         .details-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 8px;
-            margin-bottom: 12px;
+            gap: 5px;
+            margin-bottom: 8px;
         }
 
         .detail-box {
             text-align: center;
-            padding: 8px 4px;
+            padding: 5px 2px;
             background: linear-gradient(135deg, #FFFFFF 0%, #F5F7FA 100%);
-            border-radius: 6px;
+            border-radius: 4px;
             border: 1px solid #E3E0EC;
         }
 
         .detail-icon {
-            margin-bottom: 4px;
+            margin-bottom: 2px;
         }
 
         .detail-label {
-            font-size: 0.55rem;
+            font-size: 0.42rem;
             color: #90A4AE;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 2px;
+            letter-spacing: 0.3px;
+            margin-bottom: 1px;
             font-weight: 700;
         }
 
         .detail-value {
             font-family: 'Roboto Mono', monospace;
-            font-size: 0.75rem;
+            font-size: 0.55rem;
             color: #007FFF;
             font-weight: 700;
         }
@@ -576,18 +576,18 @@ header("Pragma: no-cache");
         .fare-section {
             background: linear-gradient(135deg, #E1F5FE 0%, #B3E5FC 100%);
             color: #01579B;
-            padding: 12px;
-            border-radius: 8px;
+            padding: 8px;
+            border-radius: 5px;
             text-align: center;
-            margin-bottom: 12px;
+            margin-bottom: 8px;
             border: 1px solid #B3E5FC;
         }
 
         .fare-label {
-            font-size: 0.6rem;
+            font-size: 0.45rem;
             text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 2px;
+            letter-spacing: 0.6px;
+            margin-bottom: 1px;
             opacity: 0.8;
             font-weight: 700;
             color: #0277BD;
@@ -595,25 +595,25 @@ header("Pragma: no-cache");
 
         .fare-amount {
             font-family: 'Orbitron', sans-serif;
-            font-size: 1.5rem;
+            font-size: 1rem;
             font-weight: 900;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.3px;
             color: #01579B;
         }
 
         /* PEACH BUTTON - The "Sunset" Accent */
         .book-button {
             width: 100%;
-            padding: 12px;
+            padding: 8px;
             background: linear-gradient(135deg, #FB9F8B 0%, #F58C75 100%);
             color: white;
             border: none;
-            border-radius: 8px;
+            border-radius: 5px;
             font-family: 'Roboto Condensed', sans-serif;
-            font-size: 0.85rem;
+            font-size: 0.62rem;
             font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 0.6px;
             cursor: pointer;
             transition: all 0.3s ease;
             box-shadow: 0 4px 15px rgba(251, 159, 139, 0.4);
@@ -787,14 +787,133 @@ header("Pragma: no-cache");
         }
 
 
-        /* ========== RESPONSIVE ========== */
-        @media (max-width: 768px) {
+
+        /* ========== RESPONSIVE - MODE-SPECIFIC OPTIMIZATIONS ========== */
+
+        /* DESKTOP LANDSCAPE / FULLSCREEN - Larger cards for wide screens with lots of space */
+        @media (min-width: 1024px) and (orientation: landscape) {
             .boarding-pass {
-                flex: 0 0 280px;
+                flex: 0 0 220px;
+            }
+
+            .stub-title {
+                font-size: 1rem;
             }
 
             .airport-code {
-                font-size: 1.8rem;
+                font-size: 1.6rem;
+            }
+
+            .fare-amount {
+                font-size: 1.25rem;
+            }
+
+            .book-button {
+                font-size: 0.75rem;
+                padding: 10px;
+            }
+
+            .pass-main {
+                padding: 14px;
+            }
+
+            /* Adjust perforation for larger card */
+            .boarding-pass {
+                -webkit-mask-image: radial-gradient(circle at left 58px, transparent 12px, black 13px),
+                    radial-gradient(circle at right 58px, transparent 12px, black 13px);
+                mask-image: radial-gradient(circle at left 58px, transparent 12px, black 13px),
+                    radial-gradient(circle at right 58px, transparent 12px, black 13px);
+            }
+
+            .boarding-pass::before,
+            .boarding-pass::after {
+                width: 24px;
+                height: 24px;
+                top: 58px;
+            }
+
+            .boarding-pass::before {
+                left: -12px;
+            }
+
+            .boarding-pass::after {
+                right: -12px;
+            }
+        }
+
+        /* TABLET LANDSCAPE - Optimized for tablet landscape */
+        @media (min-width: 768px) and (max-width: 1023px) and (orientation: landscape) {
+            .boarding-pass {
+                flex: 0 0 210px;
+            }
+
+            .stub-title {
+                font-size: 0.95rem;
+            }
+
+            .airport-code {
+                font-size: 1.5rem;
+            }
+
+            .fare-amount {
+                font-size: 1.2rem;
+            }
+
+            .book-button {
+                font-size: 0.72rem;
+            }
+
+            .pass-main {
+                padding: 12px;
+            }
+
+            /* Adjust perforation for medium card */
+            .boarding-pass {
+                -webkit-mask-image: radial-gradient(circle at left 55px, transparent 11.5px, black 12.5px),
+                    radial-gradient(circle at right 55px, transparent 11.5px, black 12.5px);
+                mask-image: radial-gradient(circle at left 55px, transparent 11.5px, black 12.5px),
+                    radial-gradient(circle at right 55px, transparent 11.5px, black 12.5px);
+            }
+
+            .boarding-pass::before,
+            .boarding-pass::after {
+                width: 23px;
+                height: 23px;
+                top: 55px;
+            }
+
+            .boarding-pass::before {
+                left: -11.5px;
+            }
+
+            .boarding-pass::after {
+                right: -11.5px;
+            }
+        }
+
+        /* DESKTOP PORTRAIT - Windowed browser on desktop (not fullscreen) */
+        @media (min-width: 1024px) and (orientation: portrait) {
+            .boarding-pass {
+                flex: 0 0 170px;
+            }
+
+            .main-container {
+                padding: 25px 2%;
+            }
+
+            /* Base compact design with 220px already set as default */
+            /* Perforation at 52px is already set in base styles */
+        }
+
+
+        /* TABLET PORTRAIT */
+        @media (max-width: 768px) and (orientation: portrait) {
+            .boarding-pass {
+                flex: 0 0 205px;
+            }
+
+            .airport-code {
+                font-size: 1.5rem;
             }
 
             .details-grid {
@@ -810,31 +929,55 @@ header("Pragma: no-cache");
                 width: 60px;
                 height: 60px;
             }
+
+            /* Adjust perforation for 250px card */
+            .boarding-pass {
+                -webkit-mask-image: radial-gradient(circle at left 54px, transparent 11.2px, black 12.2px),
+                    radial-gradient(circle at right 54px, transparent 11.2px, black 12.2px);
+                mask-image: radial-gradient(circle at left 54px, transparent 11.2px, black 12.2px),
+                    radial-gradient(circle at right 54px, transparent 11.2px, black 12.2px);
+            }
+
+            .boarding-pass::before,
+            .boarding-pass::after {
+                width: 22.4px;
+                height: 22.4px;
+                top: 54px;
+            }
+
+            .boarding-pass::before {
+                left: -11.2px;
+            }
+
+            .boarding-pass::after {
+                right: -11.2px;
+            }
         }
 
+        /* MOBILE */
         @media (max-width: 480px) {
             .boarding-pass {
-                flex: 0 0 260px;
+                flex: 0 0 190px;
             }
 
             .pass-stub {
-                padding: 10px 14px;
+                padding: 9px 12px;
             }
 
             .stub-title {
-                font-size: 1rem;
+                font-size: 0.9rem;
             }
 
             .airport-code {
-                font-size: 1.6rem;
+                font-size: 1.4rem;
             }
 
             .fare-amount {
-                font-size: 1.3rem;
+                font-size: 1.15rem;
             }
 
             .pass-main {
-                padding: 12px;
+                padding: 11px;
             }
 
             .details-grid {
@@ -843,6 +986,29 @@ header("Pragma: no-cache");
 
             .detail-box {
                 padding: 6px 3px;
+            }
+
+            /* Adjust perforation for 240px card */
+            .boarding-pass {
+                -webkit-mask-image: radial-gradient(circle at left 53px, transparent 11px, black 12px),
+                    radial-gradient(circle at right 53px, transparent 11px, black 12px);
+                mask-image: radial-gradient(circle at left 53px, transparent 11px, black 12px),
+                    radial-gradient(circle at right 53px, transparent 11px, black 12px);
+            }
+
+            .boarding-pass::before,
+            .boarding-pass::after {
+                width: 22px;
+                height: 22px;
+                top: 53px;
+            }
+
+            .boarding-pass::before {
+                left: -11px;
+            }
+
+            .boarding-pass::after {
+                right: -11px;
             }
         }
     </style>

@@ -914,6 +914,7 @@
                 transform: translateX(100%);
                 opacity: 0;
             }
+
             to {
                 transform: translateX(0);
                 opacity: 1;
@@ -1317,7 +1318,7 @@
                     } else {
                         captureBtn.innerHTML = '📸 Ambil Foto';
                     }
-                }, 500);
+                }, 1500);
             } else {
                 captureBtn.disabled = false;
                 captureBtn.style.opacity = '1';
@@ -1510,7 +1511,7 @@
                     } else {
                         captureBtn.innerHTML = '📸 Ambil Foto';
                     }
-                }, 500); // Short delay for UI update
+                }, 1500); // Short delay for UI update
             }
 
             console.log('Upload started in background, auto-capture triggered!');
