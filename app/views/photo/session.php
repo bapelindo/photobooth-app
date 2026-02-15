@@ -573,6 +573,55 @@
             display: block;
         }
 
+        /* Fullscreen Controls Overlay */
+        .camera-section.fullscreen .camera-controls {
+            position: absolute !important;
+            bottom: 30px !important;
+            left: 50% !important;
+            transform: translateX(-50%) !important;
+            width: 90% !important;
+            max-width: 500px !important;
+            z-index: 2000 !important;
+            background: rgba(0, 0, 0, 0.4) !important;
+            backdrop-filter: blur(8px) !important;
+            border-radius: 30px !important;
+            padding: 15px !important;
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        }
+
+        .camera-section.fullscreen .capture-section {
+            flex-direction: row !important;
+            justify-content: center !important;
+            flex-wrap: wrap !important;
+        }
+
+        /* Adjust filter dropdown in fullscreen */
+        .camera-section.fullscreen .filter-dropdown {
+            position: absolute !important;
+            top: -60px !important;
+            left: 50% !important;
+            transform: translateX(-50%) !important;
+            background: rgba(0, 0, 0, 0.6) !important;
+            color: white !important;
+            padding: 8px 15px !important;
+        }
+
+        .camera-section.fullscreen.preview-mode .camera-controls,
+        .camera-section.fullscreen.preview-mode .filter-dropdown {
+            display: none !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
+        }
+
+        .camera-section.fullscreen.preview-mode .photo-preview {
+            z-index: 3000 !important;
+            /* Ensure preview is on top */
+        }
+
+        .camera-section.fullscreen .filter-dropdown label {
+            color: white !important;
+        }
+
         .fullscreen-active .header-panel {
             display: none;
         }
@@ -1815,12 +1864,12 @@
                         <select id="camera-filter" onchange="applyFilter(this.value)">
                             <option value="none">Normal</option>
                             <?php if (isset($data['filters']) && is_array($data['filters'])): ?>
-                                                    <?php foreach ($data['filters'] as $filter): ?>
-                                                                            <option value="<?= htmlspecialchars($filter->path ?? 'none') ?>"
-                                                                                data-filter-name="<?= htmlspecialchars($filter->name) ?>">
-                                                                                <?= htmlspecialchars($filter->name) ?>
-                                                                            </option>
-                                                    <?php endforeach; ?>
+                                    <?php foreach ($data['filters'] as $filter): ?>
+                                            <option value="<?= htmlspecialchars($filter->path ?? 'none') ?>"
+                                                data-filter-name="<?= htmlspecialchars($filter->name) ?>">
+                                                <?= htmlspecialchars($filter->name) ?>
+                                            </option>
+                                    <?php endforeach; ?>
                             <?php endif; ?>
                         </select>
                     </div>
@@ -1841,10 +1890,10 @@
                 <h3>Frame Terpilih</h3>
                 <div class="frames-list">
                     <?php foreach ($data['frames'] as $frame): ?>
-                                            <div class="frame-item">
-                                                <img src="<?= URLROOT . $frame->path ?>" alt="<?= $frame->name ?>" class="frame-thumbnail">
-                                                <span><?= $frame->name ?></span>
-                                            </div>
+                            <div class="frame-item">
+                                <img src="<?= URLROOT . $frame->path ?>" alt="<?= $frame->name ?>" class="frame-thumbnail">
+                                <span><?= $frame->name ?></span>
+                            </div>
                     <?php endforeach; ?>
                 </div>
             </div>
@@ -2050,6 +2099,9 @@
                 previewImage.src = url;
                 photoPreview.style.display = 'flex';
 
+                // Add preview mode class to camera section
+                document.querySelector('.camera-section').classList.add('preview-mode');
+
                 photosTaken++;
                 updateStats();
 
@@ -2089,6 +2141,9 @@
         // Delete current photo and auto-capture next
         function deletePhoto() {
             photoPreview.style.display = 'none';
+            // Remove preview mode class
+            document.querySelector('.camera-section').classList.remove('preview-mode');
+
             currentPhotoBlob = null;
             URL.revokeObjectURL(previewImage.src);
 
@@ -2283,6 +2338,9 @@
             // IMMEDIATELY clear preview and re-enable capture for next shot
             // This runs right after upload starts, NOT after it completes!
             photoPreview.style.display = 'none';
+            // Remove preview mode class
+            document.querySelector('.camera-section').classList.remove('preview-mode');
+
             currentPhotoBlob = null;
 
             // Re-enable capture button and auto-start countdown
@@ -2339,6 +2397,9 @@
                     // Show the saved photo
                     previewImage.src = imageUrl;
                     photoPreview.style.display = 'flex';
+
+                    // Add preview mode class
+                    document.querySelector('.camera-section').classList.add('preview-mode');
 
                     // Change buttons to "Kembali" only for saved photos
                     previewActions.innerHTML = '<button class="btn btn-continue" onclick="returnToCamera()">🔙 Kembali ke Kamera</button>';
@@ -2521,7 +2582,7 @@
                     if (data.success) {
                         // Allow navigation for successful session completion
                         <?php if (ENABLE_SESSION_REFRESH_BACK): ?>
-                                                allowNavigation = true;
+                                allowNavigation = true;
                         <?php endif; ?>
 
                         // Same timing as select-frame (500ms)
@@ -2822,6 +2883,8 @@
             const photoPreview = document.getElementById('photo-preview');
             if (photoPreview.style.display === 'flex') {
                 photoPreview.style.display = 'none';
+                // Remove preview mode class
+                document.querySelector('.camera-section').classList.remove('preview-mode');
             }
 
             // Focus back on camera - scroll to camera section if needed
@@ -3014,39 +3077,39 @@
 
         // Simple back/refresh protection with popup
         <?php if (ENABLE_SESSION_REFRESH_BACK): ?>
-                                let allowNavigation = false;
+                let allowNavigation = false;
 
-                                // Handle refresh attempts
-                                window.addEventListener('beforeunload', function (e) {
-                                    if (allowNavigation) {
-                                        return;
-                                    }
+                // Handle refresh attempts
+                window.addEventListener('beforeunload', function (e) {
+                    if (allowNavigation) {
+                        return;
+                    }
 
-                                    e.preventDefault();
-                                    e.returnValue = '';
-                                    return '';
-                                });
+                    e.preventDefault();
+                    e.returnValue = '';
+                    return '';
+                });
 
-                                // Handle browser back button
-                                let currentUrl = window.location.href;
-                                window.history.pushState({}, '', currentUrl);
+                // Handle browser back button
+                let currentUrl = window.location.href;
+                window.history.pushState({}, '', currentUrl);
 
-                                window.addEventListener('popstate', function (e) {
-                                    if (allowNavigation) {
-                                        return;
-                                    }
+                window.addEventListener('popstate', function (e) {
+                    if (allowNavigation) {
+                        return;
+                    }
 
-                                    // Show confirmation for back button
-                                    if (confirm('⚠️ PERINGATAN!\n\nAnda mencoba kembali ke halaman sebelumnya. Foto yang belum disimpan akan hilang.\n\nApakah Anda yakin ingin melanjutkan?')) {
-                                        allowNavigation = true;
-                                        window.history.go(-1);
-                                    } else {
-                                        // Stay on current page
-                                        window.history.pushState({}, '', currentUrl);
-                                    }
-                                });
+                    // Show confirmation for back button
+                    if (confirm('⚠️ PERINGATAN!\n\nAnda mencoba kembali ke halaman sebelumnya. Foto yang belum disimpan akan hilang.\n\nApakah Anda yakin ingin melanjutkan?')) {
+                        allowNavigation = true;
+                        window.history.go(-1);
+                    } else {
+                        // Stay on current page
+                        window.history.pushState({}, '', currentUrl);
+                    }
+                });
 
-                                console.log('Simple back/refresh protection loaded for photo session');
+                console.log('Simple back/refresh protection loaded for photo session');
         <?php endif; ?>
     </script>
     <script>
