@@ -325,6 +325,7 @@
             justify-content: center;
             background: #000;
             aspect-ratio: 16/9;
+            transition: aspect-ratio 0.3s ease;
         }
 
 
@@ -388,6 +389,7 @@
             object-fit: contain;
             border-radius: 7px;
             background: #000;
+            transition: aspect-ratio 0.3s ease;
         }
 
         .photo-preview {
@@ -713,24 +715,31 @@
         @media (max-width: 480px) {
             /* ========== EDGE-TO-EDGE DESIGN ========== */
             html {
-                touch-action: manipulation;
+                touch-action: pan-y;
                 overflow-x: hidden;
+                overflow-y: auto;
             }
 
             body {
                 padding: 0 !important;
                 margin: 0 !important;
-                overflow-x: hidden;
-                overscroll-behavior: none;
+                overflow-x: hidden !important;
+                overflow-y: auto !important;
+                overscroll-behavior: auto;
+                min-height: 100vh;
+                height: auto !important;
+                display: block !important;
             }
 
             .session-container {
                 border-radius: 0 !important;
                 padding: 0 !important;
                 gap: 0 !important;
-                height: 100vh !important;
+                height: auto !important;
                 width: 100vw !important;
                 max-width: 100vw !important;
+                display: flex;
+                flex-direction: column;
             }
 
             /* ========== COMPACT HEADER (Full Width) ========== */
@@ -741,6 +750,29 @@
                 border-radius: 0 !important;
                 width: 100% !important;
                 box-sizing: border-box;
+            }
+
+            /* ========== CAMERA SECTION - 9:16 VERTICAL ========== */
+            .camera-section {
+                position: relative;
+                order: 1;
+                height: calc(100vh - 56px);
+                max-height: calc(100vh - 56px);
+                padding: 0 !important;
+                border-radius: 0 !important;
+                background: transparent !important;
+            }
+
+            /* Change aspect ratio to 9:16 for portrait mobile */
+            .safe-zone {
+                margin: 0;
+                border-radius: 0;
+                aspect-ratio: 9/16 !important; /* Vertical/portrait for mobile */
+            }
+
+            #camera-feed {
+                border-radius: 0;
+                aspect-ratio: 9/16 !important; /* Match safe-zone */
             }
 
             .session-info h1 {
@@ -773,11 +805,12 @@
                 font-size: 1.1rem;
             }
 
-            /* ========== CAMERA SECTION - Max 60vh ========== */
+            /* ========== CAMERA SECTION - Full viewport height minus header ========== */
             .camera-section {
+                position: relative;
                 order: 1;
-                max-height: 60vh;
-                min-height: 35vh;
+                height: calc(100vh - 56px);
+                max-height: calc(100vh - 56px);
                 padding: 0 !important;
                 border-radius: 0 !important;
                 background: transparent !important;
@@ -873,7 +906,7 @@
                 background: rgba(255, 255, 255, 0.95);
                 border-radius: 20px 20px 0 0;
                 padding: 12px;
-                min-height: 0;
+                min-height: 400px;
                 overflow-y: auto;
             }
 
@@ -884,17 +917,25 @@
                 padding: 8px 0;
             }
 
+            .gallery-panel {
+                min-height: 300px;
+            }
+
+            .selected-frames {
+                min-height: 150px;
+            }
+
             .gallery-panel h3,
             .selected-frames h3 {
                 font-size: 0.8rem;
                 margin-bottom: 8px;
             }
 
-            /* ========== GALLERY - 3 Columns, Max 250px ========== */
+            /* ========== GALLERY - 3 Columns, Max 400px ========== */
             .photo-gallery {
                 grid-template-columns: repeat(3, 1fr);
-                max-height: 250px;
-                min-height: 120px;
+                max-height: 400px;
+                min-height: 250px;
                 max-width: 100%;
                 gap: 6px;
                 padding: 4px;
@@ -1005,11 +1046,23 @@
                 min-width: 60px;
             }
 
+            .sidebar {
+                min-height: 350px;
+            }
+
+            .gallery-panel {
+                min-height: 250px;
+            }
+
+            .selected-frames {
+                min-height: 120px;
+            }
+
             .photo-gallery {
                 gap: 4px;
                 padding: 3px;
-                max-height: 220px;
-                min-height: 100px;
+                max-height: 320px;
+                min-height: 200px;
             }
 
             .gallery-panel h3,
@@ -1020,11 +1073,23 @@
 
         /* Very small phones (up to 320px) */
         @media (max-width: 320px) {
+            .sidebar {
+                min-height: 300px;
+            }
+
+            .gallery-panel {
+                min-height: 200px;
+            }
+
+            .selected-frames {
+                min-height: 100px;
+            }
+
             .photo-gallery {
                 gap: 3px;
                 padding: 2px;
-                max-height: 200px;
-                min-height: 90px;
+                max-height: 320px;
+                min-height: 180px;
             }
 
             .btn-capture {
@@ -1047,11 +1112,21 @@
             }
         }
 
-        /* Landscape orientation for mobile */
+        /* Landscape orientation for mobile - keep 16:9 horizontal */
         @media (max-width: 480px) and (orientation: landscape) {
             .camera-section {
-                max-height: 70vh;
-                min-height: 50vh;
+                position: relative;
+                height: calc(100vh - 48px);
+                max-height: calc(100vh - 48px);
+            }
+
+            /* Switch back to 16:9 for landscape */
+            .safe-zone {
+                aspect-ratio: 16/9 !important;
+            }
+
+            #camera-feed {
+                aspect-ratio: 16/9 !important;
             }
 
             .header-panel {
@@ -1080,9 +1155,21 @@
                 padding: 10px 12px 16px;
             }
 
+            .sidebar {
+                min-height: 250px;
+            }
+
+            .gallery-panel {
+                min-height: 150px;
+            }
+
+            .selected-frames {
+                min-height: 100px;
+            }
+
             .photo-gallery {
                 max-height: 180px;
-                min-height: 80px;
+                min-height: 120px;
             }
 
             .sidebar {
@@ -1428,16 +1515,29 @@
         }
 
         /* Exact same animation as select-frame */
-        html,
-        body {
+        html {
             height: 100%;
-            margin: 0;
             overflow: hidden;
         }
 
         body {
+            height: 100%;
+            margin: 0;
             opacity: 1;
             transition: opacity 0.4s ease-out;
+        }
+
+        /* Mobile override for scrolling */
+        @media (max-width: 480px) {
+            html {
+                overflow-y: auto;
+            }
+
+            body {
+                overflow-y: auto;
+                height: auto;
+                min-height: 100%;
+            }
         }
 
         body.fade-out {
@@ -1744,15 +1844,19 @@
         const photoGallery = document.getElementById('photo-gallery');
         const finishBtn = document.getElementById('finish-session-btn');
 
-        // Initialize camera with 16:9 aspect ratio
+        // Initialize camera with aspect ratio based on device orientation
         async function initCamera() {
             try {
-                // Request camera with 16:9 aspect ratio
+                // Use 9:16 for mobile portrait, 16:9 for desktop/tablet/landscape
+                const isMobilePortrait = window.innerWidth <= 480 && window.innerHeight > window.innerWidth;
+                const targetAspect = isMobilePortrait ? 9 / 16 : 16 / 9;
+
+                // Request camera with appropriate aspect ratio
                 const stream = await navigator.mediaDevices.getUserMedia({
                     video: {
                         width: { ideal: 1920, min: 1280 },
                         height: { ideal: 1080, min: 720 },
-                        aspectRatio: { ideal: 16 / 9 },
+                        aspectRatio: { ideal: targetAspect },
                         facingMode: 'user'
                     }
                 });
@@ -1761,7 +1865,9 @@
                 // Ensure camera starts playing
                 cameraFeed.onloadedmetadata = () => {
                     cameraFeed.play().then(() => {
-                        console.log('Camera started successfully with 16:9 aspect ratio');
+                        const isMobilePortrait = window.innerWidth <= 480 && window.innerHeight > window.innerWidth;
+                        const aspectStr = isMobilePortrait ? '9:16' : '16:9';
+                        console.log(`Camera started successfully with ${aspectStr} aspect ratio`);
                         console.log(`Camera resolution: ${cameraFeed.videoWidth}x${cameraFeed.videoHeight}`);
 
                         // Calculate safe zone after container adjustment
@@ -1782,7 +1888,7 @@
 
             } catch (err) {
                 console.error('Error accessing camera:', err);
-                alert('Tidak dapat mengakses kamera. Pastikan browser memiliki izin kamera dan mendukung aspek rasio 16:9.');
+                alert('Tidak dapat mengakses kamera. Pastikan browser memiliki izin kamera dan mendukung aspek rasio 9:16 atau 16:9.');
             }
         }
 
@@ -2547,7 +2653,9 @@
                 return { left: 10, top: 10, width: 80, height: 80, hasValidIntersection: true, cameraUsage: 64 };
             }
 
-            const cameraAspect = 16 / 9; // Rasio aspek kamera (lebar)
+            // Determine camera aspect ratio based on orientation
+            const isMobilePortrait = window.innerWidth <= 480 && window.innerHeight > window.innerWidth;
+            const cameraAspect = isMobilePortrait ? 9 / 16 : 16 / 9; // 9:16 vertical for mobile portrait, 16:9 horizontal otherwise
             const frameAspect = 1 / 3;   // Rasio aspek photostrip (tinggi)
 
             // Area aman dimulai dari 100% tampilan kamera, yang kemudian akan diperkecil.
@@ -2736,14 +2844,23 @@
             }
         }
 
-        // Recalculate safe zone when window resizes
+        // Recalculate safe zone when window resizes or orientation changes
         function handleResize() {
             clearTimeout(window.resizeTimer);
             window.resizeTimer = setTimeout(() => {
-                console.log('Window resized, adjusting camera and recalculating safe zone');
+                const isMobilePortrait = window.innerWidth <= 480 && window.innerHeight > window.innerWidth;
+                const aspectStr = isMobilePortrait ? '9:16 (portrait)' : '16:9 (landscape)';
+                console.log(`Window resized/orientation changed, adjusting camera for ${aspectStr}`);
                 calculateSafeZone();
             }, 300);
         }
+
+        // Listen for orientation changes
+        window.addEventListener('orientationchange', () => {
+            setTimeout(() => {
+                handleResize();
+            }, 100); // Small delay to allow layout to settle
+        });
 
 
 
