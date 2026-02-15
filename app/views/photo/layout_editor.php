@@ -7,7 +7,8 @@
     <title>PHOTOBOOTH AIRWAYS - Flight Layout Editor</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;700&family=Roboto+Mono:wght@400;700&family=Orbitron:wght@700;900&display=swap"
+    <link
+        href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;700&family=Roboto+Mono:wght@400;700&family=Orbitron:wght@700;900&display=swap"
         rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.0/fabric.min.js"></script>
     <style>
@@ -17,7 +18,8 @@
             box-sizing: border-box;
         }
 
-        html, body {
+        html,
+        body {
             height: 100%;
             margin: 0;
             font-family: 'Roboto Condensed', sans-serif;
@@ -151,14 +153,6 @@
             /* thumb and track color */
         }
 
-        /* Exact same animation as select-frame */
-        html,
-        body {
-            height: 100%;
-            margin: 0;
-            overflow: hidden;
-        }
-
         body.fade-out {
             opacity: 0;
         }
@@ -173,6 +167,7 @@
             width: 100%;
             max-width: 1600px;
             padding: 20px;
+            padding-top: 25px; /* Add space for BOARDING PASS label */
             box-sizing: border-box;
             background: rgba(255, 255, 255, 0.7);
             backdrop-filter: blur(10px);
@@ -184,7 +179,7 @@
             position: relative;
             z-index: 1;
             border: 2px solid rgba(255, 255, 255, 0.8);
-            overflow: hidden;
+            overflow: visible; /* Allow BOARDING PASS label to be visible */
         }
 
         .layout-container.content-fade-out {
@@ -226,7 +221,7 @@
             right: -10%;
             width: 300px;
             height: 300px;
-            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
             border-radius: 50%;
         }
 
@@ -237,7 +232,7 @@
             font-size: 1.8rem;
             font-weight: 900;
             letter-spacing: 3px;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
             position: relative;
             z-index: 1;
         }
@@ -255,28 +250,33 @@
             background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
             border-radius: 12px;
             padding: 18px;
+            padding-top: 28px;
             backdrop-filter: blur(10px);
             display: flex;
             flex-direction: column;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             border: 2px solid #2a5298;
             position: relative;
             overflow: visible;
+            margin-top: 15px; /* Space for label */
         }
 
         .photos-panel::before {
             content: 'BOARDING PASS';
             position: absolute;
-            top: -12px;
+            top: -15px;
             left: 20px;
-            background: #2a5298;
+            background: linear-gradient(135deg, #2a5298 0%, #1e3c72 100%);
             color: white;
-            padding: 4px 15px;
+            padding: 6px 18px;
             font-family: 'Roboto Mono', monospace;
             font-size: 0.7rem;
             font-weight: 700;
-            border-radius: 4px;
-            letter-spacing: 1px;
+            border-radius: 6px;
+            letter-spacing: 1.5px;
+            z-index: 10000;
+            box-shadow: 0 4px 12px rgba(42, 82, 152, 0.5);
+            border: 2px solid rgba(255, 255, 255, 0.3);
         }
 
         .photos-panel h3 {
@@ -377,7 +377,7 @@
             gap: 20px;
             position: relative;
             overflow: visible;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
             border: 2px solid rgba(42, 82, 152, 0.2);
         }
 
@@ -454,6 +454,7 @@
             justify-content: center;
             align-items: center;
             position: relative;
+            min-height: 75vh; /* Increased to 75% of viewport height */
         }
 
         .photostrip-canvas-container canvas {
@@ -841,6 +842,7 @@
                 height: auto;
                 max-height: none;
                 padding: 12px;
+                padding-top: 18px; /* Space for BOARDING PASS label */
                 border-radius: 12px;
                 overflow: visible;
             }
@@ -862,7 +864,9 @@
             .photos-panel {
                 order: 1;
                 padding: 12px;
-                max-height: 320px;
+                padding-top: 22px; /* Space for BOARDING PASS label */
+                margin-top: 10px; /* Additional space */
+                max-height: 340px;
                 overflow-y: auto;
                 display: flex;
                 flex-direction: column;
@@ -943,7 +947,7 @@
 
             .photostrip-canvas-container {
                 order: 2;
-                min-height: 280px;
+                min-height: 70vh; /* Increased to 70% of viewport height for mobile */
                 position: relative;
             }
 
@@ -1045,6 +1049,7 @@
 
             .layout-container {
                 padding: 10px;
+                padding-top: 15px; /* Space for BOARDING PASS label */
                 gap: 10px;
             }
 
@@ -1060,7 +1065,9 @@
 
             .photos-panel {
                 padding: 10px;
-                max-height: 300px;
+                padding-top: 20px; /* Space for BOARDING PASS label */
+                margin-top: 8px; /* Additional space */
+                max-height: 320px;
             }
 
             .photos-panel h3 {
@@ -1099,7 +1106,7 @@
             }
 
             .photostrip-canvas-container {
-                min-height: 240px;
+                min-height: 65vh; /* Increased to 65% of viewport height for small mobile */
             }
 
             .btn {
@@ -1162,7 +1169,8 @@
 
         <div class="photos-panel">
             <h3>✈️ CARGO MANIFEST</h3>
-            <div style="font-family: 'Roboto Mono', monospace; font-size: 0.7rem; color: #1e3c72; margin-bottom: 12px; display: flex; justify-content: space-between;">
+            <div
+                style="font-family: 'Roboto Mono', monospace; font-size: 0.7rem; color: #1e3c72; margin-bottom: 12px; display: flex; justify-content: space-between;">
                 <span>GATE: A<?= $data['session']->id ?></span>
                 <span>SEAT: <?= count($data['photos']) ?>A</span>
             </div>
@@ -1345,16 +1353,35 @@
                     let canvasWidth, canvasHeight;
 
                     const targetAspectRatio = 1 / 3; // 2:6 ratio
-                    const containerAspectRatio = containerRect.width / containerRect.height;
 
-                    if (containerAspectRatio > targetAspectRatio) {
-                        // Container is wider than target, so height is the constraint
-                        canvasHeight = containerRect.height;
-                        canvasWidth = canvasHeight * targetAspectRatio;
+                    // Calculate desired height based on viewport (75vh for desktop, 70vh for mobile, 65vh for small mobile)
+                    const viewportHeight = window.innerHeight;
+                    let desiredCanvasHeight;
+                    if (window.innerWidth <= 480) {
+                        desiredCanvasHeight = viewportHeight * 0.65; // Small mobile
+                    } else if (window.innerWidth <= 768) {
+                        desiredCanvasHeight = viewportHeight * 0.70; // Mobile
                     } else {
-                        // Container is taller or equal, so width is the constraint
-                        canvasWidth = containerRect.width;
-                        canvasHeight = canvasWidth / targetAspectRatio;
+                        desiredCanvasHeight = viewportHeight * 0.75; // Desktop
+                    }
+
+                    // Calculate width based on aspect ratio
+                    const desiredCanvasWidth = desiredCanvasHeight * targetAspectRatio;
+
+                    // Check if it fits in container
+                    if (desiredCanvasWidth <= containerRect.width && desiredCanvasHeight <= containerRect.height) {
+                        canvasWidth = desiredCanvasWidth;
+                        canvasHeight = desiredCanvasHeight;
+                    } else {
+                        // Fallback to container size if desired size doesn't fit
+                        const containerAspectRatio = containerRect.width / containerRect.height;
+                        if (containerAspectRatio > targetAspectRatio) {
+                            canvasHeight = containerRect.height;
+                            canvasWidth = canvasHeight * targetAspectRatio;
+                        } else {
+                            canvasWidth = containerRect.width;
+                            canvasHeight = canvasWidth / targetAspectRatio;
+                        }
                     }
 
                     mainCanvas.setDimensions({
@@ -1373,15 +1400,36 @@
             // Initial setup
             const initialRect = container.getBoundingClientRect();
             let initialWidth, initialHeight;
-            const targetAspectRatio = 1 / 3;
-            const containerAspectRatio = initialRect.width / initialRect.height;
+            const targetAspectRatio = 1 / 3; // 2:6 ratio
 
-            if (containerAspectRatio > targetAspectRatio) {
-                initialHeight = initialRect.height;
-                initialWidth = initialHeight * targetAspectRatio;
+            // Calculate desired height based on viewport (75vh for desktop, 70vh for mobile, 65vh for small mobile)
+            const viewportHeight = window.innerHeight;
+            let desiredCanvasHeight;
+            if (window.innerWidth <= 480) {
+                desiredCanvasHeight = viewportHeight * 0.65; // Small mobile
+            } else if (window.innerWidth <= 768) {
+                desiredCanvasHeight = viewportHeight * 0.70; // Mobile
             } else {
-                initialWidth = initialRect.width;
-                initialHeight = initialWidth / targetAspectRatio;
+                desiredCanvasHeight = viewportHeight * 0.75; // Desktop
+            }
+
+            // Calculate width based on aspect ratio
+            const desiredCanvasWidth = desiredCanvasHeight * targetAspectRatio;
+
+            // Check if it fits in container
+            if (desiredCanvasWidth <= initialRect.width && desiredCanvasHeight <= initialRect.height) {
+                initialWidth = desiredCanvasWidth;
+                initialHeight = desiredCanvasHeight;
+            } else {
+                // Fallback to container size
+                const containerAspectRatio = initialRect.width / initialRect.height;
+                if (containerAspectRatio > targetAspectRatio) {
+                    initialHeight = initialRect.height;
+                    initialWidth = initialHeight * targetAspectRatio;
+                } else {
+                    initialWidth = initialRect.width;
+                    initialHeight = initialWidth / targetAspectRatio;
+                }
             }
 
             mainCanvas = new fabric.Canvas(canvasEl, {
