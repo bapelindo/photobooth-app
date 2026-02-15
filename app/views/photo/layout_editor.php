@@ -1464,7 +1464,10 @@
                 width: initialWidth,
                 height: initialHeight,
                 selection: true,
-                stopContextMenu: true
+                stopContextMenu: true,
+                perPixelTargetFind: true, // Fixes issue where transparent/clipped areas capture clicks
+                targetFindTolerance: 4,  // Small tolerance
+                preserveObjectStacking: true // Prevents selected object from jumping to top (important for frame overlay)
             });
 
             mainCanvas.allowTouchScrolling = true;
@@ -1796,19 +1799,19 @@
             draggablePhotos.forEach(photo => {
                 photo.addEventListener('touchstart', (e) => {
                     if (e.touches.length !== 1) return;
-                    
+
                     const touch = e.touches[0];
                     touchStartX = touch.clientX;
                     touchStartY = touch.clientY;
                     activePhoto = photo;
                     isDragging = false; // Reset, wait for move to confirm drag vs scroll
-                    
+
                     // Don't prevent default yet, allow scrolling
                 }, { passive: false });
 
                 photo.addEventListener('touchmove', (e) => {
                     if (!activePhoto) return;
-                    
+
                     const touch = e.touches[0];
                     const diffX = Math.abs(touch.clientX - touchStartX);
                     const diffY = Math.abs(touch.clientY - touchStartY);
@@ -1832,7 +1835,7 @@
                             ghostElement.style.boxShadow = '0 10px 20px rgba(0,0,0,0.3)';
                             ghostElement.classList.add('dragging-ghost');
                             document.body.appendChild(ghostElement);
-                            
+
                             // Prepare data
                             draggedItemData = {
                                 photoSrc: URLROOT + photo.dataset.photoPath,
@@ -1856,26 +1859,26 @@
                         // Check drop zone
                         const touch = e.changedTouches[0];
                         const pointer = mainCanvas.getPointer({ clientX: touch.clientX, clientY: touch.clientY }, false);
-                        
+
                         // Check intersection with slots
                         const currentFrame = frameData[currentFrameIndex];
                         let foundSlot = null;
-                        
+
                         // Need to check if pointer is actually within canvas bounds first? 
                         // fabric.js getPointer handles offset, but we need to check visual bounds
                         const canvasRect = mainCanvas.getElement().getBoundingClientRect();
-                        const isInCanvas = touch.clientX >= canvasRect.left && 
-                                           touch.clientX <= canvasRect.right && 
-                                           touch.clientY >= canvasRect.top && 
-                                           touch.clientY <= canvasRect.bottom;
+                        const isInCanvas = touch.clientX >= canvasRect.left &&
+                            touch.clientX <= canvasRect.right &&
+                            touch.clientY >= canvasRect.top &&
+                            touch.clientY <= canvasRect.bottom;
 
                         if (isInCanvas && currentFrame && currentFrame.slotObjects) {
-                             // Use standard getPointer logic, assuming sticky pointer mapping or similar?
-                             // Standard pointer mapping might be off if canvas is scaled visually relative to pixels
-                             // But mainCanvas.getPointer normally handles window -> canvas coord translation
-                             
-                             // We re-use logic from standard drop
-                             for (const key in currentFrame.slotObjects) {
+                            // Use standard getPointer logic, assuming sticky pointer mapping or similar?
+                            // Standard pointer mapping might be off if canvas is scaled visually relative to pixels
+                            // But mainCanvas.getPointer normally handles window -> canvas coord translation
+
+                            // We re-use logic from standard drop
+                            for (const key in currentFrame.slotObjects) {
                                 if (currentFrame.slotObjects[key].containsPoint(pointer)) {
                                     foundSlot = currentFrame.slotObjects[key];
                                     break;
@@ -1886,16 +1889,16 @@
                         if (foundSlot) {
                             handleDrop(mainCanvas, foundSlot);
                         }
-                        
+
                         // Cleanup
                         document.body.removeChild(ghostElement);
                         ghostElement = null;
                     }
-                    
+
                     isDragging = false;
                     activePhoto = null;
                 });
-                
+
                 photo.addEventListener('touchcancel', () => {
                     if (ghostElement) {
                         document.body.removeChild(ghostElement);
