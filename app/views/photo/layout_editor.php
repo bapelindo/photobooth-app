@@ -4,21 +4,143 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editor Layout - Susun Photostrip</title>
+    <title>PHOTOBOOTH AIRWAYS - Flight Layout Editor</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Poppins:wght@400;600;700&display=swap"
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;700&family=Roboto+Mono:wght@400;700&family=Orbitron:wght@700;900&display=swap"
         rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.0/fabric.min.js"></script>
     <style>
-        :root {
-            --primary-color: #6C63FF;
-            --secondary-color: #FF6584;
-            --success-color: #4CAF50;
-            --warning-color: #FF9800;
-            --bg-gradient: linear-gradient(135deg, #fed6e3 0%, #ffecd2 100%);
-            --primary-color-rgb: 108, 99, 255;
-            /* RGB for #6C63FF */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+            margin: 0;
+            font-family: 'Roboto Condensed', sans-serif;
+        }
+
+        /* ========== SKY BACKGROUND WITH CLOUDS ========== */
+        body {
+            background: linear-gradient(120deg, #c2e9fb 0%, #a1c4fd 50%, #e2d0cb 100%);
+            position: relative;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            box-sizing: border-box;
+            opacity: 1;
+            transition: opacity 0.4s ease-out;
+            min-height: 100vh;
+            overflow-y: auto;
+        }
+
+        /* Animated Clouds */
+        .clouds {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .cloud {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 100px;
+            animation: float linear infinite;
+        }
+
+        .cloud::before,
+        .cloud::after {
+            content: '';
+            position: absolute;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 100px;
+        }
+
+        .cloud1 {
+            width: 120px;
+            height: 50px;
+            top: 15%;
+            left: -150px;
+            animation-duration: 45s;
+        }
+
+        .cloud1::before {
+            width: 60px;
+            height: 50px;
+            top: -25px;
+            left: 20px;
+        }
+
+        .cloud1::after {
+            width: 70px;
+            height: 40px;
+            top: -15px;
+            right: 20px;
+        }
+
+        .cloud2 {
+            width: 100px;
+            height: 40px;
+            top: 65%;
+            left: -120px;
+            animation-duration: 55s;
+            animation-delay: 5s;
+        }
+
+        .cloud2::before {
+            width: 50px;
+            height: 40px;
+            top: -20px;
+            left: 15px;
+        }
+
+        .cloud2::after {
+            width: 60px;
+            height: 30px;
+            top: -10px;
+            right: 15px;
+        }
+
+        .cloud3 {
+            width: 140px;
+            height: 60px;
+            top: 35%;
+            left: -180px;
+            animation-duration: 60s;
+            animation-delay: 15s;
+        }
+
+        .cloud3::before {
+            width: 70px;
+            height: 60px;
+            top: -30px;
+            left: 25px;
+        }
+
+        .cloud3::after {
+            width: 80px;
+            height: 50px;
+            top: -20px;
+            right: 25px;
+        }
+
+        @keyframes float {
+            from {
+                transform: translateX(0);
+            }
+
+            to {
+                transform: translateX(120vw);
+            }
         }
 
         /* Firefox Scrollbar */
@@ -37,40 +159,32 @@
             overflow: hidden;
         }
 
-        body {
-            font-family: 'Poppins', sans-serif;
-            background: var(--bg-gradient);
-            padding: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            box-sizing: border-box;
-            opacity: 1;
-            transition: opacity 0.4s ease-out;
-        }
-
         body.fade-out {
             opacity: 0;
         }
 
         .layout-container {
             display: grid;
-            grid-template-columns: 300px 1fr;
+            grid-template-columns: 320px 1fr;
             grid-template-rows: auto 1fr;
-            /* Removed 'auto' for controls-panel */
-            gap: 10px;
+            gap: 15px;
             height: 95vh;
+            max-height: 95vh;
             width: 100%;
+            max-width: 1600px;
             padding: 20px;
             box-sizing: border-box;
-            background: rgba(255, 255, 255, 0.5);
+            background: rgba(255, 255, 255, 0.7);
             backdrop-filter: blur(10px);
-            border-radius: 20px;
-            padding: 20px;
-            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.05);
+            border-radius: 15px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
             opacity: 0;
             animation: contentFadeIn 0.5s ease-in 0.2s forwards;
             transition: opacity 0.5s ease-out;
+            position: relative;
+            z-index: 1;
+            border: 2px solid rgba(255, 255, 255, 0.8);
+            overflow: hidden;
         }
 
         .layout-container.content-fade-out {
@@ -96,34 +210,84 @@
 
         .header-panel {
             grid-column: 1 / -1;
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 15px;
-            padding: 5px;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            border-radius: 12px;
+            padding: 15px 25px;
             text-align: center;
-            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(30, 60, 114, 0.3);
+        }
+
+        .header-panel::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -10%;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            border-radius: 50%;
         }
 
         .header-panel h1 {
-            font-family: 'Fredoka One', cursive;
-            color: var(--primary-color);
-            margin: 0 0 10px 0;
-            font-size: 2rem;
+            font-family: 'Orbitron', sans-serif;
+            color: white;
+            margin: 0;
+            font-size: 1.8rem;
+            font-weight: 900;
+            letter-spacing: 3px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            position: relative;
+            z-index: 1;
+        }
+
+        .header-subtitle {
+            font-family: 'Roboto Condensed', sans-serif;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.85rem;
+            letter-spacing: 2px;
+            margin-top: 5px;
+            text-transform: uppercase;
         }
 
         .photos-panel {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 15px;
-            padding: 20px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 12px;
+            padding: 18px;
             backdrop-filter: blur(10px);
             display: flex;
             flex-direction: column;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border: 2px solid #2a5298;
+            position: relative;
+            overflow: visible;
+        }
+
+        .photos-panel::before {
+            content: 'BOARDING PASS';
+            position: absolute;
+            top: -12px;
+            left: 20px;
+            background: #2a5298;
+            color: white;
+            padding: 4px 15px;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 0.7rem;
+            font-weight: 700;
+            border-radius: 4px;
+            letter-spacing: 1px;
         }
 
         .photos-panel h3 {
             margin: 0 0 15px 0;
-            font-family: 'Fredoka One', cursive;
-            color: var(--secondary-color);
-            font-size: 1.2rem;
+            font-family: 'Orbitron', sans-serif;
+            color: #1e3c72;
+            font-size: 1rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            padding-bottom: 10px;
+            border-bottom: 2px dashed #2a5298;
         }
 
         .photo-source {
@@ -138,7 +302,7 @@
         }
 
         .draggable-photo {
-            width: calc(50% - 6px);
+            width: calc(33.33% - 8px);
             box-sizing: border-box;
             aspect-ratio: 1;
             border-radius: 12px;
@@ -204,16 +368,17 @@
         }
 
         .workspace {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 12px;
             padding: 20px;
             backdrop-filter: blur(10px);
             display: grid;
             grid-template-columns: auto 1fr auto;
-            /* Added 'auto' for controls-panel */
             gap: 20px;
             position: relative;
-            overflow: hidden;
+            overflow: visible;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            border: 2px solid rgba(42, 82, 152, 0.2);
         }
 
         .frame-tabs {
@@ -226,29 +391,51 @@
         }
 
         .frame-tab {
-            background: rgba(108, 99, 255, 0.1);
-            border: 2px solid var(--primary-color);
+            background: linear-gradient(135deg, #ffffff 0%, #f0f2f5 100%);
+            border: 2px solid #2a5298;
             padding: 10px;
-            border-radius: 15px;
+            border-radius: 8px;
             cursor: pointer;
-            font-weight: 600;
-            font-size: 0.8rem;
+            font-family: 'Roboto Condensed', sans-serif;
+            font-weight: 700;
+            font-size: 0.75rem;
             transition: all 0.3s ease;
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 8px;
-            min-width: 90px;
+            gap: 6px;
+            min-width: 85px;
             text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .frame-tab::before {
+            content: 'FLIGHT';
+            position: absolute;
+            top: 2px;
+            left: 5px;
+            font-size: 0.55rem;
+            font-weight: 700;
+            color: #2a5298;
+            opacity: 0.6;
         }
 
         .frame-tab:hover {
-            background: rgba(108, 99, 255, 0.3);
+            background: linear-gradient(135deg, #e8f0fe 0%, #c3cfe2 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(42, 82, 152, 0.2);
         }
 
         .frame-tab.active {
-            background: var(--primary-color);
+            background: linear-gradient(135deg, #2a5298 0%, #1e3c72 100%);
             color: white;
+            border-color: #1e3c72;
+            box-shadow: 0 4px 12px rgba(30, 60, 114, 0.4);
+        }
+
+        .frame-tab.active::before {
+            color: rgba(255, 255, 255, 0.7);
         }
 
         .frame-thumb {
@@ -294,20 +481,23 @@
         }
 
         .btn {
-            padding: 15px;
+            padding: 12px 16px;
             border: none;
-            border-radius: 18px;
-            /* Slightly more rounded */
-            font-family: 'Poppins', sans-serif;
-            font-weight: 600;
-            font-size: 1rem;
+            border-radius: 6px;
+            font-family: 'Roboto Condensed', sans-serif;
+            font-weight: 700;
+            font-size: 0.9rem;
             cursor: pointer;
             transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            gap: 8px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
         }
 
         .side-actions {
@@ -317,42 +507,43 @@
 
         .btn-side-action {
             flex: 1;
-            background: rgba(255, 255, 255, 0.7);
-            backdrop-filter: blur(8px);
-            color: var(--text-dark);
-            border: 1px solid rgba(0, 0, 0, 0.05);
+            background: linear-gradient(135deg, #ffffff 0%, #f0f2f5 100%);
+            color: #1e3c72;
+            border: 2px solid #2a5298;
         }
 
         .btn-side-action:hover {
-            background: white;
-            border-color: var(--primary-color);
-            color: var(--primary-color);
+            background: linear-gradient(135deg, #e8f0fe 0%, #c3cfe2 100%);
             transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 6px 15px rgba(42, 82, 152, 0.2);
         }
 
         .btn-continue {
-            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            background: linear-gradient(135deg, #2a5298 0%, #1e3c72 100%);
             color: white;
-            font-family: 'Fredoka One', cursive;
-            font-size: 1.2rem;
-            padding: 10px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1rem;
+            padding: 14px 18px;
+            font-weight: 900;
+            letter-spacing: 2px;
+            box-shadow: 0 4px 15px rgba(30, 60, 114, 0.4);
         }
 
-        .btn-continue:hover {
+        .btn-continue:hover:not(:disabled) {
             transform: translateY(-3px);
-            box-shadow: 0 10px 25px rgba(255, 127, 80, 0.4);
+            box-shadow: 0 8px 25px rgba(30, 60, 114, 0.5);
         }
 
         .btn-secondary {
-            background: linear-gradient(45deg, #4CAF50, #8BC34A);
+            background: linear-gradient(135deg, #28a745 0%, #218838 100%);
             color: white;
-            font-weight: 600;
+            font-weight: 700;
+            border: 2px solid #1e7e34;
         }
 
         .btn-secondary:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(76, 175, 80, 0.4);
+            box-shadow: 0 6px 15px rgba(40, 167, 69, 0.3);
         }
 
         .btn:disabled {
@@ -364,38 +555,58 @@
         }
 
         .progress-indicator {
-            background: rgba(255, 255, 255, 0.7);
-            padding: 15px;
-            border-radius: 18px;
-            backdrop-filter: blur(8px);
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 12px 15px;
+            border-radius: 8px;
             text-align: center;
-            border: 1px solid rgba(0, 0, 0, 0.05);
+            border: 2px solid #2a5298;
             margin-bottom: auto;
-            /* Push to the top */
+            box-shadow: 0 2px 8px rgba(42, 82, 152, 0.15);
+            position: relative;
+        }
+
+        .progress-indicator::before {
+            content: 'STATUS';
+            position: absolute;
+            top: -8px;
+            left: 10px;
+            background: #2a5298;
+            color: white;
+            padding: 2px 8px;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 0.6rem;
+            font-weight: 700;
+            border-radius: 3px;
+            letter-spacing: 1px;
         }
 
         #progress-text {
-            font-weight: 600;
-            color: var(--text-dark);
-            font-size: 0.9rem;
+            font-family: 'Roboto Condensed', sans-serif;
+            font-weight: 700;
+            color: #1e3c72;
+            font-size: 0.85rem;
             margin-bottom: 10px;
             display: block;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
         .progress-bar {
             width: 100%;
-            height: 8px;
-            background: rgba(0, 0, 0, 0.08);
-            border-radius: 4px;
+            height: 6px;
+            background: rgba(30, 60, 114, 0.1);
+            border-radius: 3px;
             overflow: hidden;
+            border: 1px solid rgba(30, 60, 114, 0.2);
         }
 
         .progress-fill {
             height: 100%;
-            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
-            border-radius: 4px;
+            background: linear-gradient(90deg, #1e3c72, #2a5298);
+            border-radius: 3px;
             width: 0%;
             transition: width 0.5s ease;
+            box-shadow: 0 0 6px rgba(30, 60, 114, 0.4);
         }
 
         .empty-state {
@@ -435,7 +646,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.8);
+            background: rgba(30, 60, 114, 0.85);
             backdrop-filter: blur(5px);
             z-index: 10000;
             display: none;
@@ -451,14 +662,15 @@
         }
 
         .preview-content {
-            background: white;
-            border-radius: 20px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border: 2px solid #2a5298;
+            border-radius: 12px;
             padding: 30px;
             max-width: 50vw;
             max-height: 50vh;
             overflow: auto;
             position: relative;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 20px 60px rgba(30, 60, 114, 0.4);
             transform: scale(0.8);
             transition: transform 0.3s ease;
         }
@@ -473,21 +685,23 @@
             align-items: center;
             margin-bottom: 25px;
             padding-bottom: 15px;
-            border-bottom: 2px solid #f0f0f0;
+            border-bottom: 2px dashed #2a5298;
         }
 
         .preview-header h2 {
-            font-family: 'Fredoka One', cursive;
-            color: var(--primary-color);
+            font-family: 'Orbitron', sans-serif;
+            color: #1e3c72;
             margin: 0;
-            font-size: 1.8rem;
+            font-size: 1.5rem;
+            font-weight: 900;
+            letter-spacing: 2px;
         }
 
         .close-preview {
-            background: var(--secondary-color);
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
             color: white;
             border: none;
-            border-radius: 50%;
+            border-radius: 6px;
             width: 40px;
             height: 40px;
             font-size: 20px;
@@ -496,10 +710,11 @@
             align-items: center;
             justify-content: center;
             transition: all 0.3s ease;
+            font-weight: bold;
         }
 
         .close-preview:hover {
-            background: #ff4757;
+            background: linear-gradient(135deg, #c82333 0%, #bd2130 100%);
             transform: scale(1.1);
         }
 
@@ -512,9 +727,8 @@
 
         .photostrip-paper {
             background: white;
-            box-shadow:
-                0 10px 30px rgba(0, 0, 0, 0.2),
-                inset 0 0 0 1px #e0e0e0;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            border: 2px solid #2a5298;
             border-radius: 8px;
             padding: 15px;
             position: relative;
@@ -586,58 +800,372 @@
             transform: scale(1.1);
         }
 
+        /* ========== MOBILE RESPONSIVE ========== */
+        @media (max-width: 1024px) {
+            .layout-container {
+                grid-template-columns: 280px 1fr;
+                gap: 12px;
+                padding: 15px;
+            }
+
+            .header-panel h1 {
+                font-size: 1.5rem;
+            }
+
+            .header-subtitle {
+                font-size: 0.75rem;
+            }
+
+            .frame-tab {
+                min-width: 75px;
+                font-size: 0.7rem;
+            }
+
+            .btn {
+                font-size: 0.8rem;
+                padding: 10px 12px;
+            }
+        }
+
         @media (max-width: 768px) {
+            body {
+                padding: 10px;
+                overflow-y: auto;
+                min-height: 100vh;
+            }
+
             .layout-container {
                 grid-template-columns: 1fr;
                 grid-template-rows: auto auto 1fr auto;
+                gap: 12px;
+                height: auto;
+                max-height: none;
+                padding: 12px;
+                border-radius: 12px;
+                overflow: visible;
             }
 
+            .header-panel {
+                padding: 12px 20px;
+            }
+
+            .header-panel h1 {
+                font-size: 1.3rem;
+                letter-spacing: 2px;
+            }
+
+            .header-subtitle {
+                font-size: 0.7rem;
+            }
+
+            /* Photos panel with frames integrated */
             .photos-panel {
-                order: 2;
+                order: 1;
+                padding: 12px;
+                max-height: 320px;
+                overflow-y: auto;
+                display: flex;
+                flex-direction: column;
             }
 
+            .photos-panel h3 {
+                font-size: 0.9rem;
+                padding-bottom: 6px;
+                margin-bottom: 8px;
+            }
+
+            .photo-source {
+                gap: 10px;
+                padding: 5px;
+            }
+
+            .draggable-photo {
+                width: calc(48% - 5px);
+                border-width: 2px;
+            }
+
+            /* Frame tabs - normal flow, horizontal scroll */
             .workspace {
-                order: 3;
+                order: 2;
                 grid-template-columns: 1fr;
                 grid-template-rows: auto 1fr auto;
-                /* Added 'auto' for controls-panel */
+                gap: 12px;
+                padding: 12px;
+                overflow: visible;
             }
 
             .frame-tabs {
                 flex-direction: row;
                 overflow-x: auto;
+                overflow-y: hidden;
+                padding: 8px 10px;
+                gap: 10px;
+                background: linear-gradient(135deg, rgba(245, 247, 250, 0.98) 0%, rgba(195, 207, 226, 0.98) 100%);
+                backdrop-filter: blur(15px);
+                border-radius: 8px;
+                border: 2px solid #2a5298;
+                box-shadow: 0 2px 8px rgba(42, 82, 152, 0.15);
+                /* Add smooth snap scrolling */
+                scroll-snap-type: x mandatory;
+                -webkit-overflow-scrolling: touch;
+                order: 1;
             }
 
-            .controls-panel {
-                order: 4;
+            .frame-tab {
+                min-width: 80px;
+                flex-shrink: 0;
+                padding: 10px 8px;
+                scroll-snap-align: start;
+                position: relative;
+            }
+
+            .frame-tab::after {
+                content: '';
+                position: absolute;
+                bottom: -2px;
+                left: 50%;
+                transform: translateX(-50%);
+                width: 0;
+                height: 3px;
+                background: #1e3c72;
+                transition: width 0.3s ease;
+                border-radius: 2px;
+            }
+
+            .frame-tab.active::after {
+                width: 60%;
+            }
+
+            .frame-thumb {
+                width: 45px;
+                height: 67px;
+            }
+
+            .photostrip-canvas-container {
+                order: 2;
+                min-height: 280px;
+                position: relative;
+            }
+
+            /* Current frame indicator */
+            .photostrip-canvas-container::before {
+                content: 'FLIGHT ' attr(data-current-frame);
+                position: absolute;
+                top: -28px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: linear-gradient(135deg, #2a5298 0%, #1e3c72 100%);
+                color: white;
+                padding: 4px 12px;
+                font-family: 'Roboto Condensed', sans-serif;
+                font-size: 0.7rem;
+                font-weight: 700;
+                border-radius: 4px;
+                letter-spacing: 1px;
+                z-index: 10;
+                box-shadow: 0 2px 8px rgba(42, 82, 152, 0.3);
+            }
+
+            .progress-indicator {
+                padding: 10px 12px;
+                margin-bottom: 5px;
+            }
+
+            .progress-indicator::before {
+                font-size: 0.5rem;
+                padding: 2px 6px;
+            }
+
+            #progress-text {
+                font-size: 0.75rem;
+                margin-bottom: 8px;
+            }
+
+            .side-actions {
+                flex-wrap: wrap;
+            }
+
+            .btn-side-action {
+                padding: 10px 12px;
+                font-size: 0.75rem;
+            }
+
+            .btn-continue {
+                width: 100%;
+                padding: 12px 16px;
+                font-size: 0.9rem;
+            }
+
+            .btn svg {
+                width: 16px;
+                height: 16px;
             }
 
             .preview-content {
                 padding: 20px;
                 margin: 10px;
+                max-width: 90vw;
             }
 
-            .photostrip-image {
-                width: 150px;
-                height: 450px;
+            .preview-header h2 {
+                font-size: 1.2rem;
             }
 
-            .preview-actions {
-                flex-direction: column;
+            .photostrip-paper {
+                max-width: 90vw;
+                padding: 10px;
+            }
+
+            .notification {
+                top: 10px;
+                right: 10px;
+                left: 10px;
+                font-size: 0.8rem;
+                padding: 10px 15px;
+            }
+
+            /* Cloud animations slower on mobile */
+            .cloud1 {
+                animation-duration: 60s;
+            }
+
+            .cloud2 {
+                animation-duration: 70s;
+            }
+
+            .cloud3 {
+                animation-duration: 75s;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 8px;
+            }
+
+            .layout-container {
+                padding: 10px;
                 gap: 10px;
+            }
+
+            .header-panel h1 {
+                font-size: 1.1rem;
+                letter-spacing: 1px;
+            }
+
+            .header-subtitle {
+                font-size: 0.65rem;
+                letter-spacing: 1px;
+            }
+
+            .photos-panel {
+                padding: 10px;
+                max-height: 300px;
+            }
+
+            .photos-panel h3 {
+                font-size: 0.8rem;
+            }
+
+            .photo-source {
+                gap: 8px;
+            }
+
+            .draggable-photo {
+                width: calc(48% - 4px);
+                border-width: 2px;
+            }
+
+            .frame-tabs {
+                padding: 6px 8px;
+                gap: 8px;
+            }
+
+            .frame-tab {
+                min-width: 70px;
+                font-size: 0.65rem;
+                padding: 8px 6px;
+            }
+
+            .frame-tab::before {
+                font-size: 0.5rem;
+                top: 1px;
+                left: 3px;
+            }
+
+            .frame-thumb {
+                width: 38px;
+                height: 57px;
+            }
+
+            .photostrip-canvas-container {
+                min-height: 240px;
+            }
+
+            .btn {
+                font-size: 0.75rem;
+                padding: 8px 10px;
+            }
+
+            .btn svg {
+                width: 14px;
+                height: 14px;
+            }
+
+            .photostrip-canvas-container canvas {
+                max-width: 100%;
+            }
+        }
+
+        /* Touch device optimizations */
+        @media (hover: none) and (pointer: coarse) {
+            .draggable-photo:hover {
+                transform: none;
+            }
+
+            .draggable-photo:active {
+                transform: scale(0.95);
+            }
+
+            .btn:hover {
+                transform: none;
+            }
+
+            .btn:active {
+                transform: scale(0.97);
+            }
+
+            .frame-tab:hover {
+                transform: none;
+            }
+
+            .frame-tab:active {
+                transform: translateY(-1px);
             }
         }
     </style>
 </head>
 
 <body>
+    <!-- Animated Clouds Background -->
+    <div class="clouds">
+        <div class="cloud cloud1"></div>
+        <div class="cloud cloud2"></div>
+        <div class="cloud cloud3"></div>
+    </div>
+
     <div class="layout-container">
         <div class="header-panel">
-            <h1>✨ Editor Layout Photostrip</h1>
+            <h1>PHOTOBOOTH AIRWAYS</h1>
+            <div class="header-subtitle">Flight Layout Editor</div>
         </div>
 
         <div class="photos-panel">
-            <h3>📸 Galeri Foto Sesi (<?= count($data['photos']) ?>)</h3>
+            <h3>✈️ CARGO MANIFEST</h3>
+            <div style="font-family: 'Roboto Mono', monospace; font-size: 0.7rem; color: #1e3c72; margin-bottom: 12px; display: flex; justify-content: space-between;">
+                <span>GATE: A<?= $data['session']->id ?></span>
+                <span>SEAT: <?= count($data['photos']) ?>A</span>
+            </div>
             <div class="photo-source" id="photo-source">
                 <?php foreach ($data['photos'] as $photo): ?>
                     <div class="draggable-photo" draggable="true" data-photo-id="<?= $photo->id ?>"
@@ -774,6 +1302,9 @@
 
             // Update used status on photos in the gallery
             updatePhotoUsedStatus();
+
+            // Initialize mobile frame indicator
+            updateMobileFrameIndicator(currentFrameIndex + 1);
         });
 
         function updatePhotoUsedStatus() {
@@ -1331,6 +1862,9 @@
                         // Load the new frame
                         loadCurrentFrame();
 
+                        // Update mobile frame indicator
+                        updateMobileFrameIndicator(index + 1);
+
                         checkIfDone();
                     } catch (error) {
                         console.error('Error switching frame:', error);
@@ -1385,6 +1919,13 @@
             checkIfDone();
 
             showNotification('🗑️ Layout dibersihkan!', 'success');
+        }
+
+        function updateMobileFrameIndicator(frameNumber) {
+            const canvasContainer = document.querySelector('.photostrip-canvas-container');
+            if (canvasContainer) {
+                canvasContainer.setAttribute('data-current-frame', frameNumber);
+            }
         }
 
         function showNotification(message, type = 'success') {
