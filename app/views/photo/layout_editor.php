@@ -1463,7 +1463,7 @@
             mainCanvas = new fabric.Canvas(canvasEl, {
                 width: initialWidth,
                 height: initialHeight,
-                selection: true,
+                selection: false, // Disable group selection (blue box)
                 stopContextMenu: true,
                 perPixelTargetFind: true, // Fixes issue where transparent/clipped areas capture clicks
                 targetFindTolerance: 4,  // Small tolerance
@@ -1850,6 +1850,15 @@
                         if (ghostElement) {
                             ghostElement.style.top = (touch.clientY - 40) + 'px';
                             ghostElement.style.left = (touch.clientX - 40) + 'px';
+                        }
+                        
+                        // Auto-scroll logic if dragging near edges
+                        const scrollThreshold = 80;
+                        const scrollSpeed = 15;
+                        if (touch.clientY < scrollThreshold) {
+                            window.scrollBy({ top: -scrollSpeed, behavior: 'auto' });
+                        } else if (window.innerHeight - touch.clientY < scrollThreshold) {
+                            window.scrollBy({ top: scrollSpeed, behavior: 'auto' });
                         }
                     }
                 }, { passive: false });

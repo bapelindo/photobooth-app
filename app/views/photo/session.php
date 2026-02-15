@@ -391,6 +391,7 @@
             border-radius: 7px;
             background: #000;
             transition: aspect-ratio 0.3s ease;
+        transform: scaleX(-1); /* Mirror the camera feed */
         }
 
         .photo-preview {
@@ -2054,12 +2055,12 @@
                         <select id="camera-filter" onchange="applyFilter(this.value)">
                             <option value="none">Normal</option>
                             <?php if (isset($data['filters']) && is_array($data['filters'])): ?>
-                                <?php foreach ($data['filters'] as $filter): ?>
-                                    <option value="<?= htmlspecialchars($filter->path ?? 'none') ?>"
-                                        data-filter-name="<?= htmlspecialchars($filter->name) ?>">
-                                        <?= htmlspecialchars($filter->name) ?>
-                                    </option>
-                                <?php endforeach; ?>
+                                    <?php foreach ($data['filters'] as $filter): ?>
+                                            <option value="<?= htmlspecialchars($filter->path ?? 'none') ?>"
+                                                data-filter-name="<?= htmlspecialchars($filter->name) ?>">
+                                                <?= htmlspecialchars($filter->name) ?>
+                                            </option>
+                                    <?php endforeach; ?>
                             <?php endif; ?>
                         </select>
                     </div>
@@ -2088,10 +2089,10 @@
                 <h3>Frame Terpilih</h3>
                 <div class="frames-list">
                     <?php foreach ($data['frames'] as $frame): ?>
-                        <div class="frame-item">
-                            <img src="<?= URLROOT . $frame->path ?>" alt="<?= $frame->name ?>" class="frame-thumbnail">
-                            <span><?= $frame->name ?></span>
-                        </div>
+                            <div class="frame-item">
+                                <img src="<?= URLROOT . $frame->path ?>" alt="<?= $frame->name ?>" class="frame-thumbnail">
+                                <span><?= $frame->name ?></span>
+                            </div>
                     <?php endforeach; ?>
                 </div>
             </div>
@@ -2555,7 +2556,7 @@
             });
 
             // Set timeout to 30 seconds
-            xhr.timeout = 30000;
+            xhr.timeout = 300000;
 
             // Start upload - asynchronous, non-blocking!
             xhr.open('POST', '<?= URLROOT ?>/photo/save-session-photo');
@@ -3348,4 +3349,6 @@
             }
         }
     </script>
-</body></html>
+</body>
+
+</html>
