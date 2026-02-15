@@ -3,7 +3,8 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Sesi Foto Interaktif</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -713,6 +714,7 @@
 
         /* Mobile phones (up to 480px) */
         @media (max-width: 480px) {
+
             /* ========== EDGE-TO-EDGE DESIGN ========== */
             html {
                 touch-action: pan-y;
@@ -767,12 +769,14 @@
             .safe-zone {
                 margin: 0;
                 border-radius: 0;
-                aspect-ratio: 9/16 !important; /* Vertical/portrait for mobile */
+                aspect-ratio: 9/16 !important;
+                /* Vertical/portrait for mobile */
             }
 
             #camera-feed {
                 border-radius: 0;
-                aspect-ratio: 9/16 !important; /* Match safe-zone */
+                aspect-ratio: 9/16 !important;
+                /* Match safe-zone */
             }
 
             .session-info h1 {
@@ -922,13 +926,13 @@
             }
 
             .selected-frames {
-                min-height: 150px;
+                min-height: 200px;
             }
 
             .gallery-panel h3,
             .selected-frames h3 {
-                font-size: 0.8rem;
-                margin-bottom: 8px;
+                font-size: 0.9rem;
+                margin-bottom: 12px;
             }
 
             /* ========== GALLERY - 3 Columns, Max 400px ========== */
@@ -972,16 +976,32 @@
                 scroll-snap-align: start;
             }
 
-            /* Frame thumbnails exactly 40x60px */
+            /* Frame thumbnails larger for better visibility on mobile */
             .frame-thumbnail {
-                width: 40px;
-                height: 60px;
+                width: 60px;
+                height: 90px;
                 object-fit: cover;
-                border-radius: 4px;
+                border-radius: 8px;
+                border: 2px solid rgba(0, 191, 255, 0.3);
+            }
+
+            .frame-item {
+                min-width: 80px;
+                padding: 8px;
+                background: rgba(0, 191, 255, 0.15);
+                border: 2px solid rgba(0, 191, 255, 0.2);
             }
 
             .frame-item span {
-                display: none;
+                display: block;
+                font-size: 0.65rem;
+                color: var(--dark-blue);
+                font-weight: 600;
+                text-align: center;
+                margin-top: 4px;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
             }
 
             /* Fullscreen timer adjust */
@@ -1055,7 +1075,7 @@
             }
 
             .selected-frames {
-                min-height: 120px;
+                min-height: 180px;
             }
 
             .photo-gallery {
@@ -1082,7 +1102,7 @@
             }
 
             .selected-frames {
-                min-height: 100px;
+                min-height: 160px;
             }
 
             .photo-gallery {
@@ -1649,6 +1669,62 @@
         .upload-progress-dialog.upload-complete .upload-progress-bar-fill {
             background: var(--success-color);
         }
+
+        /* FORCE OVERRIDE for Mobile Frames - Modern Card Design */
+        @media (max-width: 480px) {
+            .selected-frames {
+                min-height: 280px !important;
+                padding: 10px 0 20px 0 !important;
+                background: transparent !important;
+            }
+
+            .frames-list {
+                padding: 10px 15px !important;
+                gap: 15px !important;
+            }
+
+            .frame-item {
+                min-width: 130px !important;
+                background: rgba(255, 255, 255, 0.9) !important;
+                border-radius: 16px !important;
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1) !important;
+                border: 1px solid rgba(255, 255, 255, 0.5) !important;
+                padding: 10px !important;
+                flex-direction: column !important;
+                justify-content: flex-start !important;
+                align-items: center !important;
+                gap: 8px !important;
+                transition: transform 0.2s ease !important;
+            }
+
+            .frame-item:active {
+                transform: scale(0.98);
+            }
+
+            .frame-thumbnail {
+                width: 110px !important;
+                height: 165px !important;
+                object-fit: cover !important;
+                border-radius: 10px !important;
+                border: none !important;
+                box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05) !important;
+                background: #f0f0f0;
+            }
+
+            .frame-item span {
+                font-size: 0.75rem !important;
+                color: #333 !important;
+                font-weight: 700 !important;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                margin-top: 0 !important;
+                text-align: center;
+                width: 100%;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+        }
     </style>
 </head>
 
@@ -1739,12 +1815,12 @@
                         <select id="camera-filter" onchange="applyFilter(this.value)">
                             <option value="none">Normal</option>
                             <?php if (isset($data['filters']) && is_array($data['filters'])): ?>
-                                <?php foreach ($data['filters'] as $filter): ?>
-                                    <option value="<?= htmlspecialchars($filter->path ?? 'none') ?>"
-                                        data-filter-name="<?= htmlspecialchars($filter->name) ?>">
-                                        <?= htmlspecialchars($filter->name) ?>
-                                    </option>
-                                <?php endforeach; ?>
+                                                    <?php foreach ($data['filters'] as $filter): ?>
+                                                                            <option value="<?= htmlspecialchars($filter->path ?? 'none') ?>"
+                                                                                data-filter-name="<?= htmlspecialchars($filter->name) ?>">
+                                                                                <?= htmlspecialchars($filter->name) ?>
+                                                                            </option>
+                                                    <?php endforeach; ?>
                             <?php endif; ?>
                         </select>
                     </div>
@@ -1765,10 +1841,10 @@
                 <h3>Frame Terpilih</h3>
                 <div class="frames-list">
                     <?php foreach ($data['frames'] as $frame): ?>
-                        <div class="frame-item">
-                            <img src="<?= URLROOT . $frame->path ?>" alt="<?= $frame->name ?>" class="frame-thumbnail">
-                            <span><?= $frame->name ?></span>
-                        </div>
+                                            <div class="frame-item">
+                                                <img src="<?= URLROOT . $frame->path ?>" alt="<?= $frame->name ?>" class="frame-thumbnail">
+                                                <span><?= $frame->name ?></span>
+                                            </div>
                     <?php endforeach; ?>
                 </div>
             </div>
@@ -2445,7 +2521,7 @@
                     if (data.success) {
                         // Allow navigation for successful session completion
                         <?php if (ENABLE_SESSION_REFRESH_BACK): ?>
-                            allowNavigation = true;
+                                                allowNavigation = true;
                         <?php endif; ?>
 
                         // Same timing as select-frame (500ms)
@@ -2938,39 +3014,39 @@
 
         // Simple back/refresh protection with popup
         <?php if (ENABLE_SESSION_REFRESH_BACK): ?>
-            let allowNavigation = false;
+                                let allowNavigation = false;
 
-            // Handle refresh attempts
-            window.addEventListener('beforeunload', function (e) {
-                if (allowNavigation) {
-                    return;
-                }
+                                // Handle refresh attempts
+                                window.addEventListener('beforeunload', function (e) {
+                                    if (allowNavigation) {
+                                        return;
+                                    }
 
-                e.preventDefault();
-                e.returnValue = '';
-                return '';
-            });
+                                    e.preventDefault();
+                                    e.returnValue = '';
+                                    return '';
+                                });
 
-            // Handle browser back button
-            let currentUrl = window.location.href;
-            window.history.pushState({}, '', currentUrl);
+                                // Handle browser back button
+                                let currentUrl = window.location.href;
+                                window.history.pushState({}, '', currentUrl);
 
-            window.addEventListener('popstate', function (e) {
-                if (allowNavigation) {
-                    return;
-                }
+                                window.addEventListener('popstate', function (e) {
+                                    if (allowNavigation) {
+                                        return;
+                                    }
 
-                // Show confirmation for back button
-                if (confirm('⚠️ PERINGATAN!\n\nAnda mencoba kembali ke halaman sebelumnya. Foto yang belum disimpan akan hilang.\n\nApakah Anda yakin ingin melanjutkan?')) {
-                    allowNavigation = true;
-                    window.history.go(-1);
-                } else {
-                    // Stay on current page
-                    window.history.pushState({}, '', currentUrl);
-                }
-            });
+                                    // Show confirmation for back button
+                                    if (confirm('⚠️ PERINGATAN!\n\nAnda mencoba kembali ke halaman sebelumnya. Foto yang belum disimpan akan hilang.\n\nApakah Anda yakin ingin melanjutkan?')) {
+                                        allowNavigation = true;
+                                        window.history.go(-1);
+                                    } else {
+                                        // Stay on current page
+                                        window.history.pushState({}, '', currentUrl);
+                                    }
+                                });
 
-            console.log('Simple back/refresh protection loaded for photo session');
+                                console.log('Simple back/refresh protection loaded for photo session');
         <?php endif; ?>
     </script>
     <script>
