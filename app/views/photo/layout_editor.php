@@ -29,7 +29,7 @@
         body {
             background: linear-gradient(120deg, #c2e9fb 0%, #a1c4fd 50%, #e2d0cb 100%);
             position: relative;
-            padding: 20px;
+            padding: 10px;
             display: flex;
             justify-content: center;
             align-items: flex-start;
@@ -167,7 +167,8 @@
             width: 100%;
             max-width: 1600px;
             padding: 20px;
-            padding-top: 25px; /* Add space for BOARDING PASS label */
+            padding-top: 15px;
+            /* Add space for BOARDING PASS label */
             box-sizing: border-box;
             background: rgba(255, 255, 255, 0.7);
             backdrop-filter: blur(10px);
@@ -179,7 +180,8 @@
             position: relative;
             z-index: 1;
             border: 2px solid rgba(255, 255, 255, 0.8);
-            overflow: visible; /* Allow BOARDING PASS label to be visible */
+            overflow: hidden;
+            /* Prevent overflow on desktop */
         }
 
         .layout-container.content-fade-out {
@@ -207,7 +209,7 @@
             grid-column: 1 / -1;
             background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
             border-radius: 12px;
-            padding: 15px 25px;
+            padding-bottom: 10px;
             text-align: center;
             position: relative;
             overflow: hidden;
@@ -258,7 +260,12 @@
             border: 2px solid #2a5298;
             position: relative;
             overflow: visible;
-            margin-top: 15px; /* Space for label */
+            margin-top: 15px;
+            /* Space for label */
+            height: 100%;
+            /* Fill grid cell */
+            min-height: 0;
+            /* Allow flex shrink */
         }
 
         .photos-panel::before {
@@ -274,7 +281,7 @@
             font-weight: 700;
             border-radius: 6px;
             letter-spacing: 1.5px;
-            z-index: 10000;
+            z-index: 100;
             box-shadow: 0 4px 12px rgba(42, 82, 152, 0.5);
             border: 2px solid rgba(255, 255, 255, 0.3);
         }
@@ -297,7 +304,10 @@
             flex-wrap: wrap;
             gap: 12px;
             padding: 10px;
-            max-height: calc(100vh - 250px);
+            height: 100%;
+            /* Fill available space */
+            min-height: 0;
+            /* Allow shrinking */
             align-content: flex-start;
         }
 
@@ -379,6 +389,11 @@
             overflow: visible;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
             border: 2px solid rgba(42, 82, 152, 0.2);
+            height: 100%;
+            margin-top: 15px;
+            /* Fill grid cell */
+            overflow: hidden;
+            /* Contain canvas and controls */
         }
 
         .frame-tabs {
@@ -454,7 +469,10 @@
             justify-content: center;
             align-items: center;
             position: relative;
-            min-height: 75vh; /* Increased to 75% of viewport height */
+            height: 100%;
+            /* Fill parent */
+            min-height: 0;
+            /* Remove fixed constraint */
         }
 
         .photostrip-canvas-container canvas {
@@ -842,7 +860,8 @@
                 height: auto;
                 max-height: none;
                 padding: 12px;
-                padding-top: 18px; /* Space for BOARDING PASS label */
+                padding-top: 18px;
+                /* Space for BOARDING PASS label */
                 border-radius: 12px;
                 overflow: visible;
             }
@@ -864,10 +883,13 @@
             .photos-panel {
                 order: 1;
                 padding: 12px;
-                padding-top: 22px; /* Space for BOARDING PASS label */
-                margin-top: 10px; /* Additional space */
+                padding-top: 22px;
+                /* Space for BOARDING PASS label */
+                margin-top: 10px;
+                /* Additional space */
                 max-height: 340px;
-                overflow-y: auto;
+                overflow: visible !important;
+                /* Allow BOARDING PASS label to be visible */
                 display: flex;
                 flex-direction: column;
             }
@@ -947,7 +969,8 @@
 
             .photostrip-canvas-container {
                 order: 2;
-                min-height: 70vh; /* Increased to 70% of viewport height for mobile */
+                min-height: 70vh;
+                /* Increased to 70% of viewport height for mobile */
                 position: relative;
             }
 
@@ -1049,7 +1072,8 @@
 
             .layout-container {
                 padding: 10px;
-                padding-top: 15px; /* Space for BOARDING PASS label */
+                padding-top: 15px;
+                /* Space for BOARDING PASS label */
                 gap: 10px;
             }
 
@@ -1065,8 +1089,10 @@
 
             .photos-panel {
                 padding: 10px;
-                padding-top: 20px; /* Space for BOARDING PASS label */
-                margin-top: 8px; /* Additional space */
+                padding-top: 20px;
+                /* Space for BOARDING PASS label */
+                margin-top: 8px;
+                /* Additional space */
                 max-height: 320px;
             }
 
@@ -1106,7 +1132,8 @@
             }
 
             .photostrip-canvas-container {
-                min-height: 65vh; /* Increased to 65% of viewport height for small mobile */
+                min-height: 65vh;
+                /* Increased to 65% of viewport height for small mobile */
             }
 
             .btn {
@@ -1300,6 +1327,7 @@
                 initializeMainCanvas();
                 initializeFrameTabs();
                 initializeDragAndDrop();
+                initializeTouchDragAndDrop(); // Add touch support
                 loadCurrentFrame();
 
                 console.log('Fabric.js layout editor initialized successfully');
@@ -1750,6 +1778,134 @@
             });
 
             console.log('Drag and drop initialized');
+        }
+
+        // --- NEW: Touch Drag and Drop Implementation ---
+        function initializeTouchDragAndDrop() {
+            console.log('Initializing TOUCH drag and drop...');
+            const photoSource = document.getElementById('photo-source');
+            if (!photoSource) return;
+
+            const draggablePhotos = photoSource.querySelectorAll('.draggable-photo');
+            let ghostElement = null;
+            let touchStartX = 0;
+            let touchStartY = 0;
+            let isDragging = false;
+            let activePhoto = null;
+
+            draggablePhotos.forEach(photo => {
+                photo.addEventListener('touchstart', (e) => {
+                    if (e.touches.length !== 1) return;
+                    
+                    const touch = e.touches[0];
+                    touchStartX = touch.clientX;
+                    touchStartY = touch.clientY;
+                    activePhoto = photo;
+                    isDragging = false; // Reset, wait for move to confirm drag vs scroll
+                    
+                    // Don't prevent default yet, allow scrolling
+                }, { passive: false });
+
+                photo.addEventListener('touchmove', (e) => {
+                    if (!activePhoto) return;
+                    
+                    const touch = e.touches[0];
+                    const diffX = Math.abs(touch.clientX - touchStartX);
+                    const diffY = Math.abs(touch.clientY - touchStartY);
+
+                    // Logic: If moved horizontally more than vertically, treat as drag
+                    // Or if moved significantly in any direction after a hold (simplified here)
+                    if (!isDragging) {
+                        if (diffX > 10 && diffX > diffY) {
+                            isDragging = true;
+                            // Create ghost element
+                            ghostElement = photo.cloneNode(true);
+                            ghostElement.style.position = 'fixed';
+                            ghostElement.style.pointerEvents = 'none'; // Click-through
+                            ghostElement.style.zIndex = '9999';
+                            ghostElement.style.width = '80px'; // Fixed size for ghost
+                            ghostElement.style.height = '80px';
+                            ghostElement.style.opacity = '0.8';
+                            ghostElement.style.top = (touch.clientY - 40) + 'px';
+                            ghostElement.style.left = (touch.clientX - 40) + 'px';
+                            ghostElement.style.transform = 'scale(1.1) rotate(5deg)';
+                            ghostElement.style.boxShadow = '0 10px 20px rgba(0,0,0,0.3)';
+                            ghostElement.classList.add('dragging-ghost');
+                            document.body.appendChild(ghostElement);
+                            
+                            // Prepare data
+                            draggedItemData = {
+                                photoSrc: URLROOT + photo.dataset.photoPath,
+                                photoId: photo.dataset.photoId,
+                                photoPath: photo.dataset.photoPath
+                            };
+                        }
+                    }
+
+                    if (isDragging) {
+                        e.preventDefault(); // Stop scrolling
+                        if (ghostElement) {
+                            ghostElement.style.top = (touch.clientY - 40) + 'px';
+                            ghostElement.style.left = (touch.clientX - 40) + 'px';
+                        }
+                    }
+                }, { passive: false });
+
+                photo.addEventListener('touchend', (e) => {
+                    if (isDragging && ghostElement) {
+                        // Check drop zone
+                        const touch = e.changedTouches[0];
+                        const pointer = mainCanvas.getPointer({ clientX: touch.clientX, clientY: touch.clientY }, false);
+                        
+                        // Check intersection with slots
+                        const currentFrame = frameData[currentFrameIndex];
+                        let foundSlot = null;
+                        
+                        // Need to check if pointer is actually within canvas bounds first? 
+                        // fabric.js getPointer handles offset, but we need to check visual bounds
+                        const canvasRect = mainCanvas.getElement().getBoundingClientRect();
+                        const isInCanvas = touch.clientX >= canvasRect.left && 
+                                           touch.clientX <= canvasRect.right && 
+                                           touch.clientY >= canvasRect.top && 
+                                           touch.clientY <= canvasRect.bottom;
+
+                        if (isInCanvas && currentFrame && currentFrame.slotObjects) {
+                             // Use standard getPointer logic, assuming sticky pointer mapping or similar?
+                             // Standard pointer mapping might be off if canvas is scaled visually relative to pixels
+                             // But mainCanvas.getPointer normally handles window -> canvas coord translation
+                             
+                             // We re-use logic from standard drop
+                             for (const key in currentFrame.slotObjects) {
+                                if (currentFrame.slotObjects[key].containsPoint(pointer)) {
+                                    foundSlot = currentFrame.slotObjects[key];
+                                    break;
+                                }
+                            }
+                        }
+
+                        if (foundSlot) {
+                            handleDrop(mainCanvas, foundSlot);
+                        }
+                        
+                        // Cleanup
+                        document.body.removeChild(ghostElement);
+                        ghostElement = null;
+                    }
+                    
+                    isDragging = false;
+                    activePhoto = null;
+                });
+                
+                photo.addEventListener('touchcancel', () => {
+                    if (ghostElement) {
+                        document.body.removeChild(ghostElement);
+                        ghostElement = null;
+                    }
+                    isDragging = false;
+                    activePhoto = null;
+                });
+            });
+            console.log('Touch drag and drop initialized');
         }
 
         function handleDrop(canvas, slot) {
