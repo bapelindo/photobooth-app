@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Sesi Foto Interaktif</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -706,6 +706,391 @@
                 min-height: 0;
             }
         }
+
+        /* ========== MOBILE FIRST - PHONE ONLY ========== */
+
+        /* Mobile phones (up to 480px) */
+        @media (max-width: 480px) {
+            /* ========== EDGE-TO-EDGE DESIGN ========== */
+            html {
+                touch-action: manipulation;
+                overflow-x: hidden;
+            }
+
+            body {
+                padding: 0 !important;
+                margin: 0 !important;
+                overflow-x: hidden;
+                overscroll-behavior: none;
+            }
+
+            .session-container {
+                border-radius: 0 !important;
+                padding: 0 !important;
+                gap: 0 !important;
+                height: 100vh !important;
+                width: 100vw !important;
+                max-width: 100vw !important;
+            }
+
+            /* ========== COMPACT HEADER (Full Width) ========== */
+            .header-panel {
+                padding: 6px 16px !important;
+                min-height: 56px;
+                max-height: 56px;
+                border-radius: 0 !important;
+                width: 100% !important;
+                box-sizing: border-box;
+            }
+
+            .session-info h1 {
+                font-size: 0.85rem;
+                letter-spacing: 0.5px;
+            }
+
+            .airline-name {
+                font-size: 0.55rem;
+            }
+
+            .airline-sub {
+                font-size: 0.4rem;
+                letter-spacing: 1.5px;
+            }
+
+            .session-stats {
+                gap: 8px;
+            }
+
+            .stat-value {
+                font-size: 0.9rem;
+            }
+
+            .stat-label {
+                font-size: 0.5rem;
+            }
+
+            .timer {
+                font-size: 1.1rem;
+            }
+
+            /* ========== CAMERA SECTION - Max 60vh ========== */
+            .camera-section {
+                order: 1;
+                max-height: 60vh;
+                min-height: 35vh;
+                padding: 0 !important;
+                border-radius: 0 !important;
+                background: transparent !important;
+            }
+
+            .safe-zone {
+                margin: 0;
+                border-radius: 0;
+            }
+
+            #camera-feed {
+                border-radius: 0;
+            }
+
+            /* ========== FLOATING CONTROLS OVERLAY ========== */
+            .camera-controls {
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                background: linear-gradient(to top, rgba(0, 0, 0, 0.7), transparent);
+                padding: 16px 12px 24px;
+                border-radius: 0;
+                z-index: 100;
+            }
+
+            .capture-section {
+                display: flex;
+                flex-direction: row;
+                flex-wrap: nowrap;
+                gap: 6px;
+                justify-content: space-between;
+                align-items: center;
+            }
+
+            .btn {
+                font-size: 0.6rem;
+                padding: 8px 10px;
+                white-space: nowrap;
+            }
+
+            .btn-capture {
+                min-width: 90px;
+                font-size: 0.65rem;
+                padding: 10px 14px;
+                box-shadow: 0 4px 12px rgba(251, 159, 139, 0.5);
+            }
+
+            .btn:active {
+                transform: scale(0.95);
+                opacity: 0.9;
+            }
+
+            .btn-capture:active {
+                transform: scale(0.95);
+                box-shadow: 0 2px 8px rgba(251, 159, 139, 0.4);
+            }
+
+            .btn-fullscreen {
+                padding: 8px 10px;
+            }
+
+            .finish-session-btn {
+                padding: 8px 12px;
+                font-size: 0.6rem;
+            }
+
+            .filter-dropdown {
+                background: rgba(255, 255, 255, 0.9);
+                padding: 6px 8px;
+                border-radius: 20px;
+                flex-shrink: 0;
+            }
+
+            .filter-dropdown label {
+                font-size: 0.55rem;
+                display: none;
+            }
+
+            .filter-dropdown select {
+                font-size: 0.6rem;
+                padding: 4px 8px;
+                min-width: 70px;
+                border: none;
+                background: transparent;
+            }
+
+            /* ========== SIDEBAR ========== */
+            .sidebar {
+                order: 2;
+                flex-direction: column;
+                gap: 0;
+                background: rgba(255, 255, 255, 0.95);
+                border-radius: 20px 20px 0 0;
+                padding: 12px;
+                min-height: 0;
+                overflow-y: auto;
+            }
+
+            .gallery-panel,
+            .selected-frames {
+                background: transparent;
+                border-radius: 0;
+                padding: 8px 0;
+            }
+
+            .gallery-panel h3,
+            .selected-frames h3 {
+                font-size: 0.8rem;
+                margin-bottom: 8px;
+            }
+
+            /* ========== GALLERY - 3 Columns, Max 250px ========== */
+            .photo-gallery {
+                grid-template-columns: repeat(3, 1fr);
+                max-height: 250px;
+                min-height: 120px;
+                max-width: 100%;
+                gap: 6px;
+                padding: 4px;
+            }
+
+            .gallery-photo {
+                max-width: 100%;
+                min-width: 0;
+                aspect-ratio: 1;
+            }
+
+            /* ========== SELECTED FRAMES - Footer Section ========== */
+            .selected-frames {
+                order: 3;
+                padding: 8px 0;
+            }
+
+            .frames-list {
+                display: flex;
+                flex-direction: row;
+                overflow-x: auto;
+                overflow-y: hidden;
+                gap: 10px;
+                padding: 4px 0;
+                scroll-snap-type: x mandatory;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .frame-item {
+                min-width: fit-content;
+                padding: 4px;
+                background: rgba(0, 191, 255, 0.1);
+                border-radius: 8px;
+                scroll-snap-align: start;
+            }
+
+            /* Frame thumbnails exactly 40x60px */
+            .frame-thumbnail {
+                width: 40px;
+                height: 60px;
+                object-fit: cover;
+                border-radius: 4px;
+            }
+
+            .frame-item span {
+                display: none;
+            }
+
+            /* Fullscreen timer adjust */
+            .fullscreen-timer .timer {
+                font-size: 1.3rem;
+            }
+        }
+
+        /* Small phones (up to 360px) */
+        @media (max-width: 360px) {
+            .header-panel {
+                padding: 4px 12px !important;
+                min-height: 52px;
+                max-height: 52px;
+            }
+
+            .session-info h1 {
+                font-size: 0.75rem;
+            }
+
+            .airline-name {
+                font-size: 0.5rem;
+            }
+
+            .airline-sub {
+                font-size: 0.35rem;
+            }
+
+            .session-stats {
+                gap: 6px;
+            }
+
+            .stat-value {
+                font-size: 0.8rem;
+            }
+
+            .stat-label {
+                font-size: 0.45rem;
+            }
+
+            .timer {
+                font-size: 1rem;
+            }
+
+            .camera-controls {
+                padding: 12px 8px 20px;
+            }
+
+            .btn {
+                font-size: 0.55rem;
+                padding: 7px 8px;
+            }
+
+            .btn-capture {
+                min-width: 75px;
+                font-size: 0.6rem;
+                padding: 8px 10px;
+            }
+
+            .filter-dropdown select {
+                font-size: 0.55rem;
+                min-width: 60px;
+            }
+
+            .photo-gallery {
+                gap: 4px;
+                padding: 3px;
+                max-height: 220px;
+                min-height: 100px;
+            }
+
+            .gallery-panel h3,
+            .selected-frames h3 {
+                font-size: 0.7rem;
+            }
+        }
+
+        /* Very small phones (up to 320px) */
+        @media (max-width: 320px) {
+            .photo-gallery {
+                gap: 3px;
+                padding: 2px;
+                max-height: 200px;
+                min-height: 90px;
+            }
+
+            .btn-capture {
+                min-width: 65px;
+                font-size: 0.55rem;
+                padding: 7px 8px;
+            }
+
+            .filter-dropdown select {
+                min-width: 50px;
+                font-size: 0.5rem;
+            }
+
+            .header-panel {
+                padding: 4px 10px !important;
+            }
+
+            .session-info h1 {
+                font-size: 0.7rem;
+            }
+        }
+
+        /* Landscape orientation for mobile */
+        @media (max-width: 480px) and (orientation: landscape) {
+            .camera-section {
+                max-height: 70vh;
+                min-height: 50vh;
+            }
+
+            .header-panel {
+                padding: 4px 16px !important;
+                min-height: 48px;
+                max-height: 48px;
+            }
+
+            .session-info h1 {
+                font-size: 0.8rem;
+            }
+
+            .stat-value {
+                font-size: 0.85rem;
+            }
+
+            .stat-label {
+                font-size: 0.45rem;
+            }
+
+            .timer {
+                font-size: 1rem;
+            }
+
+            .camera-controls {
+                padding: 10px 12px 16px;
+            }
+
+            .photo-gallery {
+                max-height: 180px;
+                min-height: 80px;
+            }
+
+            .sidebar {
+                padding: 8px;
+            }
+        }
+
+        /* ========== END MOBILE FIRST ========== */
 
 
         .filter-controls {
