@@ -463,16 +463,42 @@
         }
 
         .btn {
-            padding: 10px 10px;
+            padding: 10px 12px;
             border: none;
             border-radius: 25px;
-            font-family: 'Roboto Condensed', sans-serif;
-            font-size: 0.7rem;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.6rem;
             font-weight: 700;
             cursor: pointer;
             transition: all 0.3s ease;
             text-transform: uppercase;
             letter-spacing: 1px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        /* SVG Icon styling */
+        .btn svg {
+            width: 1.2em;
+            height: 1.2em;
+        }
+
+        /* Spin Animation for loading icons */
+        .spin {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
         }
 
         .btn-capture {
@@ -518,6 +544,37 @@
         .btn-fullscreen:hover {
             transform: translateY(-2px);
             box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        #finish-session-btn {
+            /* Success Color mixed with Blue for Tech Feel */
+            background: linear-gradient(135deg, var(--success-color) 0%, var(--primary-blue) 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(0, 191, 255, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 10px 12px;
+            border-radius: 25px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.6rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        #finish-session-btn:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.1);
+        }
+
+        #finish-session-btn svg {
+            width: 1.2em;
+            height: 1.2em;
         }
 
         .camera-section.fullscreen {
@@ -671,6 +728,9 @@
             font-size: 1rem;
             text-transform: uppercase;
             flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .photo-gallery {
@@ -900,15 +960,19 @@
             }
 
             .btn {
-                font-size: 0.6rem;
-                padding: 8px 10px;
+                font-size: 0.45rem !important;
+                /* Even smaller mobile font */
+                padding: 5px 6px !important;
+                /* Minimal padding */
                 white-space: nowrap;
+                letter-spacing: 0.5px;
             }
 
             .btn-capture {
-                min-width: 90px;
-                font-size: 0.65rem;
-                padding: 10px 14px;
+                min-width: 70px !important;
+                /* Further reduced width */
+                font-size: 0.5rem !important;
+                padding: 6px 10px !important;
                 box-shadow: 0 4px 12px rgba(251, 159, 139, 0.5);
             }
 
@@ -923,32 +987,87 @@
             }
 
             .btn-fullscreen {
-                padding: 8px 10px;
+                padding: 5px 6px !important;
             }
 
             .finish-session-btn {
-                padding: 8px 12px;
-                font-size: 0.6rem;
+                padding: 5px 8px !important;
+                font-size: 0.45rem !important;
             }
 
             .filter-dropdown {
                 background: rgba(255, 255, 255, 0.9);
-                padding: 6px 8px;
+                padding: 3px 5px;
                 border-radius: 20px;
                 flex-shrink: 0;
             }
 
             .filter-dropdown label {
-                font-size: 0.55rem;
+                font-size: 0.45rem;
                 display: none;
             }
 
             .filter-dropdown select {
-                font-size: 0.6rem;
-                padding: 4px 8px;
-                min-width: 70px;
-                border: none;
-                background: transparent;
+                font-size: 0.45rem !important;
+                padding: 2px 5px !important;
+                min-width: 50px !important;
+                border: 1px solid rgba(0, 191, 255, 0.3);
+                background: white;
+                color: var(--primary-blue);
+                border-radius: 20px;
+                text-transform: uppercase;
+                height: auto;
+            }
+
+            /* ========== MOBILE FULLSCREEN OVERRIDES ========== */
+            .camera-section.fullscreen .camera-controls {
+                min-height: auto !important;
+                padding: 10px 15px !important;
+                width: fit-content !important;
+                max-width: 95% !important;
+                bottom: 25px !important;
+                border-radius: 30px !important;
+                display: flex !important;
+                justify-content: center !important;
+                align-items: center !important;
+                left: 50% !important;
+                transform: translateX(-50%) !important;
+            }
+
+            .camera-section.fullscreen .capture-section {
+                justify-content: center !important;
+                width: auto !important;
+                gap: 6px !important;
+                flex-wrap: nowrap !important;
+            }
+
+            .camera-section.fullscreen .btn {
+                font-size: 0.45rem !important;
+                padding: 5px 6px !important;
+            }
+
+            .camera-section.fullscreen .btn-capture {
+                font-size: 0.5rem !important;
+                padding: 6px 10px !important;
+                min-width: 70px !important;
+            }
+
+            .camera-section.fullscreen .finish-session-btn {
+                padding: 5px 8px !important;
+                font-size: 0.45rem !important;
+            }
+
+            .camera-section.fullscreen .filter-dropdown {
+                top: -45px !important;
+                /* Lower it closer to controls */
+                padding: 4px 10px !important;
+            }
+
+            .camera-section.fullscreen .filter-dropdown select {
+                font-size: 0.55rem !important;
+                /* Increase size */
+                padding: 3px 8px !important;
+                min-width: 60px !important;
             }
 
             /* ========== SIDEBAR ========== */
@@ -1524,12 +1643,28 @@
             transform: translateY(0);
         }
 
+        .expired-modal h2 {
+            color: var(--warning-color);
+            font-family: 'Orbitron', sans-serif;
+            margin-top: 0;
+            font-size: 1.8rem;
+            font-weight: 900;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
         .custom-alert-modal h2 {
             color: var(--primary-peach);
             font-family: 'Orbitron', sans-serif;
             margin-top: 0;
             font-size: 1.5rem;
             font-weight: 900;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
         }
 
         .custom-alert-modal p {
@@ -1817,7 +1952,9 @@
                     <div class="stat-label">Foto Tersimpan</div>
                 </div>
                 <div class="stat-item">
-                    <div class="stat-value"><?= $data['max_save_photos'] ?></div>
+                    <div class="stat-value">
+                        <?= $data['max_save_photos'] ?>
+                    </div>
                     <div class="stat-label">Maksimal Simpan</div>
                 </div>
                 <div class="stat-item">
@@ -1846,30 +1983,83 @@
                 <div class="photo-preview" id="photo-preview">
                     <img id="preview-image" class="preview-image" src="" alt="Preview">
                     <div class="preview-actions" id="preview-actions">
-                        <button class="btn btn-delete" onclick="deletePhoto()">🗑️ Hapus</button>
-                        <button class="btn btn-save" onclick="savePhoto()">💾 Simpan</button>
+                        <button class="btn btn-delete" onclick="deletePhoto()"><svg width="1em" height="1em"
+                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="3 6 5 6 21 6"></polyline>
+                                <path
+                                    d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2">
+                                </path>
+                            </svg>
+                            HAPUS
+                        </button>
+                        <button class="btn btn-save" onclick="savePhoto()">
+                            <svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                                <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                                <polyline points="7 3 7 8 15 8"></polyline>
+                            </svg>
+                            SIMPAN
+                        </button>
                     </div>
                 </div>
             </div>
 
             <div class="camera-controls">
                 <div class="capture-section">
-                    <button class="btn btn-capture" id="capture-btn" onclick="capturePhoto()">📸 Ambil Foto</button>
-                    <button class="btn btn-fullscreen" id="fullscreen-btn">🖼️ Fullscreen</button>
+                    <button class="btn btn-capture" id="capture-btn" onclick="capturePhoto()">
+                        <svg width="1.2em" height="1.2em" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z">
+                            </path>
+                            <circle cx="12" cy="13" r="4"></circle>
+                        </svg>
+                        AMBIL FOTO
+                    </button>
+                    <button class="btn btn-fullscreen" id="fullscreen-btn">
+                        <svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="15 3 21 3 21 9"></polyline>
+                            <polyline points="9 21 3 21 3 15"></polyline>
+                            <line x1="21" y1="3" x2="14" y2="10"></line>
+                            <line x1="3" y1="21" x2="10" y2="14"></line>
+                        </svg>
+                        FULLSCREEN
+                    </button>
                     <button class="finish-session-btn" id="finish-session-btn" onclick="finishSession()">
-                        ✨ SELESAI
+                        <svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                        </svg>
+                        SELESAI
                     </button>
                     <div class="filter-dropdown">
-                        <label for="camera-filter">🎨 FILTER:</label>
+                        <label for="camera-filter">
+                            <svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="4" y1="21" x2="4" y2="14"></line>
+                                <line x1="4" y1="10" x2="4" y2="3"></line>
+                                <line x1="12" y1="21" x2="12" y2="12"></line>
+                                <line x1="12" y1="8" x2="12" y2="3"></line>
+                                <line x1="20" y1="21" x2="20" y2="16"></line>
+                                <line x1="20" y1="12" x2="20" y2="3"></line>
+                                <line x1="1" y1="14" x2="7" y2="14"></line>
+                                <line x1="9" y1="8" x2="15" y2="8"></line>
+                                <line x1="17" y1="16" x2="23" y2="16"></line>
+                            </svg>
+                            FILTER:
+                        </label>
                         <select id="camera-filter" onchange="applyFilter(this.value)">
                             <option value="none">Normal</option>
                             <?php if (isset($data['filters']) && is_array($data['filters'])): ?>
-                                    <?php foreach ($data['filters'] as $filter): ?>
-                                            <option value="<?= htmlspecialchars($filter->path ?? 'none') ?>"
-                                                data-filter-name="<?= htmlspecialchars($filter->name) ?>">
-                                                <?= htmlspecialchars($filter->name) ?>
-                                            </option>
-                                    <?php endforeach; ?>
+                                <?php foreach ($data['filters'] as $filter): ?>
+                                    <option value="<?= htmlspecialchars($filter->path ?? 'none') ?>"
+                                        data-filter-name="<?= htmlspecialchars($filter->name) ?>">
+                                        <?= htmlspecialchars($filter->name) ?>
+                                    </option>
+                                <?php endforeach; ?>
                             <?php endif; ?>
                         </select>
                     </div>
@@ -1879,7 +2069,15 @@
 
         <div class="sidebar">
             <div class="gallery-panel">
-                <h3 id="gallery-title">📸 Galeri Foto Sesi (0/<?= $data['max_save_photos'] ?>)</h3>
+                <h3 id="gallery-title">
+                    <svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                        <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                        <polyline points="21 15 16 10 5 21"></polyline>
+                    </svg>
+                    GALERI FOTO SESI (0/<?= $data['max_save_photos'] ?>)
+                </h3>
                 <div class="photo-gallery" id="photo-gallery">
                     <!-- Saved photos will appear here -->
                 </div>
@@ -1890,10 +2088,10 @@
                 <h3>Frame Terpilih</h3>
                 <div class="frames-list">
                     <?php foreach ($data['frames'] as $frame): ?>
-                            <div class="frame-item">
-                                <img src="<?= URLROOT . $frame->path ?>" alt="<?= $frame->name ?>" class="frame-thumbnail">
-                                <span><?= $frame->name ?></span>
-                            </div>
+                        <div class="frame-item">
+                            <img src="<?= URLROOT . $frame->path ?>" alt="<?= $frame->name ?>" class="frame-thumbnail">
+                            <span><?= $frame->name ?></span>
+                        </div>
                     <?php endforeach; ?>
                 </div>
             </div>
@@ -1911,7 +2109,14 @@
 
     <div class="session-expired" id="session-expired">
         <div class="expired-modal">
-            <h2>⏰ Waktu Habis!</h2>
+            <h2>
+                <svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
+                WAKTU HABIS!
+            </h2>
             <p>Sesi foto Anda telah berakhir. Mari lanjut ke tahap selanjutnya untuk menata foto-foto terbaik Anda!</p>
             <button class="btn btn-continue" onclick="finishSession()">Lanjutkan</button>
         </div>
@@ -1919,7 +2124,14 @@
 
     <div class="custom-alert-overlay" id="time-extension-overlay">
         <div class="custom-alert-modal">
-            <h2 id="extension-alert-title">⏰ Waktu Diperpanjang!</h2>
+            <h2 id="extension-alert-title">
+                <svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
+                WAKTU DIPERPANJANG!
+            </h2>
             <p id="extension-alert-message"></p>
             <button class="btn btn-continue" onclick="hideTimeExtensionAlert()">Lanjutkan Foto</button>
         </div>
@@ -1927,7 +2139,13 @@
 
     <!-- Upload Progress Dialog -->
     <div class="upload-progress-dialog" id="upload-progress-dialog">
-        <h4>⏳ Mengupload Foto...</h4>
+        <h4>
+            <svg class="spin" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 12a9 9 0 1 1-6.219-8.56"></path>
+            </svg>
+            MENGUPLOAD FOTO...
+        </h4>
         <div class="upload-progress-bar-container">
             <div class="upload-progress-bar-fill" id="upload-progress-bar-fill"></div>
         </div>
@@ -2041,13 +2259,15 @@
             captureBtn.disabled = true;
             let countdown = 2;
 
+            const countdownSvg = `<svg width="1.2em" height="1.2em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>`;
+
             // Show first countdown number immediately
-            captureBtn.innerHTML = `📸 ${countdown}`;
+            captureBtn.innerHTML = `${countdownSvg} ${countdown}`;
             captureBtn.style.transform = 'scale(1)';
             countdown--;
 
             const countdownInterval = setInterval(() => {
-                captureBtn.innerHTML = `📸 ${countdown}`;
+                captureBtn.innerHTML = `${countdownSvg} ${countdown}`;
                 captureBtn.style.transform = 'scale(1)';
 
                 countdown--;
@@ -2092,8 +2312,14 @@
 
                 // Reset buttons to Hapus/Simpan for new photos
                 previewActions.innerHTML = `
-                    <button class="btn btn-delete" onclick="deletePhoto()">🗑️ Hapus</button>
-                    <button class="btn btn-save" onclick="savePhoto()">💾 Simpan</button>
+                    <button class="btn btn-delete" onclick="deletePhoto()">
+                        <svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                        HAPUS
+                    </button>
+                    <button class="btn btn-save" onclick="savePhoto()">
+                        <svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+                        SIMPAN
+                    </button>
                 `;
 
                 previewImage.src = url;
@@ -2108,7 +2334,7 @@
                 // Reset button style and keep disabled while preview is showing
                 captureBtn.style.fontSize = '';
                 captureBtn.style.transform = '';
-                captureBtn.innerHTML = '📸 Foto Diambil';
+                captureBtn.innerHTML = `<svg width="1.2em" height="1.2em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg> FOTO DIAMBIL`;
             }, 'image/png', 1.0);
         }
 
@@ -2152,20 +2378,20 @@
             if (!isMaxPhotosReached() && !viewingGalleryPhoto) {
                 captureBtn.disabled = false;
                 captureBtn.style.opacity = '1';
-                captureBtn.innerHTML = '⏳ Memulai...';
+                captureBtn.innerHTML = `<svg class="spin" width="1.2em" height="1.2em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"></path></svg> MEMULAI...`;
 
                 // Auto-start next capture
                 setTimeout(() => {
                     if (!isMaxPhotosReached() && !viewingGalleryPhoto) {
                         capturePhoto();
                     } else {
-                        captureBtn.innerHTML = '📸 Ambil Foto';
+                        captureBtn.innerHTML = `<svg width="1.2em" height="1.2em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg> AMBIL FOTO`;
                     }
                 }, 1500);
             } else {
                 captureBtn.disabled = false;
                 captureBtn.style.opacity = '1';
-                captureBtn.innerHTML = '📸 Ambil Foto';
+                captureBtn.innerHTML = `<svg width="1.2em" height="1.2em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg> AMBIL FOTO`;
             }
         }
 
@@ -2212,13 +2438,13 @@
                         if (data.success) {
                             // Hide upload dialog with success state
                             uploadDialog.classList.add('upload-complete');
-                            uploadDialog.querySelector('h4').innerHTML = '✅ Upload Selesai!';
+                            uploadDialog.querySelector('h4').innerHTML = `<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg> UPLOAD SELESAI!`;
                             progressText.textContent = '100%';
 
                             setTimeout(() => {
                                 uploadDialog.classList.remove('active', 'upload-complete');
                                 // Reset dialog for next upload
-                                uploadDialog.querySelector('h4').innerHTML = '⏳ Mengupload Foto...';
+                                uploadDialog.querySelector('h4').innerHTML = `<svg class="spin" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"></path></svg> MENGUPLOAD FOTO...`;
                                 progressBarFill.style.width = '0%';
                             }, 1500);
 
@@ -2240,7 +2466,7 @@
                                 captureBtn.style.opacity = '0.5';
                                 captureBtn.innerHTML = '✅ Cukup';
 
-                                finishBtn.innerHTML = '🎉 SELESAI SESI';
+                                finishBtn.innerHTML = `<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg> SELESAI SESI`;
                                 finishBtn.style.background = 'var(--success-color)';
                                 finishBtn.style.animation = 'pulse 1s infinite';
 
@@ -2256,7 +2482,7 @@
                                 captureBtn.style.opacity = '0.5';
                                 captureBtn.innerHTML = '📸 Maksimal';
 
-                                finishBtn.innerHTML = '🎉 SELESAI SESI';
+                                finishBtn.innerHTML = `<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg> SELESAI SESI`;
                                 finishBtn.style.background = 'var(--success-color)';
                                 finishBtn.style.animation = 'pulse 1s infinite';
 
@@ -2269,7 +2495,7 @@
                             // Decrement pending uploads counter on error and hide dialog
                             pendingUploads--;
                             uploadDialog.classList.remove('active');
-                            uploadDialog.querySelector('h4').innerHTML = '⏳ Mengupload Foto...';
+                            uploadDialog.querySelector('h4').innerHTML = `<svg class="spin" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"></path></svg> MENGUPLOAD FOTO...`;
                             progressBarFill.style.width = '0%';
 
                             // Show detailed error message
@@ -3122,6 +3348,4 @@
             }
         }
     </script>
-</body>
-
-</html>
+</body></html>
