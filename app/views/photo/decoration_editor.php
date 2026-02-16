@@ -35,6 +35,7 @@
             height: 100%;
             margin: 0;
             overflow: hidden;
+            /* Desktop default: App mode */
         }
 
         body {
@@ -58,15 +59,19 @@
             display: grid;
             grid-template-columns: 200px 150px 1fr 200px;
             grid-template-rows: auto 1fr auto;
+            grid-template-areas:
+                "header header header header"
+                "stickers tabs workspace tools"
+                "layers tabs workspace tools";
             gap: 10px;
-            height: 95vh;
+            height: 100%;
+            /* Fill the body/viewport */
             width: 100%;
             padding: 20px;
             box-sizing: border-box;
             background: rgba(255, 255, 255, 0.5);
             backdrop-filter: blur(10px);
             border-radius: 20px;
-            padding: 20px;
             box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.05);
             opacity: 0;
             animation: contentFadeIn 0.5s ease-in 0.2s forwards;
@@ -95,7 +100,7 @@
         }
 
         .header-panel {
-            grid-column: 1 / -1;
+            grid-area: header;
             background: rgba(255, 255, 255, 0.95);
             border-radius: 10px;
             padding: 15px;
@@ -119,14 +124,14 @@
         }
 
         .stickers-panel {
-            grid-row: 2;
-            grid-column: 1;
+            grid-area: stickers;
             background: rgba(255, 255, 255, 0.95);
             border-radius: 10px;
             padding: 15px;
             backdrop-filter: blur(10px);
             display: flex;
             flex-direction: column;
+            overflow: hidden;
         }
 
         .stickers-panel h3 {
@@ -171,8 +176,7 @@
         }
 
         .tabs-panel {
-            grid-row: 2 / 4;
-            grid-column: 2;
+            grid-area: tabs;
             background: rgba(255, 255, 255, 0.95);
             border-radius: 10px;
             padding: 10px;
@@ -180,11 +184,11 @@
             display: flex;
             flex-direction: column;
             gap: 8px;
+            overflow: hidden;
         }
 
         .workspace {
-            grid-row: 2 / 4;
-            grid-column: 3;
+            grid-area: workspace;
             background: rgba(255, 255, 255, 0.95);
             border-radius: 10px;
             padding: 5px;
@@ -195,6 +199,16 @@
             justify-content: center;
             position: relative;
             overflow: hidden;
+            width: 100%;
+            /* Ensure workspace takes full width */
+        }
+
+        #photostrip-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .photostrip-tabs {
@@ -243,9 +257,18 @@
             position: relative;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
             /* 2:6 inch ratio = 1:3 */
-            height: calc(95vh - 180px);
-            /* Adjust to fit workspace */
+            height: 65vh !important;
+            /* Force reduced height */
+            min-height: 300px;
+            /* Prevent shrinking too small */
+            max-height: 90% !important;
+            /* Ensure it doesn't overflow container */
+            width: auto;
+            /* Width calculated from aspect ratio */
             aspect-ratio: 1 / 3;
+            max-width: 100%;
+            margin: auto;
+            /* Center in flex container */
         }
 
         .canvas-inner {
@@ -345,8 +368,7 @@
         }
 
         .layout-manager {
-            grid-row: 3;
-            grid-column: 1;
+            grid-area: layers;
             background: rgba(255, 255, 255, 0.95);
             border-radius: 10px;
             padding: 15px;
@@ -357,8 +379,7 @@
         }
 
         .tools-panel {
-            grid-row: 2 / 4;
-            grid-column: 4;
+            grid-area: tools;
             background: rgba(255, 255, 255, 0.95);
             border-radius: 10px;
             padding: 15px;
@@ -467,52 +488,194 @@
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
         }
 
-        @media (max-width: 1200px) {
+        /* Tablet (768px - 1200px) */
+        @media (min-width: 768px) and (max-width: 1200px) {
+
+            html,
+            body {
+                display: block;
+                height: auto;
+                min-height: 100vh;
+                overflow-y: auto;
+                /* Allow scroll on tablet */
+                padding: 20px;
+            }
+
             .decoration-container {
-                grid-template-columns: 1fr;
-                grid-template-rows: auto auto 1fr auto auto auto;
-                gap: 8px;
-                padding: 8px;
-            }
-
-            .stickers-panel {
-                grid-column: 1;
-                grid-row: 2;
+                grid-template-columns: 220px 1fr;
+                grid-template-rows: auto auto 1fr;
+                grid-template-areas:
+                    "header header"
+                    "workspace workspace"
+                    "stickers stickers"
+                    "tools tools"
+                    "tabs layers";
                 height: auto;
-                max-height: 120px;
-            }
-
-            .tabs-panel {
-                grid-column: 1;
-                grid-row: 3;
-                flex-direction: row;
-                height: auto;
-                overflow-x: auto;
-                overflow-y: auto;
-            }
-
-            .workspace {
-                grid-column: 1;
-                grid-row: 4;
-            }
-
-            .layout-manager {
-                grid-column: 1;
-                grid-row: 5;
-                height: auto;
-                margin-top: 0;
-            }
-
-            .tools-panel {
-                grid-column: 1;
-                grid-row: 6;
-                height: auto;
-                max-height: 150px;
-                overflow-y: auto;
+                min-height: 100vh;
+                overflow-y: visible;
             }
 
             .photostrip-canvas {
-                width: min(200px, 60vw);
+                width: auto;
+                height: 60vh;
+                margin: 0 auto;
+            }
+
+            .tabs-panel {
+                flex-direction: row;
+                overflow-x: auto;
+            }
+
+            .photostrip-tabs {
+                flex-direction: row;
+            }
+
+            .stickers-panel {
+                max-height: 300px;
+            }
+        }
+
+        /* Mobile (< 768px) */
+        @media (max-width: 767px) {
+
+            html,
+            body {
+                display: block;
+                padding: 10px;
+                height: auto;
+                min-height: 100%;
+                overflow-y: auto;
+                /* Allow scroll on mobile */
+            }
+
+            .decoration-container {
+                display: flex;
+                flex-direction: column;
+                height: auto;
+                min-height: 100%;
+                padding: 10px;
+                gap: 15px;
+                overflow-y: visible;
+            }
+
+            /* Order Changes for Mobile: Header -> Canvas -> Tabs -> Stickers -> Tools -> Layers */
+            .header-panel {
+                order: 1;
+            }
+
+            .workspace {
+                order: 2;
+                height: auto;
+                min-height: 400px;
+            }
+
+            .tabs-panel {
+                order: 3;
+            }
+
+            .stickers-panel {
+                order: 4;
+            }
+
+            .tools-panel {
+                order: 5;
+            }
+
+            .layout-manager {
+                order: 6;
+            }
+
+            .photostrip-canvas {
+                height: 50vh;
+                /* Allow substantial height for canvas */
+                width: auto;
+                max-width: 100%;
+            }
+
+            .stickers-grid {
+                grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
+                max-height: 150px;
+            }
+
+            .photostrip-tabs {
+                flex-direction: row;
+                overflow-x: auto;
+                padding-bottom: 5px;
+            }
+
+            .photostrip-tab {
+                flex-direction: row;
+                min-width: 120px;
+                flex-shrink: 0;
+                /* Prevent squishing */
+            }
+
+            .frame-thumb {
+                width: 30px;
+                height: 60px;
+            }
+
+            .resize-handle {
+                width: 24px;
+                /* Larger touch target */
+                height: 24px;
+                right: -10px;
+                bottom: -10px;
+            }
+
+            .delete-handle {
+                width: 24px;
+                /* Larger touch target */
+                height: 24px;
+                top: -10px;
+                right: -10px;
+                font-size: 14px;
+            }
+        }
+
+        /* Shared Mobile/Tablet Optimizations for Tools Panel */
+        @media (max-width: 1200px) {
+            .tools-panel {
+                flex-direction: row;
+                overflow-x: auto;
+                padding: 10px;
+                gap: 10px;
+                align-items: center;
+                white-space: nowrap;
+                height: auto;
+                min-height: unset;
+                /* Reset any min-height */
+            }
+
+            .tool-group {
+                display: flex;
+                flex-direction: row;
+                align-items: center;
+                gap: 8px;
+                padding: 5px;
+                min-width: fit-content;
+                /* Allow container to size to content */
+            }
+
+            .tool-group h4 {
+                display: none;
+                /* Hide headers to save space */
+            }
+
+            .tool-btn {
+                width: auto;
+                margin-bottom: 0;
+                padding: 8px 15px;
+                font-size: 0.8rem;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                height: 40px;
+            }
+
+            /* Move the last tool group (Finish button) to the far left */
+            .tool-group:last-child {
+                order: -1;
             }
         }
     </style>
@@ -621,7 +784,7 @@
                                 }
                                 ?>
                                 <div class="photo-slot-container"
-                                    style="position: absolute; left: <?= $slot['left'] ?>%; top: <?= $slot['top'] ?>%; width: <?= $slot['width'] ?>%; height: <?= $slot['height'] ?>%; overflow: hidden; border-radius: 6px;">
+                                    style="position: absolute; left: <?= $slot['left'] ?>%; top: <?= $slot['top'] ?>%; width: <?= $slot['width'] ?>%; height: <?= $slot['height'] ?>%; overflow: hidden; border-radius: 0;">
                                     <img src="<?= URLROOT . $photo['photoPath'] ?>" class="photo-layer" style="width: 100%; height: 100%;
                                                 object-fit: cover; 
                                                 object-position: <?= $objectPosition ?>;">
@@ -771,11 +934,20 @@
                 <div class="delete-handle">×</div>
             `;
 
-            // Add event listeners
+            // Add event listeners (Mouse & Touch)
             stickerElement.addEventListener('mousedown', startDrag);
+            stickerElement.addEventListener('touchstart', startDrag, { passive: false });
+
             stickerElement.addEventListener('click', (e) => {
                 e.stopPropagation();
                 selectSticker(sticker.id);
+            });
+            // Handle tap for mobile selection if click doesn't fire due to prevDefault
+            stickerElement.addEventListener('touchend', (e) => {
+                if (!isDragging && !isResizing) {
+                    e.stopPropagation();
+                    selectSticker(sticker.id);
+                }
             });
 
             const resizeHandle = stickerElement.querySelector('.resize-handle');
@@ -783,36 +955,63 @@
                 e.stopPropagation();
                 startResize(e, sticker.id);
             });
+            resizeHandle.addEventListener('touchstart', (e) => {
+                e.stopPropagation();
+                startResize(e, sticker.id);
+            }, { passive: false });
 
             const deleteHandle = stickerElement.querySelector('.delete-handle');
             deleteHandle.addEventListener('click', (e) => {
                 e.stopPropagation();
                 deleteSticker(sticker.id);
             });
+            deleteHandle.addEventListener('touchstart', (e) => {
+                e.stopPropagation();
+                e.preventDefault(); // Prevent phantom clicks
+                deleteSticker(sticker.id);
+            });
 
             decorationLayer.appendChild(stickerElement);
+        }
+
+        // Helper to get coordinates from mouse or touch
+        function getClientPos(e) {
+            if (e.touches && e.touches.length > 0) {
+                return { x: e.touches[0].clientX, y: e.touches[0].clientY };
+            }
+            return { x: e.clientX, y: e.clientY };
         }
 
         function startDrag(e) {
             if (isResizing) return;
 
+            // Only prevent default on touch to prevent scrolling, but allow clicks
+            if (e.type === 'touchstart') {
+                // We don't preventDefault here to allow 'click' to trigger if it's just a tap
+                // specific tap logic is handled in touchend
+            }
+
             isDragging = true;
-            const stickerId = e.currentTarget.id;
             const stickerElement = e.currentTarget;
+            const stickerId = stickerElement.id;
             const decorationLayer = stickerElement.parentElement;
 
             selectSticker(stickerId);
 
             const rect = stickerElement.getBoundingClientRect();
             const parentRect = decorationLayer.getBoundingClientRect();
-            const offsetX = e.clientX - rect.left;
-            const offsetY = e.clientY - rect.top;
+
+            const clientPos = getClientPos(e);
+            const offsetX = clientPos.x - rect.left;
+            const offsetY = clientPos.y - rect.top;
 
             function drag(e) {
                 if (!isDragging) return;
+                if (e.type === 'touchmove') e.preventDefault(); // Prevent scrolling while dragging
 
-                const newX = e.clientX - parentRect.left - offsetX;
-                const newY = e.clientY - parentRect.top - offsetY;
+                const curPos = getClientPos(e);
+                const newX = curPos.x - parentRect.left - offsetX;
+                const newY = curPos.y - parentRect.top - offsetY;
 
                 stickerElement.style.left = Math.max(0, Math.min(decorationLayer.offsetWidth - stickerElement.offsetWidth, newX)) + 'px';
                 stickerElement.style.top = Math.max(0, Math.min(decorationLayer.offsetHeight - stickerElement.offsetHeight, newY)) + 'px';
@@ -829,25 +1028,35 @@
                 isDragging = false;
                 document.removeEventListener('mousemove', drag);
                 document.removeEventListener('mouseup', stopDrag);
+                document.removeEventListener('touchmove', drag);
+                document.removeEventListener('touchend', stopDrag);
             }
 
             document.addEventListener('mousemove', drag);
             document.addEventListener('mouseup', stopDrag);
+            document.addEventListener('touchmove', drag, { passive: false });
+            document.addEventListener('touchend', stopDrag);
         }
 
         function startResize(e, stickerId) {
             isResizing = true;
             const stickerElement = document.getElementById(stickerId);
-            const startX = e.clientX;
-            const startY = e.clientY;
+
+            const startPos = getClientPos(e);
+            const startX = startPos.x;
+            const startY = startPos.y;
+
             const startWidth = stickerElement.offsetWidth;
             const startHeight = stickerElement.offsetHeight;
 
             function resize(e) {
                 if (!isResizing) return;
+                if (e.type === 'touchmove') e.preventDefault();
 
-                const deltaX = e.clientX - startX;
-                const deltaY = e.clientY - startY;
+                const curPos = getClientPos(e);
+                const deltaX = curPos.x - startX;
+                const deltaY = curPos.y - startY;
+
                 const newWidth = Math.max(20, startWidth + deltaX);
                 const newHeight = Math.max(20, startHeight + deltaY);
 
@@ -866,10 +1075,14 @@
                 isResizing = false;
                 document.removeEventListener('mousemove', resize);
                 document.removeEventListener('mouseup', stopResize);
+                document.removeEventListener('touchmove', resize);
+                document.removeEventListener('touchend', stopResize);
             }
 
             document.addEventListener('mousemove', resize);
             document.addEventListener('mouseup', stopResize);
+            document.addEventListener('touchmove', resize, { passive: false });
+            document.addEventListener('touchend', stopResize);
         }
 
         function selectSticker(stickerId) {
