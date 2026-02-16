@@ -29,7 +29,7 @@
         /* ========== BEAUTIFUL LIGHT SKY (MATCHING SESSION) ========== */
         body {
             /* Blue #c2e9fb -> Peach #fed6e3 */
-            background: linear-gradient(135deg, #c2e9fb 0%, #fed6e3 100%);
+            background: linear-gradient(135deg, #a1c4fd 0%, #fed6e3 100%);
             display: flex;
             justify-content: center;
             align-items: center;

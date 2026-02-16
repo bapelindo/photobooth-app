@@ -27,9 +27,10 @@
 
         /* ========== SKY BACKGROUND WITH CLOUDS ========== */
         body {
-            background: linear-gradient(120deg, #c2e9fb 0%, #a1c4fd 50%, #e2d0cb 100%);
+            background: linear-gradient(120deg, #dcfce7 0%, #fbd7ed 100%);
+            /* Fresh Green to Rose (Matches Decoration Left) */
             position: relative;
-            padding: 10px;
+            padding: 20px;
             display: flex;
             justify-content: center;
             align-items: flex-start;
@@ -142,6 +143,71 @@
 
             to {
                 transform: translateX(120vw);
+            }
+        }
+
+        /* ========== FLYING PLANE ========== */
+        .plane-container {
+            position: fixed;
+            top: 25%;
+            left: -300px;
+            display: flex;
+            align-items: center;
+            z-index: 100;
+            animation: flyPlane 45s linear infinite;
+            cursor: pointer;
+            pointer-events: auto;
+            transition: transform 0.3s ease;
+        }
+
+        .plane-container:hover {
+            transform: scale(1.1);
+        }
+
+        .plane-container.barrel-roll .plane {
+            animation: barrelRoll 1s ease-in-out;
+        }
+
+        .plane-trail {
+            width: 180px;
+            height: 2px;
+            background: repeating-linear-gradient(90deg,
+                    rgba(255, 255, 255, 0) 0,
+                    rgba(255, 255, 255, 0) 4px,
+                    rgba(255, 255, 255, 0.6) 4px,
+                    rgba(255, 255, 255, 0.6) 10px);
+            margin-right: -10px;
+            border-radius: 2px;
+            opacity: 0.8;
+            filter: blur(0.5px);
+        }
+
+        .plane {
+            width: 50px;
+            height: 50px;
+            transform: rotate(90deg);
+            transition: transform 0.3s ease;
+        }
+
+        @keyframes flyPlane {
+            0% {
+                left: -300px;
+                top: 25%;
+            }
+
+            100% {
+                left: 110%;
+                top: 25%;
+            }
+        }
+
+        @keyframes barrelRoll {
+            0% {
+                transform: rotate(90deg);
+            }
+
+            100% {
+                transform: rotate(450deg);
             }
         }
 
@@ -1181,11 +1247,24 @@
 </head>
 
 <body>
-    <!-- Animated Clouds Background -->
+    <!-- Animated Clouds -->
     <div class="clouds">
         <div class="cloud cloud1"></div>
         <div class="cloud cloud2"></div>
         <div class="cloud cloud3"></div>
+    </div>
+
+    <!-- Flying Plane -->
+    <div class="plane-container" onclick="interactivePlane(this)">
+        <div class="plane-trail"></div>
+        <svg class="plane" viewBox="0 0 24 24" fill="none">
+            <path
+                d="M21 16V14L13 9V3.5C13 2.67 12.33 2 11.5 2C10.67 2 10 2.67 10 3.5V9L2 14V16L10 13.5V19L8 20.5V22L11.5 21L15 22V20.5L13 19V13.5L21 16Z"
+                fill="#FFFFFF" />
+            <path
+                d="M21 16V14L13 9V3.5C13 2.67 12.33 2 11.5 2C10.67 2 10 2.67 10 3.5V9L2 14V16L10 13.5V19L8 20.5V22L11.5 21L15 22V20.5L13 19V13.5L21 16Z"
+                stroke="#4FC3F7" stroke-width="0.3" />
+        </svg>
     </div>
 
     <div class="layout-container">
@@ -1203,10 +1282,10 @@
             </div>
             <div class="photo-source" id="photo-source">
                 <?php foreach ($data['photos'] as $photo): ?>
-                    <div class="draggable-photo" draggable="true" data-photo-id="<?= $photo->id ?>"
-                        data-photo-path="<?= $photo->file_path ?>">
-                        <img src="<?= URLROOT . $photo->file_path ?>" alt="Foto Sesi">
-                    </div>
+                        <div class="draggable-photo" draggable="true" data-photo-id="<?= $photo->id ?>"
+                            data-photo-path="<?= $photo->file_path ?>">
+                            <img src="<?= URLROOT . $photo->file_path ?>" alt="Foto Sesi">
+                        </div>
                 <?php endforeach; ?>
             </div>
         </div>
@@ -1214,24 +1293,24 @@
         <div class="workspace">
             <div class="frame-tabs" id="frame-tabs">
                 <?php foreach ($data['frames'] as $index => $frame): ?>
-                    <div class="frame-tab <?= $index === 0 ? 'active' : '' ?>" data-frame-id="<?= $frame->id ?>">
-                        <img src="<?= URLROOT . $frame->path ?>" alt="<?= $frame->name ?>" class="frame-thumb">
-                        <span><?= $frame->name ?></span>
-                    </div>
+                        <div class="frame-tab <?= $index === 0 ? 'active' : '' ?>" data-frame-id="<?= $frame->id ?>">
+                            <img src="<?= URLROOT . $frame->path ?>" alt="<?= $frame->name ?>" class="frame-thumb">
+                            <span><?= $frame->name ?></span>
+                        </div>
                 <?php endforeach; ?>
             </div>
 
             <div id="photostrip-container">
                 <?php if (empty($data['frames'])): ?>
-                    <div class="empty-state">
-                        <h3>Tidak Ada Frame</h3>
-                        <p>Tidak ada frame yang dipilih untuk sesi ini.</p>
-                    </div>
+                        <div class="empty-state">
+                            <h3>Tidak Ada Frame</h3>
+                            <p>Tidak ada frame yang dipilih untuk sesi ini.</p>
+                        </div>
                 <?php else: ?>
-                    <!-- Single canvas container that will be reused for all frames -->
-                    <div class="photostrip-canvas-container" id="main-canvas-container">
-                        <canvas id="main-canvas"></canvas>
-                    </div>
+                        <!-- Single canvas container that will be reused for all frames -->
+                        <div class="photostrip-canvas-container" id="main-canvas-container">
+                            <canvas id="main-canvas"></canvas>
+                        </div>
                 <?php endif; ?>
             </div>
 
@@ -1851,7 +1930,7 @@
                             ghostElement.style.top = (touch.clientY - 40) + 'px';
                             ghostElement.style.left = (touch.clientX - 40) + 'px';
                         }
-                        
+
                         // Auto-scroll logic if dragging near edges
                         const scrollThreshold = 80;
                         const scrollSpeed = 15;
@@ -2530,7 +2609,7 @@
                     if (data.success) {
                         // Allow navigation for successful save
                         <?php if (ENABLE_SESSION_REFRESH_BACK): ?>
-                            allowNavigation = true;
+                                allowNavigation = true;
                         <?php endif; ?>
 
                         // Same fade-out animation as select-frame
@@ -2570,40 +2649,49 @@
     <script>
         // Simple back/refresh protection with popup
         <?php if (ENABLE_SESSION_REFRESH_BACK): ?>
-            let allowNavigation = false;
+                let allowNavigation = false;
 
-            // Handle refresh attempts
-            window.addEventListener('beforeunload', function (e) {
-                if (allowNavigation) {
-                    return;
-                }
+                // Handle refresh attempts
+                window.addEventListener('beforeunload', function (e) {
+                    if (allowNavigation) {
+                        return;
+                    }
 
-                e.preventDefault();
-                e.returnValue = '';
-                return '';
-            });
+                    e.preventDefault();
+                    e.returnValue = '';
+                    return '';
+                });
 
-            // Handle browser back button
-            let currentUrl = window.location.href;
-            window.history.pushState({}, '', currentUrl);
+                // Handle browser back button
+                let currentUrl = window.location.href;
+                window.history.pushState({}, '', currentUrl);
 
-            window.addEventListener('popstate', function (e) {
-                if (allowNavigation) {
-                    return;
-                }
+                window.addEventListener('popstate', function (e) {
+                    if (allowNavigation) {
+                        return;
+                    }
 
-                // Show confirmation for back button
-                if (confirm('⚠️ PERINGATAN!\n\nAnda mencoba kembali ke halaman sebelumnya. Layout yang belum disimpan akan hilang.\n\nApakah Anda yakin ingin melanjutkan?')) {
-                    allowNavigation = true;
-                    window.history.go(-1);
-                } else {
-                    // Stay on current page
-                    window.history.pushState({}, '', currentUrl);
-                }
-            });
+                    // Show confirmation for back button
+                    if (confirm('⚠️ PERINGATAN!\n\nAnda mencoba kembali ke halaman sebelumnya. Layout yang belum disimpan akan hilang.\n\nApakah Anda yakin ingin melanjutkan?')) {
+                        allowNavigation = true;
+                        window.history.go(-1);
+                    } else {
+                        // Stay on current page
+                        window.history.pushState({}, '', currentUrl);
+                    }
+                });
 
-            console.log('Simple back/refresh protection loaded for layout editor');
+                console.log('Simple back/refresh protection loaded for layout editor');
         <?php endif; ?>
+
+        function interactivePlane(container) {
+            if (!container.classList.contains('barrel-roll')) {
+                container.classList.add('barrel-roll');
+                setTimeout(() => {
+                    container.classList.remove('barrel-roll');
+                }, 1000);
+            }
+        }
     </script>
 </body>
 

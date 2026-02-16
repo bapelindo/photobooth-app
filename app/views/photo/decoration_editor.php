@@ -16,7 +16,8 @@
             --secondary-color: #E63946;
             --success-color: #4CAF50;
             --warning-color: #FF9800;
-            --bg-gradient: linear-gradient(120deg, #a1c4fd 0%, #c2e9fb 100%);
+            --bg-gradient: linear-gradient(120deg, #fbd7ed 0%, #e0c3fc 100%);
+            /* Rose to Lavender (Matches Finalizer Left) */
             --glass-bg: rgba(255, 255, 255, 0.85);
             --dark-text: #1B365D;
         }
@@ -40,7 +41,7 @@
 
         /* ========== SKY BACKGROUND WITH CLOUDS ========== */
         body {
-            background: linear-gradient(120deg, #c2e9fb 0%, #a1c4fd 50%, #e2d0cb 100%);
+            background: var(--bg-gradient);
             position: relative;
             padding: 20px;
             font-family: 'Roboto Condensed', sans-serif;
@@ -919,6 +920,71 @@
             fill: white;
             pointer-events: none;
         }
+
+        /* ========== FLYING PLANE ========== */
+        .plane-container {
+            position: fixed;
+            top: 25%;
+            left: -300px;
+            display: flex;
+            align-items: center;
+            z-index: 100;
+            animation: flyPlane 45s linear infinite;
+            cursor: pointer;
+            pointer-events: auto;
+            transition: transform 0.3s ease;
+        }
+
+        .plane-container:hover {
+            transform: scale(1.1);
+        }
+
+        .plane-container.barrel-roll .plane {
+            animation: barrelRoll 1s ease-in-out;
+        }
+
+        .plane-trail {
+            width: 180px;
+            height: 2px;
+            background: repeating-linear-gradient(90deg,
+                    rgba(255, 255, 255, 0) 0,
+                    rgba(255, 255, 255, 0) 4px,
+                    rgba(255, 255, 255, 0.6) 4px,
+                    rgba(255, 255, 255, 0.6) 10px);
+            margin-right: -10px;
+            border-radius: 2px;
+            opacity: 0.8;
+            filter: blur(0.5px);
+        }
+
+        .plane {
+            width: 50px;
+            height: 50px;
+            transform: rotate(90deg);
+            transition: transform 0.3s ease;
+        }
+
+        @keyframes flyPlane {
+            0% {
+                left: -300px;
+                top: 25%;
+            }
+
+            100% {
+                left: 110%;
+                top: 25%;
+            }
+        }
+
+        @keyframes barrelRoll {
+            0% {
+                transform: rotate(90deg);
+            }
+
+            100% {
+                transform: rotate(450deg);
+            }
+        }
     </style>
 </head>
 
@@ -927,6 +993,19 @@
         <div class="cloud cloud1"></div>
         <div class="cloud cloud2"></div>
         <div class="cloud cloud3"></div>
+    </div>
+
+    <!-- Flying Plane -->
+    <div class="plane-container" onclick="interactivePlane(this)">
+        <div class="plane-trail"></div>
+        <svg class="plane" viewBox="0 0 24 24" fill="none">
+            <path
+                d="M21 16V14L13 9V3.5C13 2.67 12.33 2 11.5 2C10.67 2 10 2.67 10 3.5V9L2 14V16L10 13.5V19L8 20.5V22L11.5 21L15 22V20.5L13 19V13.5L21 16Z"
+                fill="#FFFFFF" />
+            <path
+                d="M21 16V14L13 9V3.5C13 2.67 12.33 2 11.5 2C10.67 2 10 2.67 10 3.5V9L2 14V16L10 13.5V19L8 20.5V22L11.5 21L15 22V20.5L13 19V13.5L21 16Z"
+                stroke="#4FC3F7" stroke-width="0.3" />
+        </svg>
     </div>
 
     <div class="decoration-container">
@@ -1757,6 +1836,15 @@
 
             console.log('Simple back/refresh protection loaded for decoration editor');
         <?php endif; ?>
+
+        function interactivePlane(container) {
+            if (!container.classList.contains('barrel-roll')) {
+                container.classList.add('barrel-roll');
+                setTimeout(() => {
+                    container.classList.remove('barrel-roll');
+                }, 1000);
+            }
+        }
     </script>
 </body>
 
