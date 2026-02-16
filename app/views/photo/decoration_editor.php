@@ -38,10 +38,12 @@
             /* Desktop default: App mode */
         }
 
+        /* ========== SKY BACKGROUND WITH CLOUDS ========== */
         body {
+            background: linear-gradient(120deg, #c2e9fb 0%, #a1c4fd 50%, #e2d0cb 100%);
+            position: relative;
             padding: 20px;
             font-family: 'Roboto Condensed', sans-serif;
-            background: var(--bg-gradient);
             user-select: none;
             display: flex;
             justify-content: center;
@@ -49,6 +51,112 @@
             box-sizing: border-box;
             opacity: 1;
             transition: opacity 0.4s ease-out;
+            min-height: 100vh;
+        }
+
+        /* Animated Clouds */
+        .clouds {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .cloud {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 100px;
+            animation: float linear infinite;
+        }
+
+        .cloud::before,
+        .cloud::after {
+            content: '';
+            position: absolute;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 100px;
+        }
+
+        .cloud1 {
+            width: 120px;
+            height: 50px;
+            top: 15%;
+            left: -150px;
+            animation-duration: 45s;
+        }
+
+        .cloud1::before {
+            width: 60px;
+            height: 50px;
+            top: -25px;
+            left: 20px;
+        }
+
+        .cloud1::after {
+            width: 70px;
+            height: 40px;
+            top: -15px;
+            right: 20px;
+        }
+
+        .cloud2 {
+            width: 100px;
+            height: 40px;
+            top: 65%;
+            left: -120px;
+            animation-duration: 55s;
+            animation-delay: 5s;
+        }
+
+        .cloud2::before {
+            width: 50px;
+            height: 40px;
+            top: -20px;
+            left: 15px;
+        }
+
+        .cloud2::after {
+            width: 60px;
+            height: 30px;
+            top: -10px;
+            right: 15px;
+        }
+
+        .cloud3 {
+            width: 140px;
+            height: 60px;
+            top: 35%;
+            left: -180px;
+            animation-duration: 60s;
+            animation-delay: 15s;
+        }
+
+        .cloud3::before {
+            width: 70px;
+            height: 60px;
+            top: -30px;
+            left: 25px;
+        }
+
+        .cloud3::after {
+            width: 80px;
+            height: 50px;
+            top: -20px;
+            right: 25px;
+        }
+
+        @keyframes float {
+            from {
+                transform: translateX(0);
+            }
+
+            to {
+                transform: translateX(120vw);
+            }
         }
 
         body.fade-out {
@@ -76,6 +184,13 @@
             opacity: 0;
             animation: contentFadeIn 0.5s ease-in 0.2s forwards;
             transition: opacity 0.5s ease-out;
+            position: relative;
+            z-index: 1;
+            /* Ensure above clouds */
+            max-width: 1600px;
+            /* Match layout_editor */
+            margin: 0 auto;
+            /* Center if grid */
         }
 
         .decoration-container.content-fade-out {
@@ -101,45 +216,85 @@
 
         .header-panel {
             grid-area: header;
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 10px;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            border-radius: 12px;
             padding: 15px;
             text-align: center;
-            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(30, 60, 114, 0.3);
             height: fit-content;
+        }
+
+        .header-panel::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -10%;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+            border-radius: 50%;
         }
 
         .header-panel h1 {
             font-family: 'Orbitron', sans-serif;
-            color: var(--dark-text);
+            color: white;
             margin: 0 0 5px 0;
             font-size: 1.5rem;
             letter-spacing: 1px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            position: relative;
+            z-index: 1;
         }
 
         .header-panel p {
             margin: 0;
-            color: #666;
+            color: rgba(255, 255, 255, 0.8);
             font-size: 0.9rem;
+            position: relative;
+            z-index: 1;
         }
 
         .stickers-panel {
             grid-area: stickers;
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 10px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 12px;
             padding: 15px;
+            padding-top: 25px;
+            /* Space for label */
             backdrop-filter: blur(10px);
             display: flex;
             flex-direction: column;
-            overflow: hidden;
+            overflow: visible !important;
+            /* Allow label overlay */
+            border: 2px solid #2a5298;
+            position: relative;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .stickers-panel::before {
+            content: 'PACKAGES';
+            position: absolute;
+            top: -12px;
+            /* Overflow outside */
+            left: 20px;
+            background: linear-gradient(135deg, #2a5298 0%, #1e3c72 100%);
+            color: white;
+            padding: 4px 12px;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 0.7rem;
+            font-weight: 700;
+            border-radius: 6px;
+            letter-spacing: 1.5px;
+            z-index: 10;
+            box-shadow: 0 4px 12px rgba(42, 82, 152, 0.5);
+            border: 2px solid rgba(255, 255, 255, 0.3);
         }
 
         .stickers-panel h3 {
-            margin: 0 0 10px 0;
-            font-family: 'Orbitron', sans-serif;
-            color: var(--dark-text);
-            font-size: 1rem;
-            letter-spacing: 1px;
+            display: none;
+            /* Hide old header */
         }
 
         .stickers-grid {
@@ -177,21 +332,44 @@
 
         .tabs-panel {
             grid-area: tabs;
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 10px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 12px;
             padding: 10px;
+            padding-top: 25px;
+            /* Space for label */
             backdrop-filter: blur(10px);
             display: flex;
             flex-direction: column;
             gap: 8px;
-            overflow: hidden;
+            overflow: visible !important;
+            /* Allow label overlay */
+            border: 2px solid #2a5298;
+            position: relative;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .tabs-panel::before {
+            content: 'SESSION';
+            position: absolute;
+            top: -10px;
+            /* Overflow outside */
+            left: 10px;
+            background: linear-gradient(135deg, #2a5298 0%, #1e3c72 100%);
+            color: white;
+            padding: 2px 8px;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 0.6rem;
+            font-weight: 700;
+            border-radius: 3px;
+            letter-spacing: 1px;
+            z-index: 10;
+            border: 1px solid rgba(255, 255, 255, 0.3);
         }
 
         .workspace {
             grid-area: workspace;
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 10px;
-            padding: 5px;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 12px;
             backdrop-filter: blur(10px);
             display: flex;
             flex-direction: column;
@@ -200,7 +378,7 @@
             position: relative;
             overflow: hidden;
             width: 100%;
-            /* Ensure workspace takes full width */
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
         }
 
         #photostrip-container {
@@ -219,28 +397,52 @@
         }
 
         .photostrip-tab {
-            background: rgba(108, 99, 255, 0.2);
-            border: 2px solid var(--primary-color);
-            padding: 8px;
-            border-radius: 10px;
+            background: linear-gradient(135deg, #ffffff 0%, #f0f2f5 100%);
+            border: 2px solid #2a5298;
+            padding: 5px;
+            border-radius: 8px;
             cursor: pointer;
-            font-weight: 600;
-            font-size: 0.75rem;
-            transition: all 0.3s ease;
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 5px;
-            text-align: center;
+            font-size: 0.75rem;
+            font-weight: 700;
+            transition: all 0.3s ease;
+            position: relative;
+            padding-top: 15px;
+            /* Space for FLIGHT label */
+            gap: 2px;
+            min-height: 100px;
+            /* Ensure consistent height */
+            justify-content: center;
+        }
+
+        .photostrip-tab::before {
+            content: 'FLIGHT';
+            position: absolute;
+            top: 2px;
+            left: 5px;
+            font-size: 0.5rem;
+            font-weight: 700;
+            color: #2a5298;
+            opacity: 0.6;
         }
 
         .photostrip-tab:hover {
-            background: rgba(108, 99, 255, 0.3);
+            background: linear-gradient(135deg, #e8f0fe 0%, #c3cfe2 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(42, 82, 152, 0.2);
         }
 
         .photostrip-tab.active {
-            background: var(--primary-color);
+            background: linear-gradient(135deg, #2a5298 0%, #1e3c72 100%);
             color: white;
+            border-color: #1e3c72;
+            box-shadow: 0 4px 12px rgba(30, 60, 114, 0.4);
+        }
+
+        .photostrip-tab.active::before {
+            color: rgba(255, 255, 255, 0.7);
         }
 
         .frame-thumb {
@@ -414,18 +616,20 @@
             width: 100%;
             padding: 8px;
             margin-bottom: 6px;
-            border: none;
+            border: 2px solid #2a5298;
             border-radius: 6px;
-            background: var(--primary-color);
-            color: white;
-            font-weight: 600;
+            background: linear-gradient(135deg, #ffffff 0%, #f0f2f5 100%);
+            /* Restore Flight Theme */
+            color: #2a5298;
+            font-weight: 700;
             cursor: pointer;
             transition: all 0.3s ease;
             font-size: 0.8rem;
+            backdrop-filter: blur(5px);
         }
 
         .tool-btn:hover {
-            background: #554dff;
+            background: linear-gradient(135deg, #e8f0fe 0%, #c3cfe2 100%);
             transform: translateY(-1px);
         }
 
@@ -476,16 +680,30 @@
             letter-spacing: 1px;
         }
 
-        .btn-finish {
-            background: linear-gradient(135deg, var(--success-color), var(--primary-color));
-            color: white;
-            font-size: 1rem;
-            padding: 12px 30px;
-        }
-
         .btn:hover {
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-finish {
+            background: linear-gradient(135deg, #2a5298 0%, #1e3c72 100%);
+            /* Restore Premium Gradient */
+            color: white;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1rem;
+            padding: 14px 18px;
+            font-weight: 900;
+            letter-spacing: 2px;
+            box-shadow: 0 4px 15px rgba(30, 60, 114, 0.4);
+            border-radius: 6px;
+            border: none;
+        }
+
+        .btn-finish:hover {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(30, 60, 114, 0.5);
         }
 
         /* Tablet (768px - 1200px) */
@@ -586,10 +804,15 @@
             }
 
             .photostrip-canvas {
-                height: 50vh;
+                height: 50vh !important;
+                /* Override desktop 65vh */
                 /* Allow substantial height for canvas */
                 width: auto;
                 max-width: 100%;
+                margin: 0 auto !important;
+                /* Force center */
+                display: block;
+                /* Ensure block level for margin auto */
             }
 
             .stickers-grid {
@@ -678,7 +901,7 @@
                 order: -1;
             }
         }
-        
+
         .tool-icon {
             width: 18px;
             height: 18px;
@@ -697,10 +920,16 @@
 </head>
 
 <body>
+    <div class="clouds">
+        <div class="cloud cloud1"></div>
+        <div class="cloud cloud2"></div>
+        <div class="cloud cloud3"></div>
+    </div>
+
     <div class="decoration-container">
         <div class="header-panel">
-            <h1>🎨 Editor Dekorasi</h1>
-            <p>Tambahkan stiker dan hiasan lainnya untuk membuat photostrip yang lebih menarik!</p>
+            <h1>PHOTOBOOTH AIRWAYS</h1>
+            <p style="font-size: 0.85rem; letter-spacing: 2px; text-transform: uppercase;">DECORATION CLASS / EDITOR</p>
         </div>
 
         <div class="stickers-panel">
@@ -818,19 +1047,30 @@
             <div class="tool-group">
                 <h4>Aksi Stiker</h4>
                 <button class="tool-btn" onclick="duplicateSelected()">
-                    <svg class="tool-icon" viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
+                    <svg class="tool-icon" viewBox="0 0 24 24">
+                        <path
+                            d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z" />
+                    </svg>
                     <span>Duplikasi</span>
                 </button>
                 <button class="tool-btn" onclick="bringToFront()">
-                    <svg class="tool-icon" viewBox="0 0 24 24"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm2 4v-2H3c0 1.1.9 2 2 2zM3 9h2V7H3v2zm12 12h2v-2h-2v2zm4-18H9c-1.11 0-2 .9-2 2v10c0 1.1.89 2 2 2h10c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 12H9V5h10v10zm-8 6h2v-2h-2v2zm-4 0h2v-2H7v2z"/></svg>
+                    <svg class="tool-icon" viewBox="0 0 24 24">
+                        <path
+                            d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm2 4v-2H3c0 1.1.9 2 2 2zM3 9h2V7H3v2zm12 12h2v-2h-2v2zm4-18H9c-1.11 0-2 .9-2 2v10c0 1.1.89 2 2 2h10c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 12H9V5h10v10zm-8 6h2v-2h-2v2zm-4 0h2v-2H7v2z" />
+                    </svg>
                     <span>Ke Depan</span>
                 </button>
                 <button class="tool-btn" onclick="sendToBack()">
-                    <svg class="tool-icon" viewBox="0 0 24 24"><path d="M9 7H7v2h2V7zm0 4H7v2h2v-2zm0-8c-1.11 0-2 .9-2 2h2V3zm4 12h-2v2h2v-2zm6-12v2h2c0-1.1-.9-2-2-2zm-6 0h-2v2h2V3zM9 17v-2H7c0 1.1.89 2 2 2h2zm10-4h2v-2h-2v2zm0-4h2V7h-2v2zm0 8c1.1 0 2-.9 2-2h-2v2zM5 7H3v12c0 1.1.89 2 2 2h12v-2H5V7zm10-2h2V3h-2v2zm0 12h2v-2h-2v2z"/></svg>
+                    <svg class="tool-icon" viewBox="0 0 24 24">
+                        <path
+                            d="M9 7H7v2h2V7zm0 4H7v2h2v-2zm0-8c-1.11 0-2 .9-2 2h2V3zm4 12h-2v2h2v-2zm6-12v2h2c0-1.1-.9-2-2-2zm-6 0h-2v2h2V3zM9 17v-2H7c0 1.1.89 2 2 2h2zm10-4h2v-2h-2v2zm0-4h2V7h-2v2zm0 8c1.1 0 2-.9 2-2h-2v2zM5 7H3v12c0 1.1.89 2 2 2h12v-2H5V7zm10-2h2V3h-2v2zm0 12h2v-2h-2v2z" />
+                    </svg>
                     <span>Ke Belakang</span>
                 </button>
                 <button class="tool-btn danger" onclick="deleteSelected()">
-                    <svg class="tool-icon" viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+                    <svg class="tool-icon" viewBox="0 0 24 24">
+                        <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" />
+                    </svg>
                     <span>Hapus</span>
                 </button>
             </div>
@@ -838,11 +1078,17 @@
             <div class="tool-group">
                 <h4>Reset & Clear</h4>
                 <button class="tool-btn danger" onclick="clearCurrentPhotostrip()">
-                    <svg class="tool-icon" viewBox="0 0 24 24"><path d="M15 16h4v2h-4zm0-8h7v2h-7zm0 4h6v2h-6zM3 18c0 1.1.9 2 2 2h6c1.1 0 2-.9 2-2V8H3v10zM14 5h-3l-1-1H6L5 5H2v2h12z"/></svg>
+                    <svg class="tool-icon" viewBox="0 0 24 24">
+                        <path
+                            d="M15 16h4v2h-4zm0-8h7v2h-7zm0 4h6v2h-6zM3 18c0 1.1.9 2 2 2h6c1.1 0 2-.9 2-2V8H3v10zM14 5h-3l-1-1H6L5 5H2v2h12z" />
+                    </svg>
                     <span>Bersihkan</span>
                 </button>
                 <button class="tool-btn danger" onclick="clearAllDecorations()">
-                    <svg class="tool-icon" viewBox="0 0 24 24"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+                    <svg class="tool-icon" viewBox="0 0 24 24">
+                        <path
+                            d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z" />
+                    </svg>
                     <span>Reset</span>
                 </button>
             </div>
@@ -850,7 +1096,11 @@
             <div class="tool-group">
                 <button class="btn btn-finish" id="finish-btn" onclick="finishDecorations()"
                     style="width: 100%; margin: 0; padding: 12px; font-size: 0.9rem; display: flex; align-items: center; justify-content: center;">
-                    <svg class="tool-icon" style="width: 20px; height: 20px;" viewBox="0 0 24 24"><path d="M19 8h-1V3H6v5H5c-1.66 0-3 1.34-3 3v6h3v4h12v-4h3v-6c0-1.66-1.34-3-3-3zM8 5h8v3H8V5zm8 12v4H8v-4h8zm2-2v-2H6v2H4v-4c0-.55.45-1 1-1h14c.55 0 1 .45 1 1v4h-2z"/><circle cx="18" cy="11.5" r="1"/></svg>
+                    <svg class="tool-icon" style="width: 20px; height: 20px;" viewBox="0 0 24 24">
+                        <path
+                            d="M19 8h-1V3H6v5H5c-1.66 0-3 1.34-3 3v6h3v4h12v-4h3v-6c0-1.66-1.34-3-3-3zM8 5h8v3H8V5zm8 12v4H8v-4h8zm2-2v-2H6v2H4v-4c0-.55.45-1 1-1h14c.55 0 1 .45 1 1v4h-2z" />
+                        <circle cx="18" cy="11.5" r="1" />
+                    </svg>
                     <span>Cetak!</span>
                 </button>
             </div>
