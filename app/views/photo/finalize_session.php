@@ -18,7 +18,8 @@
             /* Darker Blue */
             --success-color: #4CAF50;
             --warning-color: #FF9800;
-            --bg-gradient: linear-gradient(120deg, #c2e9fb 0%, #a1c4fd 50%, #e2d0cb 100%);
+            --bg-gradient: linear-gradient(120deg, #e0c3fc 0%, #fcc2b2 100%);
+            /* Lavender to Orange (Distinct Contrast) */
             --glass-bg: rgba(255, 255, 255, 0.85);
             --dark-text: #1B365D;
         }
@@ -44,6 +45,10 @@
             opacity: 1;
             transition: opacity 0.4s ease-out;
             position: relative;
+            padding: 20px;
+            /* Requested padding */
+            box-sizing: border-box;
+            /* Ensure padding doesn't increase width */
         }
 
         /* Animated Clouds */
@@ -175,7 +180,8 @@
             padding: 20px;
             /* Match decoration padding */
             box-sizing: border-box;
-            background: rgba(255, 255, 255, 0.5);
+            background: rgba(255, 255, 255, 0.65);
+            /* Less transparent */
             backdrop-filter: blur(10px);
             border-radius: 20px;
             box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.05);
@@ -227,8 +233,10 @@
             top: 20px;
             left: 20px;
             background: rgba(255, 255, 255, 0.5);
-            color: #2a5298; /* Dark blue for visibility */
-            border: 2px solid #2a5298; /* Visible border */
+            color: #2a5298;
+            /* Dark blue for visibility */
+            border: 2px solid #2a5298;
+            /* Visible border */
             padding: 8px 15px;
             border-radius: 6px;
             font-weight: 700;
@@ -526,20 +534,36 @@
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, #2a5298 0%, #1e3c72 100%);
+            background: rgba(255, 255, 255, 0.5);
+            color: #2a5298;
+            border: 2px solid #2a5298;
+            box-shadow: 0 4px 15px rgba(30, 60, 114, 0.1);
+            font-weight: 800;
+            backdrop-filter: blur(5px);
+        }
+
+        .btn-primary:hover {
+            background: #2a5298;
             color: white;
-            box-shadow: 0 4px 15px rgba(30, 60, 114, 0.3);
+            box-shadow: 0 8px 25px rgba(30, 60, 114, 0.3);
+            transform: translateY(-2px);
         }
 
         .btn-success {
-            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
-            color: #1e3c72;
-            box-shadow: 0 4px 15px rgba(56, 249, 215, 0.3);
+            background: rgba(255, 255, 255, 0.5);
+            color: #2e7d32;
+            /* Darker green for text */
+            border: 2px solid #4CAF50;
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.1);
             font-weight: 800;
+            backdrop-filter: blur(5px);
         }
 
         .btn-success:hover {
-            box-shadow: 0 6px 20px rgba(56, 249, 215, 0.5);
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            color: #1e3c72;
+            border-color: transparent;
+            box-shadow: 0 6px 20px rgba(56, 249, 215, 0.4);
             transform: translateY(-2px);
         }
 
@@ -670,6 +694,22 @@
                 font-size: 0.8rem;
             }
         }
+
+        .icon-svg {
+            width: 1.2em;
+            height: 1.2em;
+            vertical-align: middle;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            margin-right: 8px;
+        }
+
+        .btn .icon-svg {
+            margin-right: 8px;
+        }
     </style>
 </head>
 
@@ -683,7 +723,10 @@
     <div class="finalize-container">
         <div class="header-panel">
             <button class="btn-back" onclick="goToPackages()">
-                ← Kembali ke Paket
+                <svg class="icon-svg" style="width: 1em; height: 1em; margin-right: 4px;" viewBox="0 0 24 24">
+                    <path d="M19 12H5M12 19l-7-7 7-7" />
+                </svg>
+                Kembali ke Paket
             </button>
             <h1>PHOTOBOOTH AIRWAYS</h1>
             <p style="letter-spacing: 1px; text-transform: uppercase; font-size: 0.9rem;">DECORATION CLASS / FINALIZE
@@ -691,7 +734,13 @@
         </div>
 
         <div class="photostrips-panel">
-            <h3>📸 Photostrip Anda (<?= count($data['photostrips']) ?>)</h3>
+            <h3>
+                <svg class="icon-svg" viewBox="0 0 24 24">
+                    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+                    <circle cx="12" cy="13" r="4" />
+                </svg>
+                Photostrip Anda (<?= count($data['photostrips']) ?>)
+            </h3>
 
 
             <div class="photostrips-scroll-container">
@@ -716,13 +765,33 @@
                             <div class="photostrip-info">
                                 <h4><?= $photostrip->frame_name ?></h4>
                                 <div class="print-status <?= $photostrip->is_printed ? 'printed' : 'pending' ?>">
-                                    <?= $photostrip->is_printed ? '✓ Sudah Dicetak' : '⏳ Belum Dicetak' ?>
+                                    <?php if ($photostrip->is_printed): ?>
+                                        <svg class="icon-svg" style="width: 0.9em; height: 0.9em;" viewBox="0 0 24 24">
+                                            <polyline points="20 6 9 17 4 12" />
+                                        </svg> Sudah Dicetak
+                                    <?php else: ?>
+                                        <svg class="icon-svg" style="width: 0.9em; height: 0.9em;" viewBox="0 0 24 24">
+                                            <circle cx="12" cy="12" r="10" />
+                                            <polyline points="12 6 12 12 16 14" />
+                                        </svg> Belum Dicetak
+                                    <?php endif; ?>
                                 </div>
                                 <br>
                                 <button class="btn-print" data-photostrip-id="<?= $photostrip->id ?>"
                                     <?= $photostrip->is_printed ? 'disabled' : '' ?>
                                     onclick="printPhotostrip(<?= $photostrip->id ?>)">
-                                    <?= $photostrip->is_printed ? '✓ Tercetak' : '🖨️ Cetak' ?>
+                                    <?php if ($photostrip->is_printed): ?>
+                                        <svg class="icon-svg" style="width: 0.9em; height: 0.9em;" viewBox="0 0 24 24">
+                                            <polyline points="20 6 9 17 4 12" />
+                                        </svg> Tercetak
+                                    <?php else: ?>
+                                        <svg class="icon-svg" style="width: 0.9em; height: 0.9em;" viewBox="0 0 24 24">
+                                            <polyline points="6 9 6 2 18 2 18 9" />
+                                            <path
+                                                d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
+                                            <rect x="6" y="14" width="12" height="8" />
+                                        </svg> Cetak
+                                    <?php endif; ?>
                                 </button>
                             </div>
                         </div>
@@ -732,7 +801,14 @@
         </div>
 
         <div class="actions-panel">
-            <h3>📊 Ringkasan & Aksi</h3>
+            <h3>
+                <svg class="icon-svg" viewBox="0 0 24 24">
+                    <line x1="18" y1="20" x2="18" y2="10" />
+                    <line x1="12" y1="20" x2="12" y2="4" />
+                    <line x1="6" y1="20" x2="6" y2="14" />
+                </svg>
+                Ringkasan & Aksi
+            </h3>
 
             <div class="actions-scroll-container">
                 <div class="session-summary">
@@ -755,7 +831,13 @@
                 </div>
 
                 <div class="email-section">
-                    <h4>📧 Kirim via Email</h4>
+                    <h4>
+                        <svg class="icon-svg" style="width: 1em; height: 1em;" viewBox="0 0 24 24">
+                            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                            <polyline points="22,6 12,13 2,6" />
+                        </svg>
+                        Kirim via Email
+                    </h4>
                     <div id="status-messages"></div>
 
                     <form id="email-form" onsubmit="sendEmail(event)">
@@ -766,7 +848,11 @@
                         </div>
 
                         <button type="submit" class="btn btn-primary" id="send-email-btn">
-                            📧 Kirim Email
+                            <svg class="icon-svg" viewBox="0 0 24 24">
+                                <line x1="22" y1="2" x2="11" y2="13" />
+                                <polygon points="22 2 15 22 11 13 2 9 22 2" />
+                            </svg>
+                            Kirim Email
                         </button>
                     </form>
 
@@ -779,7 +865,12 @@
                 </div>
 
                 <button class="btn btn-success" onclick="printAllPhotostrips()" id="print-all-btn">
-                    🖨️ Cetak Semua
+                    <svg class="icon-svg" viewBox="0 0 24 24">
+                        <polyline points="6 9 6 2 18 2 18 9" />
+                        <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
+                        <rect x="6" y="14" width="12" height="8" />
+                    </svg>
+                    Cetak Semua
                 </button>
             </div>
         </div>
