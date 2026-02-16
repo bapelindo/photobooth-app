@@ -7,15 +7,18 @@
     <title>Editor Dekorasi - Hias Photostrip</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Poppins:wght@400;600;700&display=swap"
+    <link
+        href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;700&family=Roboto+Mono:wght@400;700&family=Orbitron:wght@700;900&display=swap"
         rel="stylesheet">
     <style>
         :root {
-            --primary-color: #6C63FF;
-            --secondary-color: #FF6584;
+            --primary-color: #00BFFF;
+            --secondary-color: #E63946;
             --success-color: #4CAF50;
             --warning-color: #FF9800;
-            --bg-gradient: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            --bg-gradient: linear-gradient(120deg, #a1c4fd 0%, #c2e9fb 100%);
+            --glass-bg: rgba(255, 255, 255, 0.85);
+            --dark-text: #1B365D;
         }
 
         /* Firefox Scrollbar */
@@ -36,7 +39,7 @@
 
         body {
             padding: 20px;
-            font-family: 'Poppins', sans-serif;
+            font-family: 'Roboto Condensed', sans-serif;
             background: var(--bg-gradient);
             user-select: none;
             display: flex;
@@ -102,10 +105,11 @@
         }
 
         .header-panel h1 {
-            font-family: 'Fredoka One', cursive;
-            color: var(--primary-color);
+            font-family: 'Orbitron', sans-serif;
+            color: var(--dark-text);
             margin: 0 0 5px 0;
             font-size: 1.5rem;
+            letter-spacing: 1px;
         }
 
         .header-panel p {
@@ -127,9 +131,10 @@
 
         .stickers-panel h3 {
             margin: 0 0 10px 0;
-            font-family: 'Fredoka One', cursive;
-            color: var(--secondary-color);
+            font-family: 'Orbitron', sans-serif;
+            color: var(--dark-text);
             font-size: 1rem;
+            letter-spacing: 1px;
         }
 
         .stickers-grid {
@@ -257,17 +262,20 @@
             left: 0;
             width: 100%;
             height: 100%;
-            z-index: 2; /* Frame on top of photos */
+            z-index: 2;
+            /* Frame on top of photos */
         }
 
         .photo-layer {
             position: relative;
-            z-index: 1; /* Photos below frame */
+            z-index: 1;
+            /* Photos below frame */
             display: block;
         }
 
         .photo-slot-container {
-            z-index: 1; /* Photos below frame */
+            z-index: 1;
+            /* Photos below frame */
         }
 
         .decoration-layer {
@@ -276,7 +284,8 @@
             left: 0;
             width: 100%;
             height: 100%;
-            z-index: 3; /* User-added stickers on top of everything */
+            z-index: 3;
+            /* User-added stickers on top of everything */
             pointer-events: none;
         }
 
@@ -362,9 +371,10 @@
 
         .tools-panel h3 {
             margin: 0 0 5px 0;
-            font-family: 'Fredoka One', cursive;
-            color: var(--primary-color);
+            font-family: 'Orbitron', sans-serif;
+            color: var(--dark-text);
             font-size: 1rem;
+            letter-spacing: 1px;
         }
 
         .tool-group {
@@ -381,16 +391,16 @@
 
         .tool-btn {
             width: 100%;
-            padding: 10px;
-            margin-bottom: 8px;
+            padding: 8px;
+            margin-bottom: 6px;
             border: none;
-            border-radius: 8px;
+            border-radius: 6px;
             background: var(--primary-color);
             color: white;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
         }
 
         .tool-btn:hover {
@@ -434,11 +444,11 @@
 
 
         .btn {
-            padding: 12px 25px;
+            padding: 10px 20px;
             border: none;
-            border-radius: 25px;
-            font-family: 'Fredoka One', cursive;
-            font-size: 1rem;
+            border-radius: 20px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.9rem;
             cursor: pointer;
             transition: all 0.3s ease;
             text-transform: uppercase;
@@ -448,8 +458,8 @@
         .btn-finish {
             background: linear-gradient(135deg, var(--success-color), var(--primary-color));
             color: white;
-            font-size: 1.2rem;
-            padding: 15px 40px;
+            font-size: 1rem;
+            padding: 12px 30px;
         }
 
         .btn:hover {
@@ -535,7 +545,7 @@
 
         <div class="layout-manager">
             <h3
-                style="margin: 0 0 10px 0; font-family: 'Fredoka One', cursive; color: var(--primary-color); font-size: 1rem;">
+                style="margin: 0 0 10px 0; font-family: 'Orbitron', sans-serif; color: var(--dark-text); font-size: 1rem; letter-spacing: 1px;">
                 📋 Layer Manager</h3>
             <div class="layer-list" id="layer-list"></div>
         </div>
@@ -1078,7 +1088,7 @@
                     console.log(`VIEWPORT (on-screen):`);
                     console.log(`  Canvas size: ${Math.round(onScreenWidth)} x ${Math.round(onScreenHeight)} px`);
                     console.log(`  Bounding box: x=${Math.round(sticker.x)}, y=${Math.round(sticker.y)}, w=${Math.round(sticker.width)} x ${Math.round(sticker.height)}`);
-                    console.log(`  Bounding box ratio: ${(sticker.width/sticker.height).toFixed(4)}`);
+                    console.log(`  Bounding box ratio: ${(sticker.width / sticker.height).toFixed(4)}`);
                     console.log(``);
                     console.log(`600x1800 OUTPUT (final):`);
                     console.log(`  Bounding box: x=${Math.round(bboxX_600)}, y=${Math.round(bboxY_600)}, w=${Math.round(bboxWidth_600)} x ${Math.round(bboxHeight_600)}`);
