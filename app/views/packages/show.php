@@ -8,12 +8,31 @@ header("Pragma: no-cache");
 <html lang="id">
 
 <head>
+    <meta name="google-site-verification" content="LO79aX08NpEkKkXAqI0NyCk6LAubHGmNbXTjBOQZ8vM" />
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <title>Photobooth Airways</title>
+    <title>Photobooth Airways | Check-In to Your Memories ✈️</title>
+    <meta name="description" content="Book your boarding pass to unforgettable memories. Economy, Business & First Class photobooth experiences. Pesan boarding pass untuk kenangan tak terlupakan. Pengalaman photobooth bertema penerbangan unik.">
+    <link rel="canonical" href="<?= URLROOT ?>/packages">
+
+    <!-- Open Graph / Social Sharing -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Photobooth Airways | Check-In to Your Memories ✈️">
+    <meta property="og:description" content="Book your boarding pass to unforgettable memories. Unique airline-themed photobooth experience with Economy, Business & First Class packages.">
+    <meta property="og:image" content="<?= URLROOT ?>/public/assets/frames/frame_698b0e7d4a4930.22873215.png">
+    <meta property="og:url" content="<?= URLROOT ?>/packages">
+    <meta property="og:site_name" content="Photobooth Airways">
+    <meta property="og:locale" content="id_ID">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Photobooth Airways | Check-In to Your Memories">
+    <meta name="twitter:description" content="Book your boarding pass to unforgettable memories. Unique aviation-themed photobooth experience.">
+    <meta name="twitter:image" content="<?= URLROOT ?>/public/assets/frames/frame_698b0e7d4a4930.22873215.png">
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
@@ -29,6 +48,19 @@ header("Pragma: no-cache");
     <script src="<?= $snapUrl ?>" data-client-key="<?= $paymentConfig['client_key'] ?>"></script>
 
     <style>
+        /* Screen reader only - for SEO accessibility */
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border-width: 0;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -66,6 +98,7 @@ header("Pragma: no-cache");
             background: rgba(255, 255, 255, 0.9);
             border-radius: 100px;
             animation: float linear infinite;
+            will-change: transform;
         }
 
         .cloud::before,
@@ -197,11 +230,11 @@ header("Pragma: no-cache");
 
         @keyframes float {
             0% {
-                left: -200px;
+                transform: translateX(-200px);
             }
 
             100% {
-                left: 110%;
+                transform: translateX(calc(100vw + 200px));
             }
         }
 
@@ -215,6 +248,7 @@ header("Pragma: no-cache");
             z-index: 1;
             animation: flyPlane 45s linear infinite;
             pointer-events: none;
+            will-change: transform;
         }
 
         .plane-trail {
@@ -240,30 +274,23 @@ header("Pragma: no-cache");
 
         @keyframes flyPlane {
             0% {
-                left: -300px;
-                top: 15%;
-                transform: rotate(2deg);
+                transform: translate3d(-300px, 0, 0) rotate(2deg);
             }
 
             25% {
-                top: 18%;
-                transform: rotate(1deg);
+                transform: translate3d(calc(25vw - 300px), 3vh, 0) rotate(1deg);
             }
 
             50% {
-                top: 14%;
-                transform: rotate(-1deg);
+                transform: translate3d(calc(50vw - 300px), -1vh, 0) rotate(-1deg);
             }
 
             75% {
-                top: 17%;
-                transform: rotate(0deg);
+                transform: translate3d(calc(75vw - 300px), 2vh, 0) rotate(0deg);
             }
 
             100% {
-                left: 110%;
-                top: 15%;
-                transform: rotate(1deg);
+                transform: translate3d(calc(110vw), 0, 0) rotate(1deg);
             }
         }
 
@@ -1012,6 +1039,33 @@ header("Pragma: no-cache");
             }
         }
     </style>
+
+    <!-- Schema.org Structured Data -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "LocalBusiness",
+        "name": "Photobooth Airways",
+        "description": "Airline themed photobooth experience with boarding pass packages",
+        "url": "<?= URLROOT ?>",
+        "image": "<?= URLROOT ?>/public/assets/frames/frame_698b0e7d4a4930.22873215.png",
+        "priceRange": "$$",
+        "offers": [
+            <?php
+            $packageCount = count($packages);
+            foreach ($packages as $index => $pkg):
+            ?>{
+                "@type": "Offer",
+                "name": "<?= htmlspecialchars($pkg->name) ?>",
+                "description": "<?= htmlspecialchars($pkg->description ?? 'Airline themed photobooth package') ?>",
+                "price": "<?= $pkg->price ?>",
+                "priceCurrency": "IDR"
+            }<?= $index < $packageCount - 1 ? ',' : '' ?>
+
+            <?php endforeach; ?>
+        ]
+    }
+    </script>
 </head>
 
 <body>
@@ -1038,6 +1092,9 @@ header("Pragma: no-cache");
     </div>
 
     <div class="main-container">
+        <!-- SEO H1 Tag - Screen Reader Only -->
+        <h1 class="sr-only">Photobooth Airways - Board Your Flight to Timeless Memories. Unique airline themed photobooth experience with Economy, Business, and First Class boarding pass packages.</h1>
+
         <!-- Flash Message Popup -->
         <?php if (\App\Core\Session::has('flash_message')): ?>
             <div id="flash-popup" class="popup-overlay">
