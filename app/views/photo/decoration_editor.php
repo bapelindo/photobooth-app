@@ -678,6 +678,21 @@
                 order: -1;
             }
         }
+        
+        .tool-icon {
+            width: 18px;
+            height: 18px;
+            margin-right: 8px;
+            fill: currentColor;
+            flex-shrink: 0;
+        }
+
+        .delete-handle svg {
+            width: 14px;
+            height: 14px;
+            fill: white;
+            pointer-events: none;
+        }
     </style>
 </head>
 
@@ -802,22 +817,41 @@
         <div class="tools-panel">
             <div class="tool-group">
                 <h4>Aksi Stiker</h4>
-                <button class="tool-btn" onclick="duplicateSelected()">📋 Duplikasi</button>
-                <button class="tool-btn" onclick="bringToFront()">⬆️ Ke Depan</button>
-                <button class="tool-btn" onclick="sendToBack()">⬇️ Ke Belakang</button>
-                <button class="tool-btn danger" onclick="deleteSelected()">🗑️ Hapus</button>
+                <button class="tool-btn" onclick="duplicateSelected()">
+                    <svg class="tool-icon" viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
+                    <span>Duplikasi</span>
+                </button>
+                <button class="tool-btn" onclick="bringToFront()">
+                    <svg class="tool-icon" viewBox="0 0 24 24"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm2 4v-2H3c0 1.1.9 2 2 2zM3 9h2V7H3v2zm12 12h2v-2h-2v2zm4-18H9c-1.11 0-2 .9-2 2v10c0 1.1.89 2 2 2h10c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 12H9V5h10v10zm-8 6h2v-2h-2v2zm-4 0h2v-2H7v2z"/></svg>
+                    <span>Ke Depan</span>
+                </button>
+                <button class="tool-btn" onclick="sendToBack()">
+                    <svg class="tool-icon" viewBox="0 0 24 24"><path d="M9 7H7v2h2V7zm0 4H7v2h2v-2zm0-8c-1.11 0-2 .9-2 2h2V3zm4 12h-2v2h2v-2zm6-12v2h2c0-1.1-.9-2-2-2zm-6 0h-2v2h2V3zM9 17v-2H7c0 1.1.89 2 2 2h2zm10-4h2v-2h-2v2zm0-4h2V7h-2v2zm0 8c1.1 0 2-.9 2-2h-2v2zM5 7H3v12c0 1.1.89 2 2 2h12v-2H5V7zm10-2h2V3h-2v2zm0 12h2v-2h-2v2z"/></svg>
+                    <span>Ke Belakang</span>
+                </button>
+                <button class="tool-btn danger" onclick="deleteSelected()">
+                    <svg class="tool-icon" viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+                    <span>Hapus</span>
+                </button>
             </div>
 
             <div class="tool-group">
                 <h4>Reset & Clear</h4>
-                <button class="tool-btn danger" onclick="clearCurrentPhotostrip()">🧹 Bersihkan</button>
-                <button class="tool-btn danger" onclick="clearAllDecorations()">💥 Reset</button>
+                <button class="tool-btn danger" onclick="clearCurrentPhotostrip()">
+                    <svg class="tool-icon" viewBox="0 0 24 24"><path d="M15 16h4v2h-4zm0-8h7v2h-7zm0 4h6v2h-6zM3 18c0 1.1.9 2 2 2h6c1.1 0 2-.9 2-2V8H3v10zM14 5h-3l-1-1H6L5 5H2v2h12z"/></svg>
+                    <span>Bersihkan</span>
+                </button>
+                <button class="tool-btn danger" onclick="clearAllDecorations()">
+                    <svg class="tool-icon" viewBox="0 0 24 24"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+                    <span>Reset</span>
+                </button>
             </div>
 
             <div class="tool-group">
                 <button class="btn btn-finish" id="finish-btn" onclick="finishDecorations()"
-                    style="width: 100%; margin: 0; padding: 12px; font-size: 0.9rem;">
-                    ✨ Cetak!
+                    style="width: 100%; margin: 0; padding: 12px; font-size: 0.9rem; display: flex; align-items: center; justify-content: center;">
+                    <svg class="tool-icon" style="width: 20px; height: 20px;" viewBox="0 0 24 24"><path d="M19 8h-1V3H6v5H5c-1.66 0-3 1.34-3 3v6h3v4h12v-4h3v-6c0-1.66-1.34-3-3-3zM8 5h8v3H8V5zm8 12v4H8v-4h8zm2-2v-2H6v2H4v-4c0-.55.45-1 1-1h14c.55 0 1 .45 1 1v4h-2z"/><circle cx="18" cy="11.5" r="1"/></svg>
+                    <span>Cetak!</span>
                 </button>
             </div>
         </div>
@@ -931,7 +965,9 @@
             stickerElement.innerHTML = `
                 <img src="<?= URLROOT ?>${sticker.stickerPath}" alt="Sticker">
                 <div class="resize-handle"></div>
-                <div class="delete-handle">×</div>
+                <div class="delete-handle">
+                    <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+                </div>
             `;
 
             // Add event listeners (Mouse & Touch)
