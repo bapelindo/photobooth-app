@@ -5,7 +5,24 @@
     <meta charset="UTF-8">
     <meta name="viewport"
         content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Sesi Foto Interaktif</title>
+    <title>Sesi Foto Interaktif - Photobooth Airways | Photobooth Event</title>
+    <meta name="description"
+        content="Enjoy an interactive photo session at Photobooth Airways. Snap unforgettable memories with our virtual photobooth technology.">
+    <meta name="keywords"
+        content="photobooth, photobooth online, photobooth bapel, photobooth airway, virtual photobooth, photo booth jakarta, photobooth event, sewa photobooth, photobooth wedding">
+
+    <!-- Open Graph / Social Sharing -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Interactive Photo Session - Photobooth Airways">
+    <meta property="og:description"
+        content="Enjoy an interactive photo session at Photobooth Airways. Snap unforgettable memories with our virtual photobooth technology.">
+    <meta property="og:site_name" content="Photobooth Airways">
+    <meta property="og:locale" content="id_ID">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Interactive Photo Session - Photobooth Airways">
+    <meta name="twitter:description" content="Enjoy an interactive photo session at Photobooth Airways.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
@@ -391,7 +408,8 @@
             border-radius: 7px;
             background: #000;
             transition: aspect-ratio 0.3s ease;
-        transform: scaleX(-1); /* Mirror the camera feed */
+            transform: scaleX(-1);
+            /* Mirror the camera feed */
         }
 
         .photo-preview {
@@ -2055,12 +2073,12 @@
                         <select id="camera-filter" onchange="applyFilter(this.value)">
                             <option value="none">Normal</option>
                             <?php if (isset($data['filters']) && is_array($data['filters'])): ?>
-                                    <?php foreach ($data['filters'] as $filter): ?>
-                                            <option value="<?= htmlspecialchars($filter->path ?? 'none') ?>"
-                                                data-filter-name="<?= htmlspecialchars($filter->name) ?>">
-                                                <?= htmlspecialchars($filter->name) ?>
-                                            </option>
-                                    <?php endforeach; ?>
+                                <?php foreach ($data['filters'] as $filter): ?>
+                                    <option value="<?= htmlspecialchars($filter->path ?? 'none') ?>"
+                                        data-filter-name="<?= htmlspecialchars($filter->name) ?>">
+                                        <?= htmlspecialchars($filter->name) ?>
+                                    </option>
+                                <?php endforeach; ?>
                             <?php endif; ?>
                         </select>
                     </div>
@@ -2089,10 +2107,10 @@
                 <h3>Frame Terpilih</h3>
                 <div class="frames-list">
                     <?php foreach ($data['frames'] as $frame): ?>
-                            <div class="frame-item">
-                                <img src="<?= URLROOT . $frame->path ?>" alt="<?= $frame->name ?>" class="frame-thumbnail">
-                                <span><?= $frame->name ?></span>
-                            </div>
+                        <div class="frame-item">
+                            <img src="<?= URLROOT . $frame->path ?>" alt="<?= $frame->name ?>" class="frame-thumbnail">
+                            <span><?= $frame->name ?></span>
+                        </div>
                     <?php endforeach; ?>
                 </div>
             </div>
@@ -2809,7 +2827,7 @@
                     if (data.success) {
                         // Allow navigation for successful session completion
                         <?php if (ENABLE_SESSION_REFRESH_BACK): ?>
-                                allowNavigation = true;
+                            allowNavigation = true;
                         <?php endif; ?>
 
                         // Same timing as select-frame (500ms)
@@ -3304,39 +3322,39 @@
 
         // Simple back/refresh protection with popup
         <?php if (ENABLE_SESSION_REFRESH_BACK): ?>
-                let allowNavigation = false;
+            let allowNavigation = false;
 
-                // Handle refresh attempts
-                window.addEventListener('beforeunload', function (e) {
-                    if (allowNavigation) {
-                        return;
-                    }
+            // Handle refresh attempts
+            window.addEventListener('beforeunload', function (e) {
+                if (allowNavigation) {
+                    return;
+                }
 
-                    e.preventDefault();
-                    e.returnValue = '';
-                    return '';
-                });
+                e.preventDefault();
+                e.returnValue = '';
+                return '';
+            });
 
-                // Handle browser back button
-                let currentUrl = window.location.href;
-                window.history.pushState({}, '', currentUrl);
+            // Handle browser back button
+            let currentUrl = window.location.href;
+            window.history.pushState({}, '', currentUrl);
 
-                window.addEventListener('popstate', function (e) {
-                    if (allowNavigation) {
-                        return;
-                    }
+            window.addEventListener('popstate', function (e) {
+                if (allowNavigation) {
+                    return;
+                }
 
-                    // Show confirmation for back button
-                    if (confirm('⚠️ PERINGATAN!\n\nAnda mencoba kembali ke halaman sebelumnya. Foto yang belum disimpan akan hilang.\n\nApakah Anda yakin ingin melanjutkan?')) {
-                        allowNavigation = true;
-                        window.history.go(-1);
-                    } else {
-                        // Stay on current page
-                        window.history.pushState({}, '', currentUrl);
-                    }
-                });
+                // Show confirmation for back button
+                if (confirm('⚠️ PERINGATAN!\n\nAnda mencoba kembali ke halaman sebelumnya. Foto yang belum disimpan akan hilang.\n\nApakah Anda yakin ingin melanjutkan?')) {
+                    allowNavigation = true;
+                    window.history.go(-1);
+                } else {
+                    // Stay on current page
+                    window.history.pushState({}, '', currentUrl);
+                }
+            });
 
-                console.log('Simple back/refresh protection loaded for photo session');
+            console.log('Simple back/refresh protection loaded for photo session');
         <?php endif; ?>
     </script>
     <script>

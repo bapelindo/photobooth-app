@@ -4,7 +4,45 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Select Your Frames - Photobooth Airways</title>
+    <title>Select Your Frames - Photobooth Airways | Photobooth Online</title>
+    <meta name="description"
+        content="Select your favorite frames for your photobooth session. Choose from our unique aviation-themed frames at Photobooth Airways.">
+    <meta name="keywords"
+        content="photobooth, photobooth online, photobooth bapel, photobooth airway, virtual photobooth, photo booth jakarta, photobooth event, sewa photobooth, photobooth wedding">
+
+    <!-- Open Graph / Social Sharing -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Select Your Frames - Photobooth Airways">
+    <meta property="og:description"
+        content="Select your favorite frames for your photobooth session. Choose from our unique aviation-themed frames at Photobooth Airways.">
+    <meta property="og:site_name" content="Photobooth Airways">
+    <meta property="og:locale" content="id_ID">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Select Your Frames - Photobooth Airways">
+    <meta name="twitter:description"
+        content="Select your favorite frames for your photobooth session at Photobooth Airways.">
+
+    <!-- Schema.org JSON-LD -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "PhotographyService",
+      "name": "Photobooth Airways Bapel",
+      "description": "Select your favorite frames for your photobooth session. Choose from our unique aviation-themed frames at Photobooth Airways.",
+      "provider": {
+        "@type": "LocalBusiness",
+        "name": "Photobooth Airways Bapel",
+        "telephone": "",
+        "address": {
+          "@type": "PostalAddress",
+          "addressCountry": "ID"
+        }
+      },
+      "areaServed": "Indonesia"
+    }
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link

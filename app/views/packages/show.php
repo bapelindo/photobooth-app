@@ -15,13 +15,17 @@ header("Pragma: no-cache");
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <title>Photobooth Airways | Check-In to Your Memories ✈️</title>
-    <meta name="description" content="Book your boarding pass to unforgettable memories. Economy, Business & First Class photobooth experiences. Pesan boarding pass untuk kenangan tak terlupakan. Pengalaman photobooth bertema penerbangan unik.">
+    <meta name="description"
+        content="Book your boarding pass to unforgettable memories. Economy, Business & First Class photobooth experiences. Pesan boarding pass untuk kenangan tak terlupakan. Pengalaman photobooth bertema penerbangan unik.">
+    <meta name="keywords"
+        content="photobooth, photobooth online, photobooth bapel, photobooth airway, virtual photobooth, photo booth jakarta, photobooth event, sewa photobooth, photobooth wedding, photobooth web">
     <link rel="canonical" href="<?= URLROOT ?>/packages">
 
     <!-- Open Graph / Social Sharing -->
     <meta property="og:type" content="website">
     <meta property="og:title" content="Photobooth Airways | Check-In to Your Memories ✈️">
-    <meta property="og:description" content="Book your boarding pass to unforgettable memories. Unique airline-themed photobooth experience with Economy, Business & First Class packages.">
+    <meta property="og:description"
+        content="Book your boarding pass to unforgettable memories. Unique airline-themed photobooth experience with Economy, Business & First Class packages.">
     <meta property="og:image" content="<?= URLROOT ?>/public/assets/frames/frame_698b0e7d4a4930.22873215.png">
     <meta property="og:url" content="<?= URLROOT ?>/packages">
     <meta property="og:site_name" content="Photobooth Airways">
@@ -30,8 +34,33 @@ header("Pragma: no-cache");
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Photobooth Airways | Check-In to Your Memories">
-    <meta name="twitter:description" content="Book your boarding pass to unforgettable memories. Unique aviation-themed photobooth experience.">
+    <meta name="twitter:description"
+        content="Book your boarding pass to unforgettable memories. Unique aviation-themed photobooth experience.">
     <meta name="twitter:image" content="<?= URLROOT ?>/public/assets/frames/frame_698b0e7d4a4930.22873215.png">
+
+    <!-- Schema.org JSON-LD -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "PhotographyService",
+      "name": "Photobooth Airways Bapel",
+      "image": "<?= URLROOT ?>/public/assets/frames/frame_698b0e7d4a4930.22873215.png",
+      "description": "Book your boarding pass to unforgettable memories. Economy, Business & First Class photobooth experiences. Pesan boarding pass untuk kenangan tak terlupakan. Pengalaman photobooth bertema penerbangan unik.",
+      "url": "<?= URLROOT ?>/packages",
+      "provider": {
+        "@type": "LocalBusiness",
+        "name": "Photobooth Airways Bapel",
+        "image": "<?= URLROOT ?>/public/assets/frames/frame_698b0e7d4a4930.22873215.png",
+        "telephone": "",
+        "address": {
+          "@type": "PostalAddress",
+          "addressCountry": "ID"
+        }
+      },
+      "areaServed": "Indonesia",
+      "priceRange": "$$"
+    }
+    </script>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1038,6 +1067,63 @@ header("Pragma: no-cache");
                 right: -11px;
             }
         }
+
+        /* Bapel Footer */
+        /* Bapel Footer */
+        .bapel-footer {
+            position: fixed;
+            bottom: 15px;
+            right: 20px;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 0.65rem;
+            color: rgba(0, 50, 100, 0.4);
+            text-align: right;
+            letter-spacing: 1px;
+            text-transform: lowercase;
+            z-index: 9999;
+            pointer-events: auto;
+        }
+
+        .bapel-footer a {
+            color: inherit;
+            text-decoration: none;
+            font-weight: 700;
+            border-bottom: 1px dashed rgba(0, 50, 100, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .bapel-footer a:hover {
+            color: #00BFFF;
+            border-bottom: 1px solid #00BFFF;
+        }
+
+        .bapel-footer .heart {
+            color: #ff6b6b;
+            display: inline-block;
+            animation: heartbeat 1.5s ease-in-out infinite;
+        }
+
+        @keyframes heartbeat {
+            0% {
+                transform: scale(1);
+            }
+
+            14% {
+                transform: scale(1.3);
+            }
+
+            28% {
+                transform: scale(1);
+            }
+
+            42% {
+                transform: scale(1.3);
+            }
+
+            70% {
+                transform: scale(1);
+            }
+        }
     </style>
 
     <!-- Schema.org Structured Data -->
@@ -1054,13 +1140,13 @@ header("Pragma: no-cache");
             <?php
             $packageCount = count($packages);
             foreach ($packages as $index => $pkg):
-            ?>{
-                "@type": "Offer",
-                "name": "<?= htmlspecialchars($pkg->name) ?>",
-                "description": "<?= htmlspecialchars($pkg->description ?? 'Airline themed photobooth package') ?>",
-                "price": "<?= $pkg->price ?>",
-                "priceCurrency": "IDR"
-            }<?= $index < $packageCount - 1 ? ',' : '' ?>
+                ?>{
+                                        "@type": "Offer",
+                                        "name": "<?= htmlspecialchars($pkg->name) ?>",
+                                        "description": "<?= htmlspecialchars($pkg->description ?? 'Airline themed photobooth package') ?>",
+                                        "price": "<?= $pkg->price ?>",
+                                        "priceCurrency": "IDR"
+                                    }<?= $index < $packageCount - 1 ? ',' : '' ?>
 
             <?php endforeach; ?>
         ]
@@ -1093,7 +1179,8 @@ header("Pragma: no-cache");
 
     <div class="main-container">
         <!-- SEO H1 Tag - Screen Reader Only -->
-        <h1 class="sr-only">Photobooth Airways - Board Your Flight to Timeless Memories. Unique airline themed photobooth experience with Economy, Business, and First Class boarding pass packages.</h1>
+        <h1 class="sr-only">Photobooth Airways - Board Your Flight to Timeless Memories. Unique airline themed
+            photobooth experience with Economy, Business, and First Class boarding pass packages.</h1>
 
         <!-- Flash Message Popup -->
         <?php if (\App\Core\Session::has('flash_message')): ?>
@@ -1304,6 +1391,10 @@ header("Pragma: no-cache");
                     </svg>
                 </button>
             </div>
+        </div>
+
+        <div class="bapel-footer">
+            made <span class="heart">&hearts;</span> by <a href="https://wa.me/6285385204405" target="_blank">bapel</a>
         </div>
     </div>
 

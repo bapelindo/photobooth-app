@@ -10,7 +10,24 @@ header("Pragma: no-cache");
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Status Pembayaran - Photobooth Airways</title>
+    <title>Payment Status - Photobooth Airways | Sewa Photobooth</title>
+    <meta name="description"
+        content="Check your payment status for Photobooth Airways. Grab your virtual boarding pass to create unforgettable memories.">
+    <meta name="keywords"
+        content="photobooth, photobooth online, photobooth bapel, photobooth airway, virtual photobooth, photo booth jakarta, photobooth event, sewa photobooth, photobooth wedding">
+
+    <!-- Open Graph / Social Sharing -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Payment Status - Photobooth Airways">
+    <meta property="og:description"
+        content="Check your payment status for Photobooth Airways. Grab your virtual boarding pass to create unforgettable memories.">
+    <meta property="og:site_name" content="Photobooth Airways">
+    <meta property="og:locale" content="id_ID">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Payment Status - Photobooth Airways">
+    <meta name="twitter:description" content="Check your payment status for Photobooth Airways.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link

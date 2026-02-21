@@ -4,7 +4,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PHOTOBOOTH AIRWAYS - Flight Layout Editor</title>
+    <title>Flight Layout Editor - Photobooth Airways | Custom Photobooth</title>
+    <meta name="description"
+        content="Design your perfect photo layout with our Flight Layout Editor at Photobooth Airways. Create custom virtual photobooth experiences.">
+    <meta name="keywords"
+        content="photobooth, photobooth online, photobooth bapel, photobooth airway, virtual photobooth, photo booth jakarta, photobooth event, sewa photobooth, photobooth wedding">
+
+    <!-- Open Graph / Social Sharing -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Flight Layout Editor - Photobooth Airways">
+    <meta property="og:description"
+        content="Design your perfect photo layout with our Flight Layout Editor at Photobooth Airways. Create custom virtual photobooth experiences.">
+    <meta property="og:site_name" content="Photobooth Airways">
+    <meta property="og:locale" content="id_ID">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Flight Layout Editor - Photobooth Airways">
+    <meta name="twitter:description"
+        content="Design your perfect photo layout with our Flight Layout Editor at Photobooth Airways.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
@@ -1282,10 +1300,10 @@
             </div>
             <div class="photo-source" id="photo-source">
                 <?php foreach ($data['photos'] as $photo): ?>
-                        <div class="draggable-photo" draggable="true" data-photo-id="<?= $photo->id ?>"
-                            data-photo-path="<?= $photo->file_path ?>">
-                            <img src="<?= URLROOT . $photo->file_path ?>" alt="Foto Sesi">
-                        </div>
+                    <div class="draggable-photo" draggable="true" data-photo-id="<?= $photo->id ?>"
+                        data-photo-path="<?= $photo->file_path ?>">
+                        <img src="<?= URLROOT . $photo->file_path ?>" alt="Foto Sesi">
+                    </div>
                 <?php endforeach; ?>
             </div>
         </div>
@@ -1293,24 +1311,24 @@
         <div class="workspace">
             <div class="frame-tabs" id="frame-tabs">
                 <?php foreach ($data['frames'] as $index => $frame): ?>
-                        <div class="frame-tab <?= $index === 0 ? 'active' : '' ?>" data-frame-id="<?= $frame->id ?>">
-                            <img src="<?= URLROOT . $frame->path ?>" alt="<?= $frame->name ?>" class="frame-thumb">
-                            <span><?= $frame->name ?></span>
-                        </div>
+                    <div class="frame-tab <?= $index === 0 ? 'active' : '' ?>" data-frame-id="<?= $frame->id ?>">
+                        <img src="<?= URLROOT . $frame->path ?>" alt="<?= $frame->name ?>" class="frame-thumb">
+                        <span><?= $frame->name ?></span>
+                    </div>
                 <?php endforeach; ?>
             </div>
 
             <div id="photostrip-container">
                 <?php if (empty($data['frames'])): ?>
-                        <div class="empty-state">
-                            <h3>Tidak Ada Frame</h3>
-                            <p>Tidak ada frame yang dipilih untuk sesi ini.</p>
-                        </div>
+                    <div class="empty-state">
+                        <h3>Tidak Ada Frame</h3>
+                        <p>Tidak ada frame yang dipilih untuk sesi ini.</p>
+                    </div>
                 <?php else: ?>
-                        <!-- Single canvas container that will be reused for all frames -->
-                        <div class="photostrip-canvas-container" id="main-canvas-container">
-                            <canvas id="main-canvas"></canvas>
-                        </div>
+                    <!-- Single canvas container that will be reused for all frames -->
+                    <div class="photostrip-canvas-container" id="main-canvas-container">
+                        <canvas id="main-canvas"></canvas>
+                    </div>
                 <?php endif; ?>
             </div>
 
@@ -2609,7 +2627,7 @@
                     if (data.success) {
                         // Allow navigation for successful save
                         <?php if (ENABLE_SESSION_REFRESH_BACK): ?>
-                                allowNavigation = true;
+                            allowNavigation = true;
                         <?php endif; ?>
 
                         // Same fade-out animation as select-frame
@@ -2649,39 +2667,39 @@
     <script>
         // Simple back/refresh protection with popup
         <?php if (ENABLE_SESSION_REFRESH_BACK): ?>
-                let allowNavigation = false;
+            let allowNavigation = false;
 
-                // Handle refresh attempts
-                window.addEventListener('beforeunload', function (e) {
-                    if (allowNavigation) {
-                        return;
-                    }
+            // Handle refresh attempts
+            window.addEventListener('beforeunload', function (e) {
+                if (allowNavigation) {
+                    return;
+                }
 
-                    e.preventDefault();
-                    e.returnValue = '';
-                    return '';
-                });
+                e.preventDefault();
+                e.returnValue = '';
+                return '';
+            });
 
-                // Handle browser back button
-                let currentUrl = window.location.href;
-                window.history.pushState({}, '', currentUrl);
+            // Handle browser back button
+            let currentUrl = window.location.href;
+            window.history.pushState({}, '', currentUrl);
 
-                window.addEventListener('popstate', function (e) {
-                    if (allowNavigation) {
-                        return;
-                    }
+            window.addEventListener('popstate', function (e) {
+                if (allowNavigation) {
+                    return;
+                }
 
-                    // Show confirmation for back button
-                    if (confirm('⚠️ PERINGATAN!\n\nAnda mencoba kembali ke halaman sebelumnya. Layout yang belum disimpan akan hilang.\n\nApakah Anda yakin ingin melanjutkan?')) {
-                        allowNavigation = true;
-                        window.history.go(-1);
-                    } else {
-                        // Stay on current page
-                        window.history.pushState({}, '', currentUrl);
-                    }
-                });
+                // Show confirmation for back button
+                if (confirm('⚠️ PERINGATAN!\n\nAnda mencoba kembali ke halaman sebelumnya. Layout yang belum disimpan akan hilang.\n\nApakah Anda yakin ingin melanjutkan?')) {
+                    allowNavigation = true;
+                    window.history.go(-1);
+                } else {
+                    // Stay on current page
+                    window.history.pushState({}, '', currentUrl);
+                }
+            });
 
-                console.log('Simple back/refresh protection loaded for layout editor');
+            console.log('Simple back/refresh protection loaded for layout editor');
         <?php endif; ?>
 
         function interactivePlane(container) {

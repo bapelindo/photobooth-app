@@ -1,9 +1,25 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Login</title>
+    <title>Admin Login - Photobooth Airways</title>
+    <meta name="description" content="Admin login portal for Photobooth Airways.">
+    <meta name="keywords"
+        content="photobooth, photobooth online, photobooth bapel, photobooth airway, virtual photobooth, photo booth jakarta, photobooth event, sewa photobooth, photobooth wedding">
+
+    <!-- Open Graph / Social Sharing -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Admin Login - Photobooth Airways">
+    <meta property="og:description" content="Admin login portal for Photobooth Airways.">
+    <meta property="og:site_name" content="Photobooth Airways">
+    <meta property="og:locale" content="id_ID">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Admin Login - Photobooth Airways">
+    <meta name="twitter:description" content="Admin login for Photobooth Airways.">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -13,6 +29,7 @@
             --text-color: #374151;
             --border-color: #E5E7EB;
         }
+
         body {
             font-family: 'Inter', sans-serif;
             background-color: var(--bg-color);
@@ -22,6 +39,7 @@
             height: 100vh;
             margin: 0;
         }
+
         .login-container {
             background: white;
             padding: 3rem;
@@ -30,6 +48,7 @@
             width: 100%;
             max-width: 400px;
         }
+
         h2 {
             text-align: center;
             color: var(--text-color);
@@ -37,9 +56,11 @@
             font-weight: 700;
             margin-bottom: 2.5rem;
         }
+
         .form-group {
             margin-bottom: 1.5rem;
         }
+
         .form-control {
             display: block;
             width: 100%;
@@ -50,11 +71,13 @@
             box-sizing: border-box;
             transition: border-color 0.2s, box-shadow 0.2s;
         }
+
         .form-control:focus {
             outline: none;
             border-color: var(--primary-color);
             box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
         }
+
         .btn {
             display: block;
             width: 100%;
@@ -68,9 +91,11 @@
             cursor: pointer;
             transition: background-color 0.2s;
         }
+
         .btn:hover {
             background-color: var(--primary-hover);
         }
+
         .error-message {
             background-color: #FEE2E2;
             color: #B91C1C;
@@ -81,6 +106,7 @@
         }
     </style>
 </head>
+
 <body>
     <div class="login-container">
         <h2>Admin Login</h2>
@@ -101,4 +127,5 @@
         </form>
     </div>
 </body>
+
 </html>

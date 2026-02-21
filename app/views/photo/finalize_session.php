@@ -4,7 +4,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Finalisasi & Cetak - Photobooth</title>
+    <title>Finalize & Print - Photobooth Airways | Photobooth Online</title>
+    <meta name="description"
+        content="Finalize your photo session and print your custom photostrips at Photobooth Airways. Cherish your virtual flight memories.">
+    <meta name="keywords"
+        content="photobooth, photobooth online, photobooth bapel, photobooth airway, virtual photobooth, photo booth jakarta, photobooth event, sewa photobooth, photobooth wedding">
+
+    <!-- Open Graph / Social Sharing -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Finalize & Print - Photobooth Airways">
+    <meta property="og:description"
+        content="Finalize your photo session and print your custom photostrips at Photobooth Airways. Cherish your virtual flight memories.">
+    <meta property="og:site_name" content="Photobooth Airways">
+    <meta property="og:locale" content="id_ID">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Finalize & Print - Photobooth Airways">
+    <meta name="twitter:description"
+        content="Finalize your photo session and print your custom photostrips at Photobooth Airways.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
