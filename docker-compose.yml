@@ -1,0 +1,41 @@
+services:
+  app:
+    build: .
+    image: bapel/photobooth-app:latest
+    ports:
+      - "8081:80"
+    environment:
+      - DB_HOST=db
+      - DB_USER=root
+      - DB_PASS=root
+      - DB_NAME=photobooth_db
+    volumes:
+      - .:/var/www/html
+      - uploads-data:/var/www/html/public/uploads
+    depends_on:
+      - db
+    networks:
+      - photobooth-net
+
+  db:
+    image: mysql:8.0
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    environment:
+      - MYSQL_DATABASE=photobooth_db
+      - MYSQL_ROOT_PASSWORD=root
+    ports:
+      - "3306:3306"
+    volumes:
+      - db-data:/var/lib/mysql
+      - ./database.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - photobooth-net
+
+networks:
+  photobooth-net:
+    driver: bridge
+
+volumes:
+  db-data:
+  uploads-data:

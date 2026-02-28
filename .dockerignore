@@ -1,0 +1,8 @@
+.git
+.claude
+logs/
+Debug/
+*.bat
+*.exe
+*.sql
+.dockerignore

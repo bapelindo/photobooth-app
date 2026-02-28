@@ -15,12 +15,16 @@
 define('APPROOT', dirname(dirname(__FILE__)) . '/app'); // -> .../photobooth-app/app
 
 // URL Root
-// Ganti 'http://localhost/photobooth-app' sesuai dengan URL proyek Anda
 // Detect environment and set URLROOT accordingly
-// Checks if host contains 'localhost' or '127.0.0.1' to handle ports (e.g. localhost:8080)
-if (strpos($_SERVER['HTTP_HOST'], 'localhost') !== false || strpos($_SERVER['HTTP_HOST'], '127.0.0.1') !== false) {
-    define('URLROOT', 'http://' . $_SERVER['HTTP_HOST'] . '/photobooth-app');
+// For Docker: check if running in container (DOCUMENT_ROOT points to /var/www/html/public)
+$isDocker = isset($_SERVER['DOCUMENT_ROOT']) && strpos($_SERVER['DOCUMENT_ROOT'], '/var/www/html/public') !== false;
+
+if ($isDocker || strpos($_SERVER['HTTP_HOST'], 'localhost') !== false || strpos($_SERVER['HTTP_HOST'], '127.0.0.1') !== false) {
+    // Docker or local development - no subdirectory needed
+    $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http';
+    define('URLROOT', $protocol . '://' . $_SERVER['HTTP_HOST']);
 } else {
+    // Production
     define('URLROOT', 'https://photobooth.bapel.my.id');
 }
 
