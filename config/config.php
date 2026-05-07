@@ -45,7 +45,7 @@ define('SMTP_HOST', 'smtp.gmail.com');
 define('SMTP_USERNAME', 'bapelhacker@gmail.com');
 
 // Kata sandi untuk login ke server SMTP (gunakan App Password jika memakai Gmail)
-define('SMTP_PASSWORD', 'ljum wbxr dhfx jwij');
+define('SMTP_PASSWORD', 'iddc pzqs zgqx dzbp');
 
 // Tipe enkripsi (biasanya 'tls' atau 'ssl')
 define('SMTP_SECURE', 'tls');
@@ -98,3 +98,41 @@ define('PHOTO_QUALITY', 100);
 // Thumbnail size for gallery displays
 define('THUMBNAIL_WIDTH', 150);
 define('THUMBNAIL_HEIGHT', 150);
+
+// --- GOOGLE CLOUD SETTINGS ---
+define('GOOGLE_CLOUD_PROJECT_ID', 'still-summit-495602-v8');
+define('GOOGLE_CLOUD_LOCATION', 'us-central1'); // Default location for Vertex AI
+define('AI_PROVIDER', 'GEMINI'); // Choices: 'REPLICATE' or 'GEMINI'
+define('GEMINI_MODEL', 'gemini-2.5-flash-image'); // Code name: nano banana 2
+
+// Parameter Generasi AI (Gemini)
+// Temperature: 0.0 (konsisten) hingga 1.0 (kreatif). Untuk photo enhancement, 0.3 - 0.5 cukup baik.
+define('GEMINI_TEMPERATURE', 0.5);
+define('GEMINI_TOP_K', 32);
+define('GEMINI_TOP_P', 1.0);
+define('GEMINI_MAX_TOKENS', 2048);
+
+// --- REPLICATE AI SETTINGS ---
+// Dapatkan API Token di https://replicate.com/account/api-tokens
+define('REPLICATE_API_TOKEN', 'r8_dAuspDDjH4ZIKtHLowDJLNLSVDIXpHT3ex9MW');
+
+// Model yang digunakan - HARUS yang mendukung img2img (input gambar)
+// JANGAN gunakan flux-2-pro / flux-1-pro / sdxl-lightning karena itu hanya text-to-image!
+// Model img2img yang benar (gunakan VERSION HASH, bukan nama owner/model):
+//   SD 2.1 img2img (RECOMMENDED): '15a3689ee13b0d2616e98820eca31d4c3abcd36672df6afce5cb6feb1d66087d'
+//   SD 1.5 img2img (alternatif) : '9a9b6aa5ac2793993aaaff48fd0e05fc5be213bc85a0bafd24e578d3bb81e628'
+define('REPLICATE_MODEL', '15a3689ee13b0d2616e98820eca31d4c3abcd36672df6afce5cb6feb1d66087d');
+
+// Parameter Generasi AI (Image-to-Image)
+// prompt_strength: 0.0 = gambar asli tidak berubah, 1.0 = gambar asli diabaikan sepenuhnya
+// Untuk style transfer (anime, vintage, dll) yang TETAP mempertahankan wajah/subjek: 0.30 - 0.50
+// Untuk perubahan besar (ganti background, dll): 0.60 - 0.80
+define('REPLICATE_PROMPT_STRENGTH', 0.90);
+define('REPLICATE_NUM_INFERENCE_STEPS', 30);
+define('REPLICATE_GUIDANCE', 7.5);
+
+// Enable/Disable AI Enhance step in workflow
+define('AI_ENHANCE_ENABLED', true);
+
+// Default prompt jika user tidak mengubah
+define('AI_ENHANCE_DEFAULT_PROMPT', 'Enhance this photobooth photo: make it vibrant, well-lit, and professional looking.');

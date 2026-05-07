@@ -2832,7 +2832,7 @@
 
                         // Same timing as select-frame (500ms)
                         setTimeout(() => {
-                            window.location.href = `<?= URLROOT ?>/photo/layout/${sessionId}`;
+                            window.location.href = `<?= URLROOT ?>/photo/ai-enhance/${sessionId}`;
                         }, 500);
                     }
                 });

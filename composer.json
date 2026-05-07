@@ -9,7 +9,8 @@
     ],
     "require": {
         "phpmailer/phpmailer": "^6.9",
-        "midtrans/midtrans-php": "^2.5"
+        "midtrans/midtrans-php": "^2.5",
+        "google/cloud-ai-platform": "^1.59"
     },
     "autoload": {
         "psr-4": {

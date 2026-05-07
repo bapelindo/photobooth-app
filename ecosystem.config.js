@@ -1,28 +1,34 @@
 module.exports = {
-    apps: [
-        {
-            name: 'photobooth-email-worker',
-            script: 'scripts/email_worker.php',
-            interpreter: 'php',
-            instances: 1,
-            autorestart: true,
-            watch: false,
-            max_memory_restart: '100M',
-            env: {
-                NODE_ENV: 'production'
-            }
-        },
-        {
-            name: 'photobooth-print-worker',
-            script: 'scripts/print_worker.php',
-            interpreter: 'php',
-            instances: 1,
-            autorestart: true,
-            watch: false,
-            max_memory_restart: '100M',
-            env: {
-                NODE_ENV: 'production'
-            }
-        }
-    ]
+  apps: [
+    {
+      name: 'photobooth-email-worker',
+      script: 'php',
+      args: 'scripts/email_worker.php',
+      cwd: 'c:/apache/htdocs/photobooth-app',
+      interpreter: 'none',
+      watch: false,
+      autorestart: true,
+      restart_delay: 3000,
+      max_restarts: 10,
+      log_file: 'c:/apache/logs/email-worker.log',
+      out_file: 'c:/apache/logs/email-worker-out.log',
+      error_file: 'c:/apache/logs/email-worker-err.log',
+      time: true,
+    },
+    {
+      name: 'photobooth-print-worker',
+      script: 'php',
+      args: 'scripts/print_worker.php',
+      cwd: 'c:/apache/htdocs/photobooth-app',
+      interpreter: 'none',
+      watch: false,
+      autorestart: true,
+      restart_delay: 3000,
+      max_restarts: 10,
+      log_file: 'c:/apache/logs/print-worker.log',
+      out_file: 'c:/apache/logs/print-worker-out.log',
+      error_file: 'c:/apache/logs/print-worker-err.log',
+      time: true,
+    },
+  ],
 };

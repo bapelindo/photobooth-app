@@ -30,6 +30,8 @@ $router->get('photo/session/{session_id}', 'App\Controllers\PhotoController@phot
 $router->post('photo/save-session-photo', 'App\Controllers\PhotoController@saveSessionPhoto');
 $router->post('photo/deleteSessionPhoto', 'App\Controllers\PhotoController@deleteSessionPhoto');
 $router->post('photo/complete-session', 'App\Controllers\PhotoController@completeSession');
+$router->get('photo/ai-enhance/{session_id}', 'App\Controllers\AiController@enhance');
+$router->post('photo/ai-enhance-process', 'App\Controllers\AiController@process');
 $router->get('photo/layout/{session_id}', 'App\Controllers\PhotoController@layoutEditor');
 $router->get('photo/get-session-photos/{session_id}', 'App\Controllers\PhotoController@getSessionPhotos');
 $router->post('photo/save-layouts', 'App\Controllers\PhotoController@saveLayouts');
