@@ -67,13 +67,17 @@ class EmailService
                 if (isset($attachment['path']) && isset($attachment['name'])) {
                     $filePath = $attachment['path'];
                     $webPath = str_replace('\\', '/', $filePath);
-                    if (substr($webPath, 0, 1) !== '/') {
-                        $webPath = '/' . $webPath;
-                    }
-
-                    // Convert to web-accessible URL
+                    
                     // [DYNAMIC FIX] Check if path is already absolute (contains http)
-                    $downloadUrl = (strpos($webPath, 'http') === 0) ? $webPath : URLROOT . $webPath;
+                    if (strpos($webPath, 'http') === 0) {
+                        $downloadUrl = $webPath;
+                    } else {
+                        if (substr($webPath, 0, 1) !== '/') {
+                            $webPath = '/' . $webPath;
+                        }
+                        $downloadUrl = URLROOT . $webPath;
+                    }
+                    
                     $fileSize = 'Unknown';
 
                     // Get file size if exists
