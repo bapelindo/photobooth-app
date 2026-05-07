@@ -14,28 +14,42 @@
 // App Root
 define('APPROOT', dirname(dirname(__FILE__)) . '/app'); // -> .../photobooth-app/app
 
-// URL Root
 // Detect environment and set URLROOT accordingly
-// Detect Protocol
-$isHttps = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ||
-    (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https');
-$protocol = $isHttps ? 'https' : 'http';
+// 1. Check for APP_URL environment variable (standard for Cloud Run/Docker)
+$appUrl = getenv('APP_URL');
+if (!$appUrl && isset($_ENV['APP_URL'])) $appUrl = $_ENV['APP_URL'];
+if (!$appUrl && isset($_SERVER['APP_URL'])) $appUrl = $_SERVER['APP_URL'];
 
-// Detect Host
-$host = isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : 'localhost';
+if ($appUrl) {
+    define('URLROOT', rtrim($appUrl, '/'));
+} else {
+    // 2. Auto-detect if APP_URL is not set
+    // Detect Protocol
+    $isHttps = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ||
+        (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https');
+    $protocol = $isHttps ? 'https' : 'http';
 
-// Detect Subdirectory (for Localhost XAMPP/WAMP)
-$sub_dir = '';
-if (strpos($host, 'localhost') !== false || strpos($host, '127.0.0.1') !== false) {
-    if (isset($_SERVER['SCRIPT_NAME'])) {
-        $public_pos = strpos($_SERVER['SCRIPT_NAME'], '/public');
-        if ($public_pos !== false) {
-            $sub_dir = substr($_SERVER['SCRIPT_NAME'], 0, $public_pos);
+    // Detect Host
+    $host = 'localhost';
+    if (isset($_SERVER['HTTP_X_FORWARDED_HOST'])) {
+        $host = $_SERVER['HTTP_X_FORWARDED_HOST'];
+    } elseif (isset($_SERVER['HTTP_HOST'])) {
+        $host = $_SERVER['HTTP_HOST'];
+    }
+
+    // Detect Subdirectory (for Localhost XAMPP/WAMP)
+    $sub_dir = '';
+    if (strpos($host, 'localhost') !== false || strpos($host, '127.0.0.1') !== false) {
+        if (isset($_SERVER['SCRIPT_NAME'])) {
+            $public_pos = strpos($_SERVER['SCRIPT_NAME'], '/public');
+            if ($public_pos !== false) {
+                $sub_dir = substr($_SERVER['SCRIPT_NAME'], 0, $public_pos);
+            }
         }
     }
-}
 
-define('URLROOT', $protocol . '://' . $host . $sub_dir);
+    define('URLROOT', $protocol . '://' . $host . $sub_dir);
+}
 
 // Site Name
 define('SITENAME', 'Photobooth App');
