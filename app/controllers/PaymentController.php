@@ -45,6 +45,12 @@ class PaymentController extends Controller
                     'name' => $package->name,
                 ]
             ],
+            'customer_details' => [
+                'first_name' => 'Tamu',
+                'last_name' => 'Photobooth',
+                'email' => 'tamu_' . time() . '@bapel.my.id',
+                'phone' => '08' . mt_rand(100000000, 999999999),
+            ],
         ];
 
         $paymentService = new PaymentService();
@@ -135,10 +141,10 @@ class PaymentController extends Controller
                     ]
                 ],
                 'customer_details' => [
-                    'first_name' => 'Customer',
+                    'first_name' => 'Tamu',
                     'last_name' => 'Photobooth',
-                    'email' => 'customer@photobooth.com',
-                    'phone' => '08123456789',
+                    'email' => 'tamu_' . time() . '@bapel.my.id',
+                    'phone' => '08' . mt_rand(100000000, 999999999),
                 ],
             ];
 
@@ -280,7 +286,8 @@ class PaymentController extends Controller
                 ]);
             }
 
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
+            if (ob_get_length()) ob_clean();
             http_response_code(500);
             echo json_encode([
                 'success' => false,
@@ -485,8 +492,9 @@ class PaymentController extends Controller
                 'message' => 'Payment bypassed successfully'
             ]);
 
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             error_log('Bypass payment error: ' . $e->getMessage());
+            if (ob_get_length()) ob_clean();
             http_response_code(500);
             echo json_encode([
                 'success' => false,

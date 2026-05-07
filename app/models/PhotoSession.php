@@ -78,7 +78,7 @@ class PhotoSession
             FROM photo_session_photos 
             WHERE session_id = :session_id AND is_saved = 1 
             GROUP BY file_path 
-            ORDER BY taken_at ASC
+            ORDER BY MAX(taken_at) ASC
         ");
         $this->db->bind(':session_id', $session_id);
         return $this->db->resultSet();
@@ -109,7 +109,7 @@ class PhotoSession
             JOIN packages p ON t.package_id = p.id
             LEFT JOIN photo_session_photos psp ON ps.id = psp.session_id
             LEFT JOIN photostrips ph ON ps.id = ph.session_id
-            GROUP BY ps.id, ps.photos_saved, ps.photos_taken, ps.session_start_time, ps.session_end_time, t.order_id, t.amount, p.name, p.price
+            GROUP BY ps.id, ps.photos_saved, ps.photos_taken, ps.session_start_time, ps.session_end_time, t.order_id, t.amount, p.name, p.price, ps.created_at
             ORDER BY ps.created_at DESC
         ");
         return $this->db->resultSet();
