@@ -19,6 +19,9 @@ class Controller
             '/admin/login', // Allow admin login to be accessed without workflow_step
 
             '/payment/process', // Allow payment process to initiate workflow
+            '/payment/callback', // Webhook for Midtrans MUST be public
+            '/payment/test-midtrans',
+            '/payment/test-endpoint',
             '/photo/send_email', // Allow send_email to be accessed without workflow_step
             '/photo/ajax_print_photo', // Allow ajax_print_photo to be accessed without workflow_step
             '/photo/select_frame' // Allow frame selection to be accessed directly
@@ -29,8 +32,8 @@ class Controller
         $path = parse_url($request_uri, PHP_URL_PATH);
 
         // Normalize path: remove URLROOT and /public/ if present
-        $url_root_path = parse_url(URLROOT, PHP_URL_PATH);
-        if (strpos($path, $url_root_path) === 0) {
+        $url_root_path = parse_url(URLROOT, PHP_URL_PATH) ?? '';
+        if ($url_root_path !== '' && strpos($path, $url_root_path) === 0) {
             $path = substr($path, strlen($url_root_path));
         }
         if (strpos($path, '/public') === 0) {
@@ -60,7 +63,7 @@ class Controller
         // If workflow_step is not set, redirect to packages
         if (ENABLE_SESSION_REFRESH_BACK && !Session::get('workflow_step')) {
             error_log('Controller __construct: workflow_step not set, redirecting to packages.');
-            header('Location: /packages');
+            header('Location: ' . \URLROOT . '/packages');
             exit();
         }
     }
@@ -79,7 +82,7 @@ class Controller
 
             require_once $viewFile;
         } else {
-            throw new \Exception("View {$view} not found.");
+            throw new Exception("View {$view} not found.");
         }
     }
 
@@ -96,7 +99,7 @@ class Controller
 
             require_once '../app/views/admin/layout.php';
         } else {
-            throw new \Exception("View {$view} not found.");
+            throw new Exception("View {$view} not found.");
         }
     }
 

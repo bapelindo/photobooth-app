@@ -74,7 +74,7 @@ class PhotoSession
     {
         // Get distinct saved photos by file_path to avoid duplicates
         $this->db->query("
-            SELECT id, session_id, file_path, taken_at, is_saved 
+            SELECT MAX(id) as id, MAX(session_id) as session_id, file_path, MAX(taken_at) as taken_at, MAX(is_saved) as is_saved 
             FROM photo_session_photos 
             WHERE session_id = :session_id AND is_saved = 1 
             GROUP BY file_path 
@@ -144,7 +144,7 @@ class PhotoSession
             LEFT JOIN photo_session_photos psp ON ps.id = psp.session_id
             LEFT JOIN photostrips ph ON ps.id = ph.session_id
             WHERE ps.id = :session_id
-            GROUP BY ps.id, ps.photos_saved, ps.photos_taken, ps.session_start_time, ps.session_end_time
+            GROUP BY ps.id, ps.photos_saved, ps.photos_taken, ps.session_start_time, ps.session_end_time, t.order_id, t.amount, p.name, p.price, p.frame_limit, p.session_duration, p.max_save_photos
         ");
         $this->db->bind(':session_id', $session_id);
         return $this->db->single();

@@ -2414,181 +2414,28 @@
             }
         }
 
-        // Save current photo
-        let pendingUploads = 0; // Counter for tracking concurrent uploads
+        // Queue system for robust sequential uploads
+        let pendingUploads = 0;
+        let uploadQueue = [];
+        let isUploading = false;
 
         function savePhoto() {
             if (!currentPhotoBlob || photosSaved >= maxSavePhotos) return;
 
-            // ALLOW MULTIPLE CONCURRENT UPLOADS - increment counter
+            const blobToUpload = currentPhotoBlob;
             pendingUploads++;
 
-            // Show upload progress dialog
-            const uploadDialog = document.getElementById('upload-progress-dialog');
-            const progressBarFill = document.getElementById('upload-progress-bar-fill');
-            const progressText = document.getElementById('upload-progress-text');
-
-            uploadDialog.classList.add('active');
-            progressBarFill.style.width = '0%';
-            progressText.textContent = '0%';
-
-            const formData = new FormData();
-            formData.append('session_id', sessionId);
-            formData.append('photo', currentPhotoBlob, 'photo.png');
-
-            // Use XMLHttpRequest for progress tracking
-            const xhr = new XMLHttpRequest();
-
-            // Track upload progress - UPDATE DIALOG, not button
-            xhr.upload.addEventListener('progress', (e) => {
-                if (e.lengthComputable) {
-                    const percentComplete = Math.round((e.loaded / e.total) * 100);
-                    progressBarFill.style.width = percentComplete + '%';
-                    progressText.textContent = percentComplete + '%';
-                }
+            // Add to queue
+            uploadQueue.push({
+                blob: blobToUpload,
+                retryCount: 0
             });
-
-            // Upload complete
-            xhr.addEventListener('load', () => {
-                if (xhr.status === 200) {
-                    try {
-                        const data = JSON.parse(xhr.responseText);
-
-                        if (data.success) {
-                            // Hide upload dialog with success state
-                            uploadDialog.classList.add('upload-complete');
-                            uploadDialog.querySelector('h4').innerHTML = `<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg> UPLOAD SELESAI!`;
-                            progressText.textContent = '100%';
-
-                            setTimeout(() => {
-                                uploadDialog.classList.remove('active', 'upload-complete');
-                                // Reset dialog for next upload
-                                uploadDialog.querySelector('h4').innerHTML = `<svg class="spin" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"></path></svg> MENGUPLOAD FOTO...`;
-                                progressBarFill.style.width = '0%';
-                            }, 1500);
-
-                            savedPhotos.push(data.photo);
-                            photosSaved++;
-                            updateStats();
-                            addToGallery(data.photo);
-                            pendingUploads--; // Decrement pending uploads counter
-
-                            // Only auto-complete during extended time when requirement is reached
-                            if (isExtendedTime && photosSaved >= numFrameSlots) {
-                                console.log(`Auto-completing session during extended time: ${photosSaved} photos saved, ${numFrameSlots} slots required`);
-
-                                // Disable capture button and update finish button
-                                const captureBtn = document.getElementById('capture-btn');
-                                const finishBtn = document.getElementById('finish-session-btn');
-
-                                captureBtn.disabled = true;
-                                captureBtn.style.opacity = '0.5';
-                                captureBtn.innerHTML = '✅ Cukup';
-
-                                finishBtn.innerHTML = `<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg> SELESAI SESI`;
-                                finishBtn.style.background = 'var(--success-color)';
-                                finishBtn.style.animation = 'pulse 1s infinite';
-
-                                setTimeout(() => {
-                                    showCustomAlert(`Selamat! Anda telah mencapai ${numFrameSlots} foto yang dibutuhkan. Tekan tombol SELESAI untuk melanjutkan ke layout.`);
-                                }, 1000);
-                            } else if (photosSaved >= maxSavePhotos) {
-                                // Disable capture button when max photos reached
-                                const captureBtn = document.getElementById('capture-btn');
-                                const finishBtn = document.getElementById('finish-session-btn');
-
-                                captureBtn.disabled = true;
-                                captureBtn.style.opacity = '0.5';
-                                captureBtn.innerHTML = '📸 Maksimal';
-
-                                finishBtn.innerHTML = `<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg> SELESAI SESI`;
-                                finishBtn.style.background = 'var(--success-color)';
-                                finishBtn.style.animation = 'pulse 1s infinite';
-
-                                // Show alert when max photos reached - user still needs to manually finish
-                                setTimeout(() => {
-                                    showCustomAlert(`Anda telah menyimpan ${maxSavePhotos} foto maksimal. Tekan tombol SELESAI untuk melanjutkan ke layout.`);
-                                }, 1000);
-                            }
-                        } else {
-                            // Decrement pending uploads counter on error and hide dialog
-                            pendingUploads--;
-                            uploadDialog.classList.remove('active');
-                            uploadDialog.querySelector('h4').innerHTML = `<svg class="spin" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"></path></svg> MENGUPLOAD FOTO...`;
-                            progressBarFill.style.width = '0%';
-
-                            // Show detailed error message
-                            let errorMsg = data.error || data.message || 'Unknown error';
-
-                            // Add debug info if available
-                            if (data.debug) {
-                                console.error('Upload debug info:', data.debug);
-                                errorMsg += '\n\nCek console browser untuk detail debug.';
-                            }
-
-                            if (data.error_code) {
-                                errorMsg += `\n(Error code: ${data.error_code})`;
-                            }
-
-                            if (data.httpStatus) {
-                                errorMsg += `\n(HTTP ${data.httpStatus})`;
-                            }
-
-                            alert('Gagal menyimpan foto: ' + errorMsg);
-                        }
-                    } catch (parseError) {
-                        console.error('JSON parse error:', parseError);
-                        // Decrement pending uploads counter on error and hide dialog
-                        pendingUploads--;
-                        uploadDialog.classList.remove('active');
-                        alert('Gagal menyimpan foto: Server response is not valid JSON');
-                    }
-                } else {
-                    // Reset flag on error and hide dialog
-                    pendingUploads--;
-                    uploadDialog.classList.remove('active');
-                    alert('Gagal menyimpan foto: Server returned HTTP ' + xhr.status);
-                }
-            });
-
-            // Error handling
-            xhr.addEventListener('error', () => {
-                console.error('XMLHttpRequest error');
-                // Reset flag on error and hide dialog
-                pendingUploads--;
-                uploadDialog.classList.remove('active');
-                uploadDialog.querySelector('h4').innerHTML = '⏳ Mengupload Foto...';
-                progressBarFill.style.width = '0%';
-                alert('Gagal menyimpan foto: Gagal terkoneksi ke server.\n\nCek koneksi internet dan coba lagi.');
-            });
-
-            // Timeout handling
-            xhr.addEventListener('timeout', () => {
-                console.error('Request timeout');
-                // Reset flag on timeout and hide dialog
-                pendingUploads--;
-                uploadDialog.classList.remove('active');
-                uploadDialog.querySelector('h4').innerHTML = '⏳ Mengupload Foto...';
-                progressBarFill.style.width = '0%';
-                alert('Gagal menyimpan foto: Request timeout.\n\nKoneksi internet terlalu lambat.');
-            });
-
-            // Set timeout to 30 seconds
-            xhr.timeout = 300000;
-
-            // Start upload - asynchronous, non-blocking!
-            xhr.open('POST', '<?= URLROOT ?>/photo/save-session-photo');
-            xhr.send(formData);
 
             // IMMEDIATELY clear preview and re-enable capture for next shot
-            // This runs right after upload starts, NOT after it completes!
             photoPreview.style.display = 'none';
-            // Remove preview mode class
             document.querySelector('.camera-section').classList.remove('preview-mode');
-
             currentPhotoBlob = null;
 
-            // Re-enable capture button and auto-start countdown
             const captureBtn = document.getElementById('capture-btn');
             if (!isMaxPhotosReached() && !viewingGalleryPhoto) {
                 captureBtn.disabled = false;
@@ -2605,7 +2452,143 @@
                 }, 1500); // Short delay for UI update
             }
 
-            console.log('Upload started in background, auto-capture triggered!');
+            // Process queue if not already uploading
+            processUploadQueue();
+        }
+
+        function processUploadQueue() {
+            if (isUploading || uploadQueue.length === 0) return;
+
+            isUploading = true;
+            const currentItem = uploadQueue[0];
+
+            // Show/update dialog
+            const uploadDialog = document.getElementById('upload-progress-dialog');
+            const progressBarFill = document.getElementById('upload-progress-bar-fill');
+            const progressText = document.getElementById('upload-progress-text');
+
+            if (!uploadDialog.classList.contains('active')) {
+                uploadDialog.classList.add('active');
+            }
+
+            uploadDialog.querySelector('h4').innerHTML = `<svg class="spin" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"></path></svg> UPLOAD (${pendingUploads} ANTRIAN)...`;
+            progressBarFill.style.width = '0%';
+            progressText.textContent = '0%';
+
+            const formData = new FormData();
+            formData.append('session_id', sessionId);
+            formData.append('photo', currentItem.blob, 'photo.png');
+
+            const xhr = new XMLHttpRequest();
+
+            xhr.upload.addEventListener('progress', (e) => {
+                if (e.lengthComputable) {
+                    const percentComplete = Math.round((e.loaded / e.total) * 100);
+                    progressBarFill.style.width = percentComplete + '%';
+                    progressText.textContent = percentComplete + '%';
+                }
+            });
+
+            xhr.addEventListener('load', () => {
+                if (xhr.status === 200) {
+                    try {
+                        const data = JSON.parse(xhr.responseText);
+                        if (data.success) {
+                            // Success! Remove from queue
+                            uploadQueue.shift();
+                            pendingUploads--;
+
+                            savedPhotos.push(data.photo);
+                            photosSaved++;
+                            updateStats();
+                            addToGallery(data.photo);
+
+                            if (pendingUploads === 0) {
+                                uploadDialog.classList.add('upload-complete');
+                                uploadDialog.querySelector('h4').innerHTML = `<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg> SEMUA SELESAI!`;
+                                progressText.textContent = '100%';
+
+                                setTimeout(() => {
+                                    if (pendingUploads === 0) uploadDialog.classList.remove('active', 'upload-complete');
+                                }, 1500);
+                            }
+
+                            // Check max photos
+                            if (isExtendedTime && photosSaved >= numFrameSlots) {
+                                autoFinishExtendedTime();
+                            } else if (photosSaved >= maxSavePhotos) {
+                                autoFinishMaxTime();
+                            }
+
+                            isUploading = false;
+                            processUploadQueue(); // Process next in queue
+                        } else {
+                            handleUploadError(currentItem, data.error || data.message || 'Unknown error');
+                        }
+                    } catch (e) {
+                        handleUploadError(currentItem, 'Invalid server response');
+                    }
+                } else {
+                    handleUploadError(currentItem, `HTTP Error ${xhr.status}`);
+                }
+            });
+
+            xhr.addEventListener('error', () => handleUploadError(currentItem, 'Network Error'));
+            xhr.addEventListener('timeout', () => handleUploadError(currentItem, 'Timeout'));
+
+            xhr.timeout = 180000; // 3 minutes per photo timeout
+            xhr.open('POST', '<?= URLROOT ?>/photo/save-session-photo');
+            xhr.send(formData);
+        }
+
+        function handleUploadError(item, errorMsg) {
+            if (item.retryCount < 3) {
+                item.retryCount++;
+                console.warn(`Upload failed (${errorMsg}). Retrying (${item.retryCount}/3)...`);
+                
+                // Show retry status
+                const uploadDialog = document.getElementById('upload-progress-dialog');
+                if (uploadDialog) {
+                    uploadDialog.querySelector('h4').innerHTML = `<svg class="spin" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"></path></svg> MENGULANG UPLOAD (${item.retryCount}/3)...`;
+                }
+
+                isUploading = false;
+                setTimeout(processUploadQueue, 2000); // Wait 2 secs before retry
+            } else {
+                alert(`Gagal upload setelah 3 percobaan: ${errorMsg}\nCobalah periksa koneksi internet Anda.`);
+                uploadQueue.shift(); // Drop it
+                pendingUploads--;
+                isUploading = false;
+
+                if (pendingUploads === 0) {
+                    document.getElementById('upload-progress-dialog').classList.remove('active');
+                }
+                processUploadQueue();
+            }
+        }
+
+        function autoFinishExtendedTime() {
+            const captureBtn = document.getElementById('capture-btn');
+            const finishBtn = document.getElementById('finish-session-btn');
+            captureBtn.disabled = true;
+            captureBtn.style.opacity = '0.5';
+            captureBtn.innerHTML = '✅ Cukup';
+            finishBtn.innerHTML = `<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg> SELESAI SESI`;
+            finishBtn.style.background = 'var(--success-color)';
+            finishBtn.style.animation = 'pulse 1s infinite';
+            setTimeout(() => { showCustomAlert(`Selamat! Anda telah mencapai ${numFrameSlots} foto yang dibutuhkan. Tekan tombol SELESAI untuk melanjutkan ke layout.`); }, 1000);
+        }
+
+        function autoFinishMaxTime() {
+            const captureBtn = document.getElementById('capture-btn');
+            const finishBtn = document.getElementById('finish-session-btn');
+            captureBtn.disabled = true;
+            captureBtn.style.opacity = '0.5';
+            captureBtn.innerHTML = '📸 Maksimal';
+            finishBtn.innerHTML = `<svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg> SELESAI SESI`;
+            finishBtn.style.background = 'var(--success-color)';
+            finishBtn.style.animation = 'pulse 1s infinite';
+            setTimeout(() => { showCustomAlert(`Anda telah menyimpan ${maxSavePhotos} foto maksimal. Tekan tombol SELESAI untuk melanjutkan ke layout.`); }, 1000);
         }
 
         // Add photo to gallery

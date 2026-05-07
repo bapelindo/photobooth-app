@@ -12,10 +12,20 @@ if [ "$DB_HOST" = "db" ]; then
 fi
 
 # Ensure permissions
+mkdir -p /var/www/html/logs
+mkdir -p /var/www/html/app/views
+mkdir -p /var/www/html/public/uploads
+
+# Pass environment variables to Apache
+echo "export DB_SOCKET=\"$DB_SOCKET\"" >> /etc/apache2/envvars
+echo "export DB_HOST=\"$DB_HOST\"" >> /etc/apache2/envvars
+echo "export DB_USER=\"$DB_USER\"" >> /etc/apache2/envvars
+echo "export DB_PASS=\"$DB_PASS\"" >> /etc/apache2/envvars
+echo "export DB_NAME=\"$DB_NAME\"" >> /etc/apache2/envvars
+
 chown -R www-data:www-data /var/www/html/logs
 chown -R www-data:www-data /var/www/html/app/views
 chown -R www-data:www-data /var/www/html/public/uploads
-# Add more folders if needed
 
 # Execute the CMD
 exec "$@"

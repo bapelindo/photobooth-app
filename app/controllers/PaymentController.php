@@ -66,7 +66,7 @@ class PaymentController extends Controller
         ini_set('display_errors', 0);
 
         try {
-            ob_clean();
+            if (ob_get_length()) ob_clean();
             header('Content-Type: application/json');
 
             // Basic validation
@@ -170,7 +170,7 @@ class PaymentController extends Controller
 
             // Make sure we send a response even if there's an error
             try {
-                ob_clean();
+                if (ob_get_length()) ob_clean();
                 header('Content-Type: application/json');
                 http_response_code(500);
                 echo json_encode([
@@ -187,7 +187,7 @@ class PaymentController extends Controller
 
     public function testEndpoint()
     {
-        ob_clean();
+        if (ob_get_length()) ob_clean();
         header('Content-Type: application/json');
         echo json_encode([
             'success' => true,
@@ -198,7 +198,7 @@ class PaymentController extends Controller
 
     public function testMidtrans()
     {
-        ob_clean();
+        if (ob_get_length()) ob_clean();
         header('Content-Type: application/json');
 
         try {
@@ -324,7 +324,7 @@ class PaymentController extends Controller
         } elseif ($order_id) {
             $transaction = $transactionModel->findByOrderId($order_id);
         } else {
-            header('Location: /packages');
+            header('Location: ' . \URLROOT . '/packages');
             exit();
         }
 
@@ -438,7 +438,7 @@ class PaymentController extends Controller
         }
 
         try {
-            ob_clean();
+            if (ob_get_length()) ob_clean();
             header('Content-Type: application/json');
 
             // Validate package

@@ -150,7 +150,7 @@ class AiController extends Controller
             $response = curl_exec($ch);
             $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
             $curlError = curl_error($ch);
-            curl_close($ch);
+            // curl_close($ch);
 
             if ($curlError)
                 throw new Exception('cURL error: ' . $curlError);
@@ -197,7 +197,7 @@ class AiController extends Controller
                     CURLOPT_SSL_VERIFYPEER => false,
                 ]);
                 $pollResponse = curl_exec($ch);
-                curl_close($ch);
+                // curl_close($ch);
 
                 $pollData = json_decode($pollResponse, true);
                 $status = $pollData['status'] ?? 'failed';
@@ -220,7 +220,7 @@ class AiController extends Controller
                 ]);
                 $imageContent = curl_exec($chImage);
                 $httpCodeImage = curl_getinfo($chImage, CURLINFO_HTTP_CODE);
-                curl_close($chImage);
+                // curl_close($chImage);
 
                 if (!$imageContent || $httpCodeImage >= 400)
                     throw new Exception('Gagal mendownload hasil dari Replicate');
@@ -331,36 +331,36 @@ class AiController extends Controller
                         [
                             'inline_data' => [
                                 'mime_type' => $mimeType,
-                                'data'      => $base64Image
+                                'data' => $base64Image
                             ]
                         ]
                     ]
                 ]
             ],
             'generationConfig' => [
-                'temperature' => defined('GEMINI_TEMPERATURE') ? (float)GEMINI_TEMPERATURE : 0.4,
-                'topK' => defined('GEMINI_TOP_K') ? (int)GEMINI_TOP_K : 32,
-                'topP' => defined('GEMINI_TOP_P') ? (float)GEMINI_TOP_P : 1.0,
-                'maxOutputTokens' => defined('GEMINI_MAX_TOKENS') ? (int)GEMINI_MAX_TOKENS : 2048,
+                'temperature' => defined('GEMINI_TEMPERATURE') ? (float) GEMINI_TEMPERATURE : 0.4,
+                'topK' => defined('GEMINI_TOP_K') ? (int) GEMINI_TOP_K : 32,
+                'topP' => defined('GEMINI_TOP_P') ? (float) GEMINI_TOP_P : 1.0,
+                'maxOutputTokens' => defined('GEMINI_MAX_TOKENS') ? (int) GEMINI_MAX_TOKENS : 2048,
             ]
         ];
 
         $ch = curl_init($url);
         curl_setopt_array($ch, [
             CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_POST           => true,
-            CURLOPT_POSTFIELDS     => json_encode($payload),
-            CURLOPT_HTTPHEADER     => [
+            CURLOPT_POST => true,
+            CURLOPT_POSTFIELDS => json_encode($payload),
+            CURLOPT_HTTPHEADER => [
                 'Authorization: Bearer ' . $accessToken,
                 'Content-Type: application/json'
             ],
-            CURLOPT_TIMEOUT        => 120,
+            CURLOPT_TIMEOUT => 120,
             CURLOPT_SSL_VERIFYPEER => false,
         ]);
 
         $response = curl_exec($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        curl_close($ch);
+        // curl_close($ch);
 
         $responseData = json_decode($response, true);
 
@@ -397,8 +397,8 @@ class AiController extends Controller
                 }
             }
 
-            $filename     = 'ai_' . $session_id . '_' . uniqid() . '.png';
-            $savePath     = $uploadDir . $filename;
+            $filename = 'ai_' . $session_id . '_' . uniqid() . '.png';
+            $savePath = $uploadDir . $filename;
             $relativePath = '/uploads/ai_enhanced/' . $filename;
 
             file_put_contents($savePath, base64_decode($generatedBase64));
@@ -413,21 +413,21 @@ class AiController extends Controller
             $photoSessionPhotoModel = $this->model('PhotoSessionPhoto');
             $photo_id = $photoSessionPhotoModel->create([
                 'session_id' => $session_id,
-                'file_path'  => $relativePath,
-                'is_saved'   => 1,
+                'file_path' => $relativePath,
+                'is_saved' => 1,
             ]);
 
             echo json_encode([
-                'success'       => true,
-                'image_path'    => $relativePath,
-                'photo_id'      => $photo_id,
+                'success' => true,
+                'image_path' => $relativePath,
+                'photo_id' => $photo_id,
                 'text_response' => $textResponse,
             ]);
         } else {
             // Jika tidak ada gambar yang dihasilkan, kembalikan response error/teks
             echo json_encode([
-                'success'       => false,
-                'message'       => 'Gemini tidak menghasilkan gambar. Response: ' . $textResponse,
+                'success' => false,
+                'message' => 'Gemini tidak menghasilkan gambar. Response: ' . $textResponse,
                 'text_response' => $textResponse,
             ]);
         }

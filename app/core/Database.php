@@ -25,8 +25,14 @@ class Database {
         $this->user = $config['user'];
         $this->pass = $config['password'];
         $this->dbname = $config['dbname'];
+        $socket = isset($config['socket']) ? $config['socket'] : null;
 
-        $dsn = 'mysql:host=' . $this->host . ';dbname=' . $this->dbname;
+        if ($socket) {
+            $dsn = 'mysql:unix_socket=' . $socket . ';dbname=' . $this->dbname;
+        } else {
+            $dsn = 'mysql:host=' . $this->host . ';dbname=' . $this->dbname;
+        }
+
         $options = [
             PDO::ATTR_PERSISTENT => true,
             PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
@@ -37,7 +43,7 @@ class Database {
             $this->dbh = new PDO($dsn, $this->user, $this->pass, $options);
         } catch (PDOException $e) {
             $this->error = $e->getMessage();
-            echo $this->error;
+            die("Database Connection Error: " . $this->error . " | DSN: " . $dsn . " | User: " . $this->user);
         }
     }
 
