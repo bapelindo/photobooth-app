@@ -72,7 +72,7 @@ define('EMAIL_FROM_NAME', 'Photobooth App');
 define('ENABLE_SESSION_REFRESH_BACK', true);
 
 // Enable/Disable Payment Bypass (for testing only - set to false in production)
-define('ENABLE_PAYMENT_BYPASS', false);
+define('ENABLE_PAYMENT_BYPASS', true);
 
 // --- PHOTOBOOTH SESSION SETTINGS ---
 // Default session duration in seconds
