@@ -17,8 +17,10 @@ define('APPROOT', dirname(dirname(__FILE__)) . '/app'); // -> .../photobooth-app
 // Detect environment and set URLROOT accordingly
 // 1. Check for APP_URL environment variable (standard for Cloud Run/Docker)
 $appUrl = getenv('APP_URL');
-if (!$appUrl && isset($_ENV['APP_URL'])) $appUrl = $_ENV['APP_URL'];
-if (!$appUrl && isset($_SERVER['APP_URL'])) $appUrl = $_SERVER['APP_URL'];
+if (!$appUrl && isset($_ENV['APP_URL']))
+    $appUrl = $_ENV['APP_URL'];
+if (!$appUrl && isset($_SERVER['APP_URL']))
+    $appUrl = $_SERVER['APP_URL'];
 
 if ($appUrl) {
     define('URLROOT', rtrim($appUrl, '/'));
