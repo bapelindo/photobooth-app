@@ -24,6 +24,10 @@ RUN pecl install imagick \
 # Enable Apache mod_rewrite
 RUN a2enmod rewrite
 
+# Configure Apache to use the PORT environment variable
+ENV PORT=8080
+RUN sed -i "s/Listen 80/Listen \${PORT}/g" /etc/apache2/ports.conf
+
 # Set working directory
 WORKDIR /var/www/html
 
@@ -47,7 +51,7 @@ COPY docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 COPY docker/php.ini /usr/local/etc/php/conf.d/photobooth.ini
 
 # Expose port
-EXPOSE 80
+EXPOSE 8080
 
 # Entrypoint script (will be created next)
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
