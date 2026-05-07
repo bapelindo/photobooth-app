@@ -72,7 +72,8 @@ class EmailService
                     }
 
                     // Convert to web-accessible URL
-                    $downloadUrl = URLROOT . $webPath;
+                    // [DYNAMIC FIX] Check if path is already absolute (contains http)
+                    $downloadUrl = (strpos($webPath, 'http') === 0) ? $webPath : URLROOT . $webPath;
                     $fileSize = 'Unknown';
 
                     // Get file size if exists
