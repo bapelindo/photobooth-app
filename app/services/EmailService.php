@@ -71,17 +71,19 @@ class EmailService
                     // [DYNAMIC FIX] Check if path is already absolute (contains http)
                     if (strpos($webPath, 'http') === 0) {
                         $downloadUrl = $webPath;
+                        $parsedUrl = parse_url($webPath);
+                        $absolutePath = dirname(dirname(__DIR__)) . '/public' . $parsedUrl['path'];
                     } else {
                         if (substr($webPath, 0, 1) !== '/') {
                             $webPath = '/' . $webPath;
                         }
                         $downloadUrl = URLROOT . $webPath;
+                        $absolutePath = dirname(dirname(__DIR__)) . '/public' . $webPath;
                     }
                     
                     $fileSize = 'Unknown';
 
                     // Get file size if exists
-                    $absolutePath = dirname(dirname(__DIR__)) . '/public' . $webPath;
                     if (file_exists($absolutePath)) {
                         $sizeBytes = filesize($absolutePath);
                         $fileSize = $this->formatFileSize($sizeBytes);

@@ -1031,7 +1031,7 @@ class PhotoController extends Controller
                     $fullPath = dirname(APPROOT) . '/public' . $photostrip->final_image_path;
                     if (file_exists($fullPath)) {
                         $attachments[] = [
-                            'path' => $photostrip->final_image_path, // [DYNAMIC FIX] Use absolute URL to capture current domain
+                            'path' => URLROOT . $photostrip->final_image_path, // [DYNAMIC FIX] Use absolute URL to capture current domain
                             'name' => 'photostrip_' . $photostrip->frame_name . '.png'
                         ];
                     }
@@ -1045,7 +1045,7 @@ class PhotoController extends Controller
                 $relativePath = str_replace('\\', '/', $relativePath);
 
                 $attachments[] = [
-                    'path' => $relativePath, // [DYNAMIC FIX] Use absolute URL to capture current domain
+                    'path' => URLROOT . $relativePath, // [DYNAMIC FIX] Use absolute URL to capture current domain
                     'name' => 'session_photos_' . $session_id . '.zip'
                 ];
             }
