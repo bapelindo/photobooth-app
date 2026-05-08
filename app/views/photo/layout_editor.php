@@ -1601,201 +1601,213 @@
         }
 
         function loadCurrentFrame() {
-            if (!mainCanvas || !frameData[currentFrameIndex]) {
-                console.error('Canvas or frame data not available');
-                return;
-            }
-
-            const currentFrame = frameData[currentFrameIndex];
-            console.log('Loading frame:', currentFrame.name);
-
-            // Clear canvas
-            mainCanvas.clear();
-            mainCanvas.backgroundColor = 'lightblue';
-
-            const imageUrl = URLROOT + currentFrame.path;
-            console.log('Attempting to load frame from URL:', imageUrl);
-
-            // Load frame as a regular object (not background) so it can be layered
-            fabric.Image.fromURL(imageUrl, (img, isError) => {
-                if (isError || !img) {
-                    console.error(`Failed to load frame from ${imageUrl}. isError: ${isError}`);
-                    const errorRect = new fabric.Rect({
-                        width: mainCanvas.width,
-                        height: mainCanvas.height,
-                        fill: 'rgba(255, 0, 0, 0.2)',
-                        stroke: 'red',
-                        strokeWidth: 2
-                    });
-                    mainCanvas.add(errorRect);
-                    mainCanvas.sendToBack(errorRect);
-                    mainCanvas.renderAll();
+            return new Promise((resolve) => {
+                if (!mainCanvas || !frameData[currentFrameIndex]) {
+                    console.error('Canvas or frame data not available');
+                    resolve();
                     return;
                 }
 
-                console.log('Image loaded successfully. Setting as background layer.', img);
+                const currentFrame = frameData[currentFrameIndex];
+                console.log('Loading frame:', currentFrame.name);
 
-                // Add frame as bottom layer
-                img.set({
-                    scaleX: mainCanvas.width / img.width,
-                    scaleY: mainCanvas.height / img.height,
-                    selectable: false,
-                    evented: false,
-                    id: 'frame-bottom'
-                });
-                mainCanvas.add(img);
-                mainCanvas.sendToBack(img);
+                // Clear canvas
+                mainCanvas.clear();
+                mainCanvas.backgroundColor = 'lightblue';
 
-                // Clone and add frame as top layer (will be on top of photos)
-                img.clone((clonedImg) => {
-                    clonedImg.set({
-                        id: 'frame-top',
-                        selectable: false,
-                        evented: false
-                    });
-                    mainCanvas.add(clonedImg);
-                    mainCanvas.bringToFront(clonedImg);
-                    mainCanvas.renderAll();
-                    console.log('Frame layers added: bottom and top');
-                });
-            }, { crossOrigin: 'anonymous' });
+                const imageUrl = URLROOT + currentFrame.path;
+                console.log('Attempting to load frame from URL:', imageUrl);
 
-            // Create slot rectangles from current frame data
-            const slotCoords = currentFrame.slots;
+                let loadedPromises = [];
 
-            // Default slots if none provided
-            const defaultSlots = [
-                { left: 8.33, top: 6.67, width: 83.33, height: 20 },
-                { left: 8.33, top: 30, width: 83.33, height: 20 },
-                { left: 8.33, top: 53.33, width: 83.33, height: 20 },
-                { left: 8.33, top: 76.67, width: 83.33, height: 20 }
-            ];
-
-            const slotsToUse = slotCoords.length > 0 ? slotCoords : defaultSlots;
-
-            // Create slot rectangles
-            slotsToUse.forEach((slotCoordData, slotIndex) => {
-                const slotRect = new fabric.Rect({
-                    left: mainCanvas.width * (slotCoordData.left / 100),
-                    top: mainCanvas.height * (slotCoordData.top / 100),
-                    width: mainCanvas.width * (slotCoordData.width / 100),
-                    height: mainCanvas.height * (slotCoordData.height / 100),
-                    fill: 'rgba(108, 99, 255, 0.2)',
-                    stroke: '#6C63FF',
-                    strokeDashArray: [6, 6],
-                    strokeWidth: 3,
-                    selectable: false,
-                    evented: false,
-                    hoverCursor: 'copy',
-                    isSlot: true,
-                    frameIndex: currentFrameIndex,
-                    slotIndex: slotIndex,
-                    rx: 10,
-                    ry: 10
-                });
-
-                console.log(`Created slot ${slotIndex}:`, {
-                    left: slotRect.left,
-                    top: slotRect.top,
-                    width: slotRect.width,
-                    height: slotRect.height
-                });
-                mainCanvas.add(slotRect);
-
-                // Add slot number text
-                const slotText = new fabric.Text(`📷 ${slotIndex + 1}`, {
-                    left: slotRect.left + slotRect.width / 2,
-                    top: slotRect.top + slotRect.height / 2,
-                    fontSize: 16,
-                    fill: '#6C63FF',
-                    textAlign: 'center',
-                    originX: 'center',
-                    originY: 'center',
-                    selectable: false,
-                    evented: false,
-                    fontWeight: 'bold'
-                });
-                mainCanvas.add(slotText);
-
-                // Store slot reference in frame data
-                if (!currentFrame.slotObjects) {
-                    currentFrame.slotObjects = {};
-                }
-                currentFrame.slotObjects[slotIndex] = slotRect;
-            });
-
-            // Drag and drop handled by HTML5 events in initializeMainCanvas
-            console.log('✅ Frame loaded with slot objects:', Object.keys(currentFrame.slotObjects || {}));
-
-            // Load any saved images for this frame
-            if (currentFrame.images) {
-                Object.keys(currentFrame.images).forEach(slotIndex => {
-                    const imageData = currentFrame.images[slotIndex];
-                    if (imageData && currentFrame.slotObjects[slotIndex]) {
-                        // Restore saved image
-                        fabric.Image.fromURL(imageData.src, (img) => {
-                            const slot = currentFrame.slotObjects[slotIndex];
-                            img.set({
-                                left: imageData.left || slot.left,
-                                top: imageData.top || slot.top,
-                                scaleX: imageData.scaleX,
-                                scaleY: imageData.scaleY,
-                                clipPath: new fabric.Rect({
-                                    left: slot.left,
-                                    top: slot.top,
-                                    width: slot.width,
-                                    height: slot.height,
-                                    absolutePositioned: true
-                                }),
-                                selectable: true,
-                                hasControls: false,
-                                hasBorders: true,
-                                moveCursor: 'move',
-                                hoverCursor: 'move',
-                                lockScalingX: true,
-                                lockScalingY: true,
-                                lockRotation: true
+                // Load frame as a regular object (not background) so it can be layered
+                const framePromise = new Promise((resolveFrame) => {
+                    fabric.Image.fromURL(imageUrl, (img, isError) => {
+                        if (isError || !img) {
+                            console.error(`Failed to load frame from ${imageUrl}. isError: ${isError}`);
+                            const errorRect = new fabric.Rect({
+                                width: mainCanvas.width,
+                                height: mainCanvas.height,
+                                fill: 'rgba(255, 0, 0, 0.2)',
+                                stroke: 'red',
+                                strokeWidth: 2
                             });
+                            mainCanvas.add(errorRect);
+                            mainCanvas.sendToBack(errorRect);
+                            mainCanvas.renderAll();
+                            resolveFrame();
+                            return;
+                        }
 
-                            // Add panning constraints for restored image
-                            img.on('moving', function () {
-                                const slotWidth = slot.width;
-                                const slotHeight = slot.height;
-                                const rightBound = slot.left;
-                                const leftBound = slot.left - (this.getScaledWidth() - slotWidth);
-                                const bottomBound = slot.top;
-                                const topBound = slot.top - (this.getScaledHeight() - slotHeight);
+                        console.log('Image loaded successfully. Setting as background layer.', img);
 
-                                if (this.left > rightBound) this.left = rightBound;
-                                if (this.left < leftBound) this.left = leftBound;
-                                if (this.top > bottomBound) this.top = bottomBound;
-                                if (this.top < topBound) this.top = topBound;
-                            });
-
-                            // Save position when restored photo stops moving
-                            img.on('modified', function () {
-                                // Update position in frame data
-                                if (currentFrame.images[slotIndex]) {
-                                    currentFrame.images[slotIndex].left = this.left;
-                                    currentFrame.images[slotIndex].top = this.top;
-                                }
-                            });
-
-                            mainCanvas.add(img);
-                            // Restore the fabricImage reference
-                            imageData.fabricImage = img;
+                        // Add frame as bottom layer
+                        img.set({
+                            scaleX: mainCanvas.width / img.width,
+                            scaleY: mainCanvas.height / img.height,
+                            selectable: false,
+                            evented: false,
+                            id: 'frame-bottom'
                         });
-                    }
-                });
-            }
+                        mainCanvas.add(img);
+                        mainCanvas.sendToBack(img);
 
-            // CRITICAL: Ensure frame-top is always on top after restoring images
-            mainCanvas.getObjects().forEach(obj => {
-                if (obj.id === 'frame-top') {
-                    mainCanvas.bringToFront(obj);
+                        // Clone and add frame as top layer (will be on top of photos)
+                        img.clone((clonedImg) => {
+                            clonedImg.set({
+                                id: 'frame-top',
+                                selectable: false,
+                                evented: false
+                            });
+                            mainCanvas.add(clonedImg);
+                            mainCanvas.bringToFront(clonedImg);
+                            mainCanvas.renderAll();
+                            console.log('Frame layers added: bottom and top');
+                            resolveFrame();
+                        });
+                    }, { crossOrigin: 'anonymous' });
+                });
+                loadedPromises.push(framePromise);
+
+                // Create slot rectangles from current frame data
+                const slotCoords = currentFrame.slots;
+
+                // Default slots if none provided
+                const defaultSlots = [
+                    { left: 8.33, top: 6.67, width: 83.33, height: 20 },
+                    { left: 8.33, top: 30, width: 83.33, height: 20 },
+                    { left: 8.33, top: 53.33, width: 83.33, height: 20 },
+                    { left: 8.33, top: 76.67, width: 83.33, height: 20 }
+                ];
+
+                const slotsToUse = slotCoords.length > 0 ? slotCoords : defaultSlots;
+
+                // Create slot rectangles
+                slotsToUse.forEach((slotCoordData, slotIndex) => {
+                    const slotRect = new fabric.Rect({
+                        left: mainCanvas.width * (slotCoordData.left / 100),
+                        top: mainCanvas.height * (slotCoordData.top / 100),
+                        width: mainCanvas.width * (slotCoordData.width / 100),
+                        height: mainCanvas.height * (slotCoordData.height / 100),
+                        fill: 'rgba(108, 99, 255, 0.2)',
+                        stroke: '#6C63FF',
+                        strokeDashArray: [6, 6],
+                        strokeWidth: 3,
+                        selectable: false,
+                        evented: false,
+                        hoverCursor: 'copy',
+                        isSlot: true,
+                        frameIndex: currentFrameIndex,
+                        slotIndex: slotIndex,
+                        rx: 10,
+                        ry: 10
+                    });
+
+                    mainCanvas.add(slotRect);
+
+                    // Add slot number text
+                    const slotText = new fabric.Text(`📷 ${slotIndex + 1}`, {
+                        left: slotRect.left + slotRect.width / 2,
+                        top: slotRect.top + slotRect.height / 2,
+                        fontSize: 16,
+                        fill: '#6C63FF',
+                        textAlign: 'center',
+                        originX: 'center',
+                        originY: 'center',
+                        selectable: false,
+                        evented: false,
+                        fontWeight: 'bold'
+                    });
+                    mainCanvas.add(slotText);
+
+                    // Store slot reference in frame data
+                    if (!currentFrame.slotObjects) {
+                        currentFrame.slotObjects = {};
+                    }
+                    currentFrame.slotObjects[slotIndex] = slotRect;
+                });
+
+                // Load any saved images for this frame
+                if (currentFrame.images) {
+                    Object.keys(currentFrame.images).forEach(slotIndex => {
+                        const imageData = currentFrame.images[slotIndex];
+                        if (imageData && currentFrame.slotObjects[slotIndex]) {
+                            const imgPromise = new Promise((resolveImg) => {
+                                // Restore saved image
+                                fabric.Image.fromURL(imageData.src, (img) => {
+                                    if (!img) {
+                                        resolveImg();
+                                        return;
+                                    }
+                                    const slot = currentFrame.slotObjects[slotIndex];
+                                    img.set({
+                                        left: imageData.left || slot.left,
+                                        top: imageData.top || slot.top,
+                                        scaleX: imageData.scaleX,
+                                        scaleY: imageData.scaleY,
+                                        clipPath: new fabric.Rect({
+                                            left: slot.left,
+                                            top: slot.top,
+                                            width: slot.width,
+                                            height: slot.height,
+                                            absolutePositioned: true
+                                        }),
+                                        selectable: true,
+                                        hasControls: false,
+                                        hasBorders: true,
+                                        moveCursor: 'move',
+                                        hoverCursor: 'move',
+                                        lockScalingX: true,
+                                        lockScalingY: true,
+                                        lockRotation: true
+                                    });
+
+                                    // Add panning constraints for restored image
+                                    img.on('moving', function () {
+                                        const slotWidth = slot.width;
+                                        const slotHeight = slot.height;
+                                        const rightBound = slot.left;
+                                        const leftBound = slot.left - (this.getScaledWidth() - slotWidth);
+                                        const bottomBound = slot.top;
+                                        const topBound = slot.top - (this.getScaledHeight() - slotHeight);
+
+                                        if (this.left > rightBound) this.left = rightBound;
+                                        if (this.left < leftBound) this.left = leftBound;
+                                        if (this.top > bottomBound) this.top = bottomBound;
+                                        if (this.top < topBound) this.top = topBound;
+                                    });
+
+                                    // Save position when restored photo stops moving
+                                    img.on('modified', function () {
+                                        // Update position in frame data
+                                        if (currentFrame.images[slotIndex]) {
+                                            currentFrame.images[slotIndex].left = this.left;
+                                            currentFrame.images[slotIndex].top = this.top;
+                                        }
+                                    });
+
+                                    mainCanvas.add(img);
+                                    // Restore the fabricImage reference
+                                    imageData.fabricImage = img;
+                                    resolveImg();
+                                });
+                            });
+                            loadedPromises.push(imgPromise);
+                        }
+                    });
                 }
+
+                Promise.all(loadedPromises).then(() => {
+                    // CRITICAL: Ensure frame-top is always on top after restoring images
+                    mainCanvas.getObjects().forEach(obj => {
+                        if (obj.id === 'frame-top') {
+                            mainCanvas.bringToFront(obj);
+                        }
+                    });
+                    mainCanvas.renderAll();
+                    resolve();
+                });
             });
-            mainCanvas.renderAll();
         }
 
         function initializeDragAndDrop() {
@@ -2510,10 +2522,10 @@
                 // Switch to this frame if not current
                 if (frameIndex !== currentFrameIndex) {
                     currentFrameIndex = frameIndex;
-                    loadCurrentFrame();
-
-                    // Wait a bit for frame to fully load and render
-                    await new Promise(resolve => setTimeout(resolve, 100));
+                    await loadCurrentFrame();
+                } else {
+                    // Always make sure it's fully loaded just in case, or at least re-rendered
+                    mainCanvas.renderAll();
                 }
 
                 // Hide slots before generating final image
