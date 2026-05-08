@@ -2070,7 +2070,7 @@
                             </svg>
                             FILTER:
                         </label>
-                        <select id="camera-filter" onchange="applyFilter(this.value)">
+                        <select id="camera-filter" onchange="applyFilter(this.value)" onmousedown="stopCaptureTimer()">
                             <option value="none">Normal</option>
                             <?php if (isset($data['filters']) && is_array($data['filters'])): ?>
                                 <?php foreach ($data['filters'] as $filter): ?>
@@ -2193,6 +2193,8 @@
         let currentPhotoBlob = null;
         let savedPhotos = [];
         let isExtendedTime = false; // Track if we're in extended time
+        let captureCountdownInterval = null; // Track capture countdown
+        let captureNextTimeout = null; // Track auto-capture timeout
 
         // DOM elements
         const cameraFeed = document.getElementById('camera-feed');
@@ -2285,21 +2287,22 @@
             captureBtn.style.transform = 'scale(1)';
             countdown--;
 
-            const countdownInterval = setInterval(() => {
+            captureCountdownInterval = setInterval(() => {
                 captureBtn.innerHTML = `${countdownSvg} ${countdown}`;
                 captureBtn.style.transform = 'scale(1)';
-
+ 
                 countdown--;
-
+ 
                 if (countdown < 0) {
-                    clearInterval(countdownInterval);
-
+                    clearInterval(captureCountdownInterval);
+                    captureCountdownInterval = null;
+ 
                     // Flash effect
                     document.body.style.backgroundColor = 'white';
                     setTimeout(() => {
                         document.body.style.backgroundColor = '';
                     }, 100);
-
+ 
                     // Take the actual photo
                     takePhotoNow(captureBtn);
                 }
@@ -2400,7 +2403,8 @@
                 captureBtn.innerHTML = `<svg class="spin" width="1.2em" height="1.2em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"></path></svg> MEMULAI...`;
 
                 // Auto-start next capture
-                setTimeout(() => {
+                captureNextTimeout = setTimeout(() => {
+                    captureNextTimeout = null;
                     if (!isMaxPhotosReached() && !viewingGalleryPhoto) {
                         capturePhoto();
                     } else {
@@ -2443,7 +2447,8 @@
                 captureBtn.innerHTML = '⏳ Memulai...';
 
                 // Start next capture immediately without waiting for upload!
-                setTimeout(() => {
+                captureNextTimeout = setTimeout(() => {
+                    captureNextTimeout = null;
                     if (!isMaxPhotosReached() && !viewingGalleryPhoto) {
                         capturePhoto();
                     } else {
@@ -3078,18 +3083,40 @@
 
             return result;
         }
+        function stopCaptureTimer() {
+            if (captureCountdownInterval || captureNextTimeout) {
+                if (captureCountdownInterval) {
+                    clearInterval(captureCountdownInterval);
+                    captureCountdownInterval = null;
+                }
+                
+                if (captureNextTimeout) {
+                    clearTimeout(captureNextTimeout);
+                    captureNextTimeout = null;
+                }
+                
+                const captureBtn = document.getElementById('capture-btn');
+                captureBtn.disabled = false;
+                captureBtn.style.transform = '';
+                captureBtn.innerHTML = `<svg width="1.2em" height="1.2em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg> AMBIL FOTO`;
+            }
+        }
+
         // Apply camera filter
         let currentFilter = 'none';
 
         function applyFilter(filterValue) {
             const cameraFeed = document.getElementById('camera-feed');
-
+ 
+            // If there's an active capture countdown or auto-capture timeout, stop it
+            stopCaptureTimer();
+ 
             // Remove any existing inline filter styles
             cameraFeed.style.filter = '';
-
+ 
             // Update select value if called programmatically
             document.getElementById('camera-filter').value = filterValue;
-
+ 
             // Apply new filter
             currentFilter = filterValue;
             if (filterValue !== 'none' && filterValue) {
