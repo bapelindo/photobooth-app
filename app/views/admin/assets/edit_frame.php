@@ -1,92 +1,99 @@
-<?php require APPROOT . '/views/admin/layouts/header.php'; ?>
-
-<style>
-    .editor-wrapper {
-        max-width: 800px;
-        margin: auto;
-        padding: 1rem;
-    }
-    #editor-container {
-        position: relative;
-        width: 300px; /* Fixed width for a predictable canvas */
-        margin: 1rem auto;
-        border: 2px solid #ccc;
-        aspect-ratio: 2 / 6; /* Enforcing 2x6 inch aspect ratio */
-        background-color: #f0f0f0;
-    }
-    #frame-bg {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        z-index: 1;
-    }
-    .slot {
-        position: absolute;
-        box-sizing: border-box;
-        border: 2px dashed #fff;
-        background-color: rgba(0, 150, 255, 0.5);
-        cursor: move;
-        z-index: 10;
-        color: white;
-        font-size: 24px;
-        font-weight: bold;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        text-shadow: 1px 1px 2px black;
-    }
-    .resizer {
-        position: absolute;
-        width: 10px;
-        height: 10px;
-        background: #fff;
-        border: 1px solid #333;
-        z-index: 11;
-    }
-    .resizer.bottom-right {
-        bottom: -5px;
-        right: -5px;
-        cursor: se-resize;
-    }
-    .controls {
-        text-align: center;
-        margin-top: 1rem;
-        padding: 1rem;
-        background-color: #f7f7f7;
-        border-radius: 8px;
-    }
-    .form-group {
-        margin-bottom: 1rem;
-    }
-    .slot-controls button {
-        margin: 0 5px;
-    }
-</style>
-
-<div class="editor-wrapper">
-    <h2>Edit Slots for: <?= htmlspecialchars($data['asset']->name) ?></h2>
-
-    <div class="controls">
-        <div class="form-group">
-            <label for="slot-count-input">Number of Slots:</label>
-            <input type="number" id="slot-count-input" value="<?= $data['asset']->slot_count ?? 1 ?>" min="0" max="10" class="form-control" style="width: 100px; display: inline-block;" readonly>
-        </div>
-        <div class="form-group slot-controls">
-            <button id="add-slot-btn" class="btn btn-success">+ Add Slot</button>
-            <button id="remove-slot-btn" class="btn btn-warning">- Remove Last</button>
-            <button id="generate-slots-btn" class="btn btn-info">Reset & Generate</button>
-        </div>
-        <button id="save-frame-btn" class="btn btn-primary">Save Frame Data</button>
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+    <div>
+        <h1 style="margin: 0; font-size: 1.5rem; display: flex; align-items: center; gap: 0.5rem;">
+            <i data-feather="layout" style="color: var(--primary);"></i>
+            Edit Frame Slots
+        </h1>
+        <p style="color: var(--text-muted); margin: 0; font-size: 0.875rem;">Define the photo placement slots for <strong style="color: var(--text-main);"><?= htmlspecialchars($data['asset']->name) ?></strong>.</p>
     </div>
-
-    <div id="editor-container">
-        <img id="frame-bg" src="<?= URLROOT . htmlspecialchars($data['asset']->path) ?>" alt="Frame Background">
-        <!-- Slots will be generated here by JavaScript -->
+    <div>
+        <a href="<?= URLROOT; ?>/admin/assets" class="btn btn-secondary">
+            <i data-feather="arrow-left"></i> Back to Assets
+        </a>
     </div>
 </div>
+
+<div style="display: grid; grid-template-columns: 1fr 350px; gap: 2rem; align-items: start;">
+    
+    <!-- Editor Card -->
+    <div class="card">
+        <div class="card-header" style="background-color: var(--bg-body);">
+            <h3 class="card-title" style="display: flex; align-items: center; gap: 0.5rem;">
+                <i data-feather="edit-3" style="width: 18px;"></i> Visual Editor
+            </h3>
+        </div>
+        <div class="card-body" style="display: flex; justify-content: center; background-color: var(--bg-surface-hover); overflow: hidden;">
+            <div id="editor-container" style="position: relative; width: 300px; aspect-ratio: 2 / 6; background-color: #e2e8f0; border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); border-radius: 4px; overflow: hidden;">
+                <img id="frame-bg" src="<?= URLROOT . htmlspecialchars($data['asset']->path) ?>" alt="Frame Background" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1; pointer-events: none;">
+                <!-- Slots generated here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Controls Card -->
+    <div class="card">
+        <div class="card-header" style="background-color: var(--bg-body);">
+            <h3 class="card-title" style="display: flex; align-items: center; gap: 0.5rem;">
+                <i data-feather="sliders" style="width: 18px;"></i> Configuration
+            </h3>
+        </div>
+        <div class="card-body" style="display: flex; flex-direction: column; gap: 1.5rem;">
+            
+            <div>
+                <label for="slot-count-input" class="form-label">Total Slots</label>
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <input type="number" id="slot-count-input" value="<?= $data['asset']->slot_count ?? 1 ?>" min="0" max="10" class="form-control" style="width: 100px; background-color: var(--bg-body);" readonly>
+                    <span style="font-size: 0.75rem; color: var(--text-muted);">Current active slots</span>
+                </div>
+            </div>
+
+            <div style="border-top: 1px solid var(--border-color); padding-top: 1.5rem;">
+                <label class="form-label" style="margin-bottom: 0.75rem;">Slot Management</label>
+                <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                    <button id="add-slot-btn" class="btn btn-secondary" style="width: 100%; justify-content: flex-start;">
+                        <i data-feather="plus-circle" style="color: var(--success);"></i> Add 1 Slot
+                    </button>
+                    <button id="remove-slot-btn" class="btn btn-secondary" style="width: 100%; justify-content: flex-start;">
+                        <i data-feather="minus-circle" style="color: var(--warning);"></i> Remove Last Slot
+                    </button>
+                    <button id="generate-slots-btn" class="btn btn-secondary" style="width: 100%; justify-content: flex-start;">
+                        <i data-feather="refresh-cw" style="color: var(--primary);"></i> Auto Generate
+                    </button>
+                </div>
+                <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 1rem;">
+                    <i data-feather="info" style="width: 12px; height: 12px;"></i> Drag to move. Use bottom-right corner to resize. Right-click a slot to delete.
+                </div>
+            </div>
+
+            <div style="border-top: 1px solid var(--border-color); padding-top: 1.5rem; margin-top: auto;">
+                <button id="save-frame-btn" class="btn btn-primary" style="width: 100%;">
+                    <i data-feather="save"></i> Save Frame Data
+                </button>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<style>
+    .slot {
+        position: absolute; box-sizing: border-box;
+        border: 2px dashed #ffffff; background-color: rgba(37, 99, 235, 0.4);
+        cursor: move; z-index: 10;
+        color: white; font-size: 1.5rem; font-weight: 700;
+        display: flex; align-items: center; justify-content: center;
+        text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+        box-shadow: inset 0 0 0 1px rgba(0,0,0,0.2);
+        transition: background-color 0.2s;
+    }
+    .slot:hover { background-color: rgba(37, 99, 235, 0.6); }
+    .resizer { position: absolute; width: 12px; height: 12px; background: white; border: 2px solid var(--primary); border-radius: 50%; z-index: 11; }
+    .resizer.bottom-right { bottom: -6px; right: -6px; cursor: se-resize; }
+    
+    @media (max-width: 900px) {
+        div[style*="grid-template-columns: 1fr 350px;"] { grid-template-columns: 1fr !important; }
+    }
+</style>
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
@@ -122,11 +129,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         function closeDragElement() {
-            // Clean up all mouse event listeners
             document.onmouseup = null;
             document.onmousemove = null;
-            document.ontouchend = null;
-            document.ontouchmove = null;
         }
     }
 
@@ -154,9 +158,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function updateSlotCount() {
-        countInput.value = slots.length;
-    }
+    function updateSlotCount() { countInput.value = slots.length; }
 
     function clearSlots() {
         slots.forEach(s => s.remove());
@@ -167,7 +169,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function addOneSlot() {
         const index = slots.length + 1;
         const defaultHeight = 15;
-        const defaultTop = 5 + ((index - 1) * (defaultHeight + 5)); // Stagger new slots
+        const defaultTop = 5 + ((index - 1) * (defaultHeight + 5)); 
         const coords = { top: defaultTop, left: 10, width: 80, height: defaultHeight };
         createSlot(coords, index);
     }
@@ -181,7 +183,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function generateSlots() {
-        const numToGen = prompt("Enter number of slots to generate:", countInput.value);
+        const numToGen = prompt("Enter number of slots to generate (e.g., 4):", countInput.value);
+        if (numToGen === null) return;
         const count = parseInt(numToGen, 10);
         if (isNaN(count) || count < 0) return;
         
@@ -198,7 +201,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function loadExistingSlots() {
         const existingSlots = JSON.parse(<?= json_encode($data['asset']->slot_coordinates ?? '[]') ?>);
-        if (existingSlots.length > 0) {
+        if (existingSlots && existingSlots.length > 0) {
             countInput.value = existingSlots.length;
             existingSlots.forEach((coord, index) => createSlot(coord, index + 1));
         } else {
@@ -226,9 +229,7 @@ document.addEventListener('DOMContentLoaded', () => {
             e.preventDefault();
             if (confirm('Delete this slot?')) {
                 const slotIndex = slots.indexOf(slot);
-                if(slotIndex > -1) {
-                    slots.splice(slotIndex, 1);
-                }
+                if(slotIndex > -1) slots.splice(slotIndex, 1);
                 slot.remove();
                 updateSlotCount();
             }
@@ -238,6 +239,7 @@ document.addEventListener('DOMContentLoaded', () => {
     addSlotBtn.addEventListener('click', addOneSlot);
     removeSlotBtn.addEventListener('click', removeLastSlot);
     generateBtn.addEventListener('click', generateSlots);
+    
     saveBtn.addEventListener('click', async () => {
         const coordinates = slots.map(slot => {
             const parentRect = editor.getBoundingClientRect();
@@ -255,30 +257,23 @@ document.addEventListener('DOMContentLoaded', () => {
             const response = await fetch('<?= URLROOT; ?>/admin/assets/ajax_save_frame_data', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
-                    asset_id: assetId, 
-                    slot_count: slotCount,
-                    coordinates: coordinates 
-                })
+                body: JSON.stringify({ asset_id: assetId, slot_count: slotCount, coordinates: coordinates })
             });
             const result = await response.json();
             if (result.success) {
-                showAdminMessage('Frame data saved successfully!', 'success');
-                setTimeout(() => {
-                    window.location.href = '<?= URLROOT; ?>/admin/assets';
-                }, 1000);
+                if(typeof showToast === 'function') showToast('Frame data saved successfully!', 'success');
+                else alert('Saved successfully!');
+                setTimeout(() => window.location.href = '<?= URLROOT; ?>/admin/assets', 1000);
             } else {
                 throw new Error(result.message || 'Failed to save.');
             }
         } catch (err) {
-            showAdminMessage('Error: ' + err.message, 'error');
+            if(typeof showToast === 'function') showToast('Error: ' + err.message, 'error');
+            else alert('Error: ' + err.message);
             console.error(err);
         }
     });
 
-    // Initial load
     loadExistingSlots();
 });
 </script>
-
-<?php require APPROOT . '/views/admin/layouts/footer.php'; ?>

@@ -1,35 +1,31 @@
-<div class="page-header">
-    <h1>
-        <i data-feather="home"></i>
-        Dashboard
-    </h1>
-    <div class="page-actions">
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+    <div>
+        <h1 style="margin: 0; font-size: 1.5rem; display: flex; align-items: center; gap: 0.5rem;">
+            <i data-feather="grid" style="color: var(--primary);"></i>
+            Dashboard Overview
+        </h1>
+        <p style="color: var(--text-muted); margin: 0; font-size: 0.875rem;">Welcome back, here's what's happening today.</p>
+    </div>
+    <div style="display: flex; gap: 0.75rem; align-items: center;">
         <button class="btn btn-secondary" onclick="refreshDashboard()">
-            <i data-feather="refresh-cw"></i>
-            Refresh
+            <i data-feather="refresh-cw"></i> Refresh
         </button>
-        <div class="dropdown">
-            <button class="btn btn-primary" onclick="toggleDropdown('adminDropdown')">
-                <i data-feather="settings"></i>
-                Quick Actions
-                <i data-feather="chevron-down"></i>
+        <div style="position: relative;" id="quick-actions-dropdown">
+            <button class="btn btn-primary" onclick="toggleQuickActions()">
+                <i data-feather="zap"></i> Quick Actions <i data-feather="chevron-down"></i>
             </button>
-            <div class="dropdown-content" id="adminDropdown">
-                <a href="#" onclick="exportData('all')">
-                    <i data-feather="download"></i>
-                    Export All Data
+            <div id="quick-actions-menu" style="display: none; position: absolute; right: 0; top: 100%; margin-top: 0.5rem; background: white; border: 1px solid var(--border-color); border-radius: var(--radius-md); box-shadow: var(--shadow-lg); min-width: 200px; z-index: 50; overflow: hidden;">
+                <a href="#" onclick="exportData('all'); return false;" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; color: var(--text-main); text-decoration: none; font-size: 0.875rem; transition: background 0.2s;">
+                    <i data-feather="download" style="width: 16px;"></i> Export Data
                 </a>
-                <a href="#" onclick="clearCache()">
-                    <i data-feather="trash-2"></i>
-                    Clear Cache
+                <a href="#" onclick="clearCache(); return false;" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; color: var(--text-main); text-decoration: none; font-size: 0.875rem; transition: background 0.2s;">
+                    <i data-feather="trash-2" style="width: 16px;"></i> Clear Cache
                 </a>
-                <a href="#" onclick="showSystemInfo()">
-                    <i data-feather="info"></i>
-                    System Info
+                <a href="#" onclick="showSystemInfo(); return false;" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; color: var(--text-main); text-decoration: none; font-size: 0.875rem; transition: background 0.2s;">
+                    <i data-feather="info" style="width: 16px;"></i> System Info
                 </a>
-                <a href="<?= URLROOT ?>/admin/download-logs">
-                    <i data-feather="file-text"></i>
-                    Download Logs
+                <a href="<?= URLROOT ?>/admin/download-logs" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; color: var(--text-main); text-decoration: none; font-size: 0.875rem; transition: background 0.2s; border-top: 1px solid var(--border-color);">
+                    <i data-feather="file-text" style="width: 16px;"></i> Download Logs
                 </a>
             </div>
         </div>
@@ -37,726 +33,323 @@
 </div>
 
 <?php if (isset($error_message)): ?>
-<div class="alert alert-error">
+<div style="background-color: var(--danger-bg); border: 1px solid var(--danger); color: var(--danger-text); padding: 1rem; border-radius: var(--radius-md); margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem;">
     <i data-feather="alert-triangle"></i>
-    <?= htmlspecialchars($error_message) ?>
+    <span style="font-weight: 500; font-size: 0.875rem;"><?= htmlspecialchars($error_message) ?></span>
 </div>
 <?php endif; ?>
 
-<div class="dashboard-grid">
-    <div class="stat-card">
-        <div class="card-icon revenue-icon">
-            <i data-feather="dollar-sign"></i>
-        </div>
-        <div class="card-content">
-            <h3 class="card-title">Revenue Today</h3>
-            <p class="card-value">Rp <?= number_format($summary->revenue_today ?? 0, 0, ',', '.') ?></p>
-        </div>
-    </div>
-     <div class="stat-card">
-        <div class="card-icon transaction-icon">
-            <i data-feather="shopping-cart"></i>
-        </div>
-        <div class="card-content">
-            <h3 class="card-title">Transactions Today</h3>
-            <p class="card-value"><?= $summary->transactions_today ?? 0 ?></p>
+<!-- Top Metrics -->
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+    <!-- Revenue Today -->
+    <div class="card" style="margin-bottom: 0;">
+        <div class="card-body" style="display: flex; align-items: center; gap: 1.25rem;">
+            <div style="width: 48px; height: 48px; border-radius: 50%; background-color: var(--primary-light); color: var(--primary); display: flex; align-items: center; justify-content: center;">
+                <i data-feather="dollar-sign"></i>
+            </div>
+            <div>
+                <p style="color: var(--text-muted); font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.25rem;">Revenue Today</p>
+                <h3 style="font-size: 1.5rem; font-weight: 700; color: var(--text-main); margin: 0;">Rp <?= number_format($summary->revenue_today ?? 0, 0, ',', '.') ?></h3>
+            </div>
         </div>
     </div>
-     <div class="stat-card">
-        <div class="card-icon total-revenue-icon">
-            <i data-feather="bar-chart-2"></i>
-        </div>
-        <div class="card-content">
-            <h3 class="card-title">Total Revenue</h3>
-            <p class="card-value">Rp <?= number_format($summary->total_revenue ?? 0, 0, ',', '.') ?></p>
-        </div>
-    </div>
-     <div class="stat-card">
-        <div class="card-icon total-trans-icon">
-            <i data-feather="check-circle"></i>
-        </div>
-        <div class="card-content">
-            <h3 class="card-title">Total Transactions</h3>
-            <p class="card-value"><?= $summary->total_transactions ?? 0 ?></p>
-        </div>
-    </div>
-</div>
 
-<!-- Queue Statistics -->
-<div class="section-container card" style="margin-top: 2rem;">
-    <div class="section-header">
-        <h2 class="section-title">Queue System Status</h2>
-        <a href="<?= URLROOT ?>/admin/queue" class="btn btn-primary">Manage Queues</a>
+    <!-- Transactions Today -->
+    <div class="card" style="margin-bottom: 0;">
+        <div class="card-body" style="display: flex; align-items: center; gap: 1.25rem;">
+            <div style="width: 48px; height: 48px; border-radius: 50%; background-color: var(--warning-bg); color: var(--warning); display: flex; align-items: center; justify-content: center;">
+                <i data-feather="shopping-cart"></i>
+            </div>
+            <div>
+                <p style="color: var(--text-muted); font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.25rem;">Transactions Today</p>
+                <h3 style="font-size: 1.5rem; font-weight: 700; color: var(--text-main); margin: 0;"><?= $summary->transactions_today ?? 0 ?></h3>
+            </div>
+        </div>
     </div>
-    
-    <div class="dashboard-grid" style="grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));">
-        <!-- Email Queue Stats -->
-        <div class="stat-card">
-            <div class="card-icon email-icon">
-                <i data-feather="mail"></i>
+
+    <!-- Total Revenue -->
+    <div class="card" style="margin-bottom: 0;">
+        <div class="card-body" style="display: flex; align-items: center; gap: 1.25rem;">
+            <div style="width: 48px; height: 48px; border-radius: 50%; background-color: var(--success-bg); color: var(--success); display: flex; align-items: center; justify-content: center;">
+                <i data-feather="trending-up"></i>
             </div>
-            <div class="card-content">
-                <h3 class="card-title">Email Queue</h3>
-                <p class="card-value"><?= $email_queue_stats->pending ?? 0 ?> pending</p>
-                <small class="card-subtitle">
-                    <?= $email_queue_stats->completed ?? 0 ?> completed • 
-                    <?= $email_queue_stats->failed ?? 0 ?> failed
-                </small>
+            <div>
+                <p style="color: var(--text-muted); font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.25rem;">Total Revenue</p>
+                <h3 style="font-size: 1.5rem; font-weight: 700; color: var(--text-main); margin: 0;">Rp <?= number_format($summary->total_revenue ?? 0, 0, ',', '.') ?></h3>
             </div>
         </div>
-        
-        <!-- Print Queue Stats -->
-        <div class="stat-card">
-            <div class="card-icon print-icon">
-                <i data-feather="printer"></i>
+    </div>
+
+    <!-- Total Transactions -->
+    <div class="card" style="margin-bottom: 0;">
+        <div class="card-body" style="display: flex; align-items: center; gap: 1.25rem;">
+            <div style="width: 48px; height: 48px; border-radius: 50%; background-color: #f3e8ff; color: #7e22ce; display: flex; align-items: center; justify-content: center;">
+                <i data-feather="check-circle"></i>
             </div>
-            <div class="card-content">
-                <h3 class="card-title">Print Queue</h3>
-                <p class="card-value"><?= $print_queue_stats->pending ?? 0 ?> pending</p>
-                <small class="card-subtitle">
-                    <?= $print_queue_stats->completed ?? 0 ?> completed • 
-                    <?= $print_queue_stats->failed ?? 0 ?> failed
-                </small>
-            </div>
-        </div>
-        
-        <!-- Photo Sessions Today -->
-        <div class="stat-card">
-            <div class="card-icon session-icon">
-                <i data-feather="camera"></i>
-            </div>
-            <div class="card-content">
-                <h3 class="card-title">Sessions Today</h3>
-                <p class="card-value"><?= $session_stats->sessions_today ?? 0 ?> sessions</p>
-                <small class="card-subtitle">
-                    <?= $session_stats->completed_sessions ?? 0 ?> completed • 
-                    <?= $session_stats->avg_photos_per_session ?? 0 ?> avg photos
-                </small>
-            </div>
-        </div>
-        
-        <!-- System Status -->
-        <div class="stat-card">
-            <div class="card-icon system-icon">
-                <i data-feather="activity"></i>
-            </div>
-            <div class="card-content">
-                <h3 class="card-title">System Status</h3>
-                <p class="card-value" id="system-status">
-                    <span class="status-dot active"></span> Active
-                </p>
-                <small class="card-subtitle" id="last-updated">Updated just now</small>
+            <div>
+                <p style="color: var(--text-muted); font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.25rem;">Total Transactions</p>
+                <h3 style="font-size: 1.5rem; font-weight: 700; color: var(--text-main); margin: 0;"><?= $summary->total_transactions ?? 0 ?></h3>
             </div>
         </div>
     </div>
 </div>
 
-<div class="section-container card">
-    <div class="section-header">
-        <h2 class="section-title">Most Popular Packages</h2>
+<!-- Operations & System -->
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">System Operations</h3>
+        <a href="<?= URLROOT ?>/admin/queue" class="btn btn-secondary btn-sm">Manage Queues</a>
     </div>
-    <table>
-        <thead>
-            <tr>
-                <th>Package Name</th>
-                <th>Total Transactions</th>
-            </tr>
-        </thead>
-        <tbody>
-            <?php if (!empty($popular_packages)): ?>
-                <?php foreach ($popular_packages as $package): ?>
-                <tr>
-                    <td><strong><?= htmlspecialchars($package->name ?? 'Unknown') ?></strong></td>
-                    <td><span class="badge"><?= $package->transaction_count ?? 0 ?></span></td>
-                </tr>
-                <?php endforeach; ?>
-            <?php else: ?>
-                <tr>
-                    <td colspan="2" style="text-align: center; color: var(--text-muted); padding: 2rem;">
-                        <i data-feather="inbox"></i><br>
-                        No popular packages data available
-                    </td>
-                </tr>
-            <?php endif; ?>
-        </tbody>
-    </table>
-</div>
+    <div class="card-body">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem;">
+            
+            <div style="border-right: 1px solid var(--border-color); padding-right: 1.5rem;" class="op-stat">
+                <div style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-muted); font-size: 0.875rem; font-weight: 500; margin-bottom: 0.75rem;">
+                    <i data-feather="mail" style="width: 16px;"></i> Email Queue
+                </div>
+                <h4 style="font-size: 1.25rem; margin: 0 0 0.25rem 0;" id="eq-pending"><?= $email_queue_stats->pending ?? 0 ?> pending</h4>
+                <div style="font-size: 0.75rem; color: var(--text-muted);" id="eq-sub">
+                    <?= $email_queue_stats->completed ?? 0 ?> completed &bull; <?= $email_queue_stats->failed ?? 0 ?> failed
+                </div>
+            </div>
 
-<!-- Daily Session Statistics -->
-<div class="section-container card" style="margin-top: 2rem;">
-    <div class="section-header">
-        <h2 class="section-title">Daily Session Statistics</h2>
+            <div style="border-right: 1px solid var(--border-color); padding-right: 1.5rem;" class="op-stat">
+                <div style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-muted); font-size: 0.875rem; font-weight: 500; margin-bottom: 0.75rem;">
+                    <i data-feather="printer" style="width: 16px;"></i> Print Queue
+                </div>
+                <h4 style="font-size: 1.25rem; margin: 0 0 0.25rem 0;" id="pq-pending"><?= $print_queue_stats->pending ?? 0 ?> pending</h4>
+                <div style="font-size: 0.75rem; color: var(--text-muted);" id="pq-sub">
+                    <?= $print_queue_stats->completed ?? 0 ?> completed &bull; <?= $print_queue_stats->failed ?? 0 ?> failed
+                </div>
+            </div>
+
+            <div style="border-right: 1px solid var(--border-color); padding-right: 1.5rem;" class="op-stat">
+                <div style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-muted); font-size: 0.875rem; font-weight: 500; margin-bottom: 0.75rem;">
+                    <i data-feather="camera" style="width: 16px;"></i> Sessions Today
+                </div>
+                <h4 style="font-size: 1.25rem; margin: 0 0 0.25rem 0;"><?= $session_stats->sessions_today ?? 0 ?> sessions</h4>
+                <div style="font-size: 0.75rem; color: var(--text-muted);">
+                    <?= $session_stats->completed_sessions ?? 0 ?> completed &bull; Avg <?= $session_stats->avg_photos_per_session ?? 0 ?> photos
+                </div>
+            </div>
+
+            <div class="op-stat" style="padding-right: 1.5rem;">
+                <div style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-muted); font-size: 0.875rem; font-weight: 500; margin-bottom: 0.75rem;">
+                    <i data-feather="activity" style="width: 16px;"></i> Health
+                </div>
+                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;" id="sys-status">
+                    <span style="width: 8px; height: 8px; border-radius: 50%; background-color: var(--success);"></span>
+                    <h4 style="font-size: 1.25rem; margin: 0; color: var(--success);">Active</h4>
+                </div>
+                <div style="font-size: 0.75rem; color: var(--text-muted);" id="sys-updated">Updated just now</div>
+            </div>
+
+        </div>
     </div>
-    <table>
-        <thead>
-            <tr>
-                <th>Date</th>
-                <th>Sessions</th>
-                <th>Revenue</th>
-                <th>Avg. Duration</th>
-                <th>Print Success Rate</th>
-            </tr>
-        </thead>
-        <tbody>
-            <?php if (!empty($daily_session_stats)): ?>
-                <?php foreach ($daily_session_stats as $stat): ?>
-                <tr>
-                    <td><?= date('M j, Y', strtotime($stat->date)) ?></td>
-                    <td><span class="badge"><?= $stat->sessions ?></span></td>
-                    <td><strong>Rp <?= number_format($stat->revenue ?? 0, 0, ',', '.') ?></strong></td>
-                    <td><?= round($stat->avg_duration ?? 0) ?>s</td>
-                    <td><?= round($stat->print_success_rate ?? 0, 1) ?>%</td>
-                </tr>
-                <?php endforeach; ?>
-            <?php else: ?>
-                <tr>
-                    <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 2rem;">
-                        <i data-feather="inbox"></i><br>
-                        No session data available for the past 7 days
-                    </td>
-                </tr>
-            <?php endif; ?>
-        </tbody>
-    </table>
 </div>
 
 <style>
-.status-dot {
-    display: inline-block;
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    margin-right: 6px;
-}
-
-.card-subtitle {
-    color: var(--text-muted);
-    font-size: 0.875rem;
-    margin-top: 4px;
-}
-
-/* Icon styling for different types */
-.revenue-icon {
-    background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(59, 130, 246, 0.1));
-    border: 1px solid rgba(59, 130, 246, 0.3);
-}
-.revenue-icon i { color: var(--primary-light); }
-
-.transaction-icon {
-    background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(245, 158, 11, 0.1));
-    border: 1px solid rgba(245, 158, 11, 0.3);
-}
-.transaction-icon i { color: #fbbf24; }
-
-.total-revenue-icon {
-    background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(16, 185, 129, 0.1));
-    border: 1px solid rgba(16, 185, 129, 0.3);
-}
-.total-revenue-icon i { color: var(--success-light); }
-
-.total-trans-icon {
-    background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(239, 68, 68, 0.1));
-    border: 1px solid rgba(239, 68, 68, 0.3);
-}
-.total-trans-icon i { color: var(--error-light); }
-
-.email-icon {
-    background: linear-gradient(135deg, rgba(14, 165, 233, 0.2), rgba(14, 165, 233, 0.1));
-    border: 1px solid rgba(14, 165, 233, 0.3);
-}
-.email-icon i { color: #38bdf8; }
-
-.print-icon {
-    background: linear-gradient(135deg, rgba(124, 58, 237, 0.2), rgba(124, 58, 237, 0.1));
-    border: 1px solid rgba(124, 58, 237, 0.3);
-}
-.print-icon i { color: #a855f7; }
-
-.session-icon {
-    background: linear-gradient(135deg, rgba(202, 138, 4, 0.2), rgba(202, 138, 4, 0.1));
-    border: 1px solid rgba(202, 138, 4, 0.3);
-}
-.session-icon i { color: #facc15; }
-
-.system-icon {
-    background: linear-gradient(135deg, rgba(34, 197, 94, 0.2), rgba(34, 197, 94, 0.1));
-    border: 1px solid rgba(34, 197, 94, 0.3);
-}
-.system-icon i { color: var(--success-color); }
-
-.status-dot {
-    display: inline-block;
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    margin-right: 6px;
-}
-
-.status-dot.active { background: var(--success-color); }
-.status-dot.warning { background: var(--warning-color); }
-.status-dot.error { background: var(--error-color); }
-
-.section-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1rem;
-}
+    @media (max-width: 768px) {
+        .op-stat { border-right: none !important; padding-right: 0 !important; border-bottom: 1px solid var(--border-color); padding-bottom: 1.5rem; }
+        .op-stat:last-child { border-bottom: none; padding-bottom: 0; }
+    }
 </style>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 1.5rem; align-items: start;">
+    <!-- Popular Packages -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Popular Packages</h3>
+        </div>
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Package</th>
+                        <th style="text-align: right;">Transactions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php if (!empty($popular_packages)): ?>
+                        <?php foreach ($popular_packages as $package): ?>
+                        <tr>
+                            <td style="font-weight: 500;"><?= htmlspecialchars($package->name ?? 'Unknown') ?></td>
+                            <td style="text-align: right;">
+                                <span class="badge badge-primary"><?= $package->transaction_count ?? 0 ?></span>
+                            </td>
+                        </tr>
+                        <?php endforeach; ?>
+                    <?php else: ?>
+                        <tr>
+                            <td colspan="2" style="text-align: center; color: var(--text-muted); padding: 2rem;">
+                                No package data available
+                            </td>
+                        </tr>
+                    <?php endif; ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Daily Sessions -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">7-Day Session Overview</h3>
+        </div>
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Sessions</th>
+                        <th style="text-align: right;">Revenue</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php if (!empty($daily_session_stats)): ?>
+                        <?php foreach ($daily_session_stats as $stat): ?>
+                        <tr>
+                            <td><?= date('M j', strtotime($stat->date)) ?></td>
+                            <td><span class="badge badge-secondary" style="background: var(--bg-body); border: 1px solid var(--border-color);"><?= $stat->sessions ?></span></td>
+                            <td style="text-align: right; font-weight: 600;">Rp <?= number_format($stat->revenue ?? 0, 0, ',', '.') ?></td>
+                        </tr>
+                        <?php endforeach; ?>
+                    <?php else: ?>
+                        <tr>
+                            <td colspan="3" style="text-align: center; color: var(--text-muted); padding: 2rem;">
+                                No session data available
+                            </td>
+                        </tr>
+                    <?php endif; ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- System Info Modal -->
+<div id="system-info-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); backdrop-filter: blur(2px); z-index: 1000; align-items: center; justify-content: center;">
+    <div style="background: white; border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); width: 90%; max-width: 600px; max-height: 85vh; display: flex; flex-direction: column;">
+        <div style="padding: 1.5rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+            <h3 style="margin: 0; font-size: 1.25rem;">System Information</h3>
+            <button onclick="document.getElementById('system-info-modal').style.display='none'" style="background: none; border: none; cursor: pointer; color: var(--text-muted);"><i data-feather="x"></i></button>
+        </div>
+        <div style="padding: 1.5rem; overflow-y: auto; font-family: monospace; font-size: 0.875rem; background: var(--bg-body); color: var(--text-main);" id="sys-info-content">
+            Loading...
+        </div>
+    </div>
+</div>
 
 <script>
-// Auto-refresh queue statistics every 30 seconds
-function refreshQueueStats() {
-    fetch('<?= URLROOT ?>/admin/queue-stats')
-        .then(response => response.json())
-        .then(data => {
-            // Update email queue stats
-            const emailCards = document.querySelectorAll('.stat-card');
-            let emailCard = null;
-            
-            // Find email card by checking for mail icon
-            emailCards.forEach(card => {
-                if (card.querySelector('[data-feather="mail"]')) {
-                    emailCard = card;
-                }
-            });
-            if (emailCard) {
-                const emailValue = emailCard.querySelector('.card-value');
-                const emailSubtitle = emailCard.querySelector('.card-subtitle');
-                
-                emailValue.textContent = `${data.email_stats.pending || 0} pending`;
-                emailSubtitle.textContent = `${data.email_stats.completed || 0} completed • ${data.email_stats.failed || 0} failed`;
-            }
-            
-            // Update print queue stats
-            let printCard = null;
-            emailCards.forEach(card => {
-                if (card.querySelector('[data-feather="printer"]')) {
-                    printCard = card;
-                }
-            });
-            if (printCard) {
-                const printValue = printCard.querySelector('.card-value');
-                const printSubtitle = printCard.querySelector('.card-subtitle');
-                
-                printValue.textContent = `${data.print_stats.pending || 0} pending`;
-                printSubtitle.textContent = `${data.print_stats.completed || 0} completed • ${data.print_stats.failed || 0} failed`;
-            }
-            
-            // Update last updated time
-            const lastUpdated = document.getElementById('last-updated');
-            if (lastUpdated) {
-                lastUpdated.textContent = 'Updated just now';
-            }
-            
-            // Update system status based on queue health
-            const systemStatus = document.getElementById('system-status');
-            const statusDot = systemStatus?.querySelector('.status-dot');
-            
-            const totalPending = (data.email_stats.pending || 0) + (data.print_stats.pending || 0);
-            const totalFailed = (data.email_stats.failed || 0) + (data.print_stats.failed || 0);
-            
-            if (totalFailed > 5) {
-                statusDot.style.background = '#EF4444'; // Red
-                systemStatus.innerHTML = '<span class="status-dot" style="background: #EF4444;"></span> Issues';
-            } else if (totalPending > 10) {
-                statusDot.style.background = '#F59E0B'; // Yellow
-                systemStatus.innerHTML = '<span class="status-dot" style="background: #F59E0B;"></span> Busy';
-            } else {
-                statusDot.style.background = '#16A34A'; // Green
-                systemStatus.innerHTML = '<span class="status-dot" style="background: #16A34A;"></span> Active';
-            }
-        })
-        .catch(error => {
-            console.error('Failed to refresh queue stats:', error);
-            const lastUpdated = document.getElementById('last-updated');
-            if (lastUpdated) {
-                lastUpdated.textContent = 'Update failed';
-                lastUpdated.style.color = '#EF4444';
-            }
-        });
-}
+    function toggleQuickActions() {
+        const menu = document.getElementById('quick-actions-menu');
+        menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+    }
 
-// Start auto-refresh
-setInterval(refreshQueueStats, 30000); // Every 30 seconds
-
-// Initial call to update immediately
-refreshQueueStats();
-
-// Advanced dashboard functions
-function refreshDashboard() {
-    location.reload();
-}
-
-function toggleDropdown(id) {
-    const dropdown = document.getElementById(id);
-    dropdown.classList.toggle('show');
-    
-    // Close other dropdowns
-    const dropdowns = document.querySelectorAll('.dropdown-content');
-    dropdowns.forEach(dd => {
-        if (dd.id !== id) {
-            dd.classList.remove('show');
+    // Close dropdown on outside click
+    document.addEventListener('click', function(e) {
+        const dropdown = document.getElementById('quick-actions-dropdown');
+        if (dropdown && !dropdown.contains(e.target)) {
+            document.getElementById('quick-actions-menu').style.display = 'none';
         }
     });
-}
 
-function exportData(type) {
-    const url = `<?= URLROOT ?>/admin/export-data/${type}`;
-    window.open(url, '_blank');
-    toggleDropdown('adminDropdown');
-}
+    // Add hover effect to dropdown items manually since we used inline styles for simplicity
+    document.querySelectorAll('#quick-actions-menu a').forEach(a => {
+        a.addEventListener('mouseenter', () => a.style.backgroundColor = 'var(--bg-surface-hover)');
+        a.addEventListener('mouseleave', () => a.style.backgroundColor = 'transparent');
+    });
 
-function clearCache() {
-    if (confirm('Are you sure you want to clear the cache?')) {
-        fetch('<?= URLROOT ?>/admin/clear-cache', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                showAdminMessage('Cache cleared successfully: ' + data.message, 'success');
-            } else {
-                showAdminMessage('Failed to clear cache: ' + data.message, 'error');
-            }
-        })
-        .catch(error => {
-            showAdminMessage('Error clearing cache: ' + error.message, 'error');
-        });
+    function refreshDashboard() {
+        location.reload();
     }
-    toggleDropdown('adminDropdown');
-}
 
-function showSystemInfo() {
-    fetch('<?= URLROOT ?>/admin/system-info')
-        .then(response => response.json())
+    function exportData(type) {
+        document.getElementById('quick-actions-menu').style.display = 'none';
+        window.open(`<?= URLROOT ?>/admin/export-data/${type}`, '_blank');
+    }
+
+    function clearCache() {
+        document.getElementById('quick-actions-menu').style.display = 'none';
+        if(confirm('Are you sure you want to clear the system cache?')) {
+            fetch('<?= URLROOT ?>/admin/clear-cache', { method: 'POST' })
+            .then(res => res.json())
+            .then(data => {
+                if(data.success) showToast('Cache cleared successfully', 'success');
+                else showToast(data.message || 'Failed to clear cache', 'error');
+            })
+            .catch(err => showToast('Error clearing cache', 'error'));
+        }
+    }
+
+    function showSystemInfo() {
+        document.getElementById('quick-actions-menu').style.display = 'none';
+        const modal = document.getElementById('system-info-modal');
+        const content = document.getElementById('sys-info-content');
+        modal.style.display = 'flex';
+        content.textContent = 'Loading system info...';
+
+        fetch('<?= URLROOT ?>/admin/system-info')
+        .then(res => res.json())
         .then(data => {
-            if (data.error) {
-                showAdminMessage('Error loading system info: ' + data.error, 'error');
-                return;
-            }
-            
-            let info = `
-=== SYSTEM INFORMATION ===
-
-PHP Version: ${data.php_version}
-Server: ${data.server_software}
-Memory Limit: ${data.memory_limit}
-Max Execution Time: ${data.max_execution_time}s
-Upload Max Filesize: ${data.upload_max_filesize}
-Post Max Size: ${data.post_max_size}
-
-Disk Free Space: ${data.disk_free_space}
-Disk Total Space: ${data.disk_total_space}
-
-Current Time: ${data.current_time}
-Timezone: ${data.timezone}
-
-Extensions:
-- GD: ${data.extensions.gd ? 'Enabled' : 'Disabled'}
-- cURL: ${data.extensions.curl ? 'Enabled' : 'Disabled'}
-- PDO: ${data.extensions.pdo ? 'Enabled' : 'Disabled'}
-- ZIP: ${data.extensions.zip ? 'Enabled' : 'Disabled'}
-            `;
-            
-            // Create a modal or use alert for now
-            const modal = document.createElement('div');
-            modal.className = 'system-info-modal';
-            modal.innerHTML = `
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h3>System Information</h3>
-                        <button onclick="this.closest('.system-info-modal').remove()">×</button>
-                    </div>
-                    <pre class="system-info-text">${info}</pre>
+            if(data.error) { content.textContent = 'Error: ' + data.error; return; }
+            content.innerHTML = `
+                <div style="margin-bottom: 1rem;"><strong style="color: var(--primary);">PHP Version:</strong> ${data.php_version}</div>
+                <div style="margin-bottom: 1rem;"><strong style="color: var(--primary);">Server:</strong> ${data.server_software}</div>
+                <div style="margin-bottom: 1rem;"><strong style="color: var(--primary);">Limits:</strong>
+                    <ul style="list-style: none; padding: 0; margin: 0.5rem 0 0 1rem;">
+                        <li>Memory: ${data.memory_limit}</li>
+                        <li>Max Execution: ${data.max_execution_time}s</li>
+                        <li>Upload Max: ${data.upload_max_filesize}</li>
+                        <li>Post Max: ${data.post_max_size}</li>
+                    </ul>
+                </div>
+                <div style="margin-bottom: 1rem;"><strong style="color: var(--primary);">Disk Space:</strong>
+                    <ul style="list-style: none; padding: 0; margin: 0.5rem 0 0 1rem;">
+                        <li>Free: ${data.disk_free_space}</li>
+                        <li>Total: ${data.disk_total_space}</li>
+                    </ul>
+                </div>
+                <div><strong style="color: var(--primary);">Extensions:</strong>
+                    <ul style="list-style: none; padding: 0; margin: 0.5rem 0 0 1rem;">
+                        <li>GD: ${data.extensions.gd ? '<span style="color:var(--success);">Yes</span>' : '<span style="color:var(--danger);">No</span>'}</li>
+                        <li>cURL: ${data.extensions.curl ? '<span style="color:var(--success);">Yes</span>' : '<span style="color:var(--danger);">No</span>'}</li>
+                        <li>PDO: ${data.extensions.pdo ? '<span style="color:var(--success);">Yes</span>' : '<span style="color:var(--danger);">No</span>'}</li>
+                        <li>ZIP: ${data.extensions.zip ? '<span style="color:var(--success);">Yes</span>' : '<span style="color:var(--danger);">No</span>'}</li>
+                    </ul>
                 </div>
             `;
-            document.body.appendChild(modal);
         })
-        .catch(error => {
-            showAdminMessage('Error loading system info: ' + error.message, 'error');
-        });
-    
-    toggleDropdown('adminDropdown');
-}
-
-// Close dropdowns when clicking outside
-document.addEventListener('click', function(event) {
-    if (!event.target.matches('.dropdown button')) {
-        const dropdowns = document.querySelectorAll('.dropdown-content');
-        dropdowns.forEach(dropdown => {
-            dropdown.classList.remove('show');
-        });
+        .catch(err => { content.textContent = 'Failed to load system info'; });
     }
-});
+
+    // Auto-refresh queue stats
+    function refreshQueueStats() {
+        fetch('<?= URLROOT ?>/admin/queue-stats')
+        .then(res => res.json())
+        .then(data => {
+            document.getElementById('eq-pending').textContent = `${data.email_stats.pending || 0} pending`;
+            document.getElementById('eq-sub').innerHTML = `${data.email_stats.completed || 0} completed &bull; ${data.email_stats.failed || 0} failed`;
+
+            document.getElementById('pq-pending').textContent = `${data.print_stats.pending || 0} pending`;
+            document.getElementById('pq-sub').innerHTML = `${data.print_stats.completed || 0} completed &bull; ${data.print_stats.failed || 0} failed`;
+
+            const updated = document.getElementById('sys-updated');
+            if(updated) updated.textContent = 'Updated just now';
+
+            const sysStatus = document.getElementById('sys-status');
+            const totalPending = (data.email_stats.pending || 0) + (data.print_stats.pending || 0);
+            const totalFailed = (data.email_stats.failed || 0) + (data.print_stats.failed || 0);
+
+            if (totalFailed > 5) {
+                sysStatus.innerHTML = `<span style="width: 8px; height: 8px; border-radius: 50%; background-color: var(--danger);"></span><h4 style="font-size: 1.25rem; margin: 0; color: var(--danger);">Issues</h4>`;
+            } else if (totalPending > 10) {
+                sysStatus.innerHTML = `<span style="width: 8px; height: 8px; border-radius: 50%; background-color: var(--warning);"></span><h4 style="font-size: 1.25rem; margin: 0; color: var(--warning);">Busy</h4>`;
+            } else {
+                sysStatus.innerHTML = `<span style="width: 8px; height: 8px; border-radius: 50%; background-color: var(--success);"></span><h4 style="font-size: 1.25rem; margin: 0; color: var(--success);">Active</h4>`;
+            }
+        }).catch(err => console.error('Queue refresh failed'));
+    }
+
+    setInterval(refreshQueueStats, 30000);
 </script>
-
-<style>
-    .dashboard-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 1.5rem;
-        margin-bottom: 2.5rem;
-    }
-    .stat-card {
-        background: linear-gradient(135deg, var(--card-bg) 0%, var(--card-secondary) 100%);
-        border-radius: 1rem;
-        box-shadow: var(--shadow);
-        border: 1px solid var(--border-color);
-        padding: 2rem;
-        display: flex;
-        align-items: center;
-        gap: 1.5rem;
-        transition: var(--transition);
-        position: relative;
-        overflow: hidden;
-    }
-    
-    .stat-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 3px;
-        background: var(--gradient-primary);
-    }
-    
-    .stat-card:hover {
-        transform: translateY(-4px);
-        box-shadow: var(--shadow-lg);
-        border-color: var(--border-light);
-    }
-    .card-icon {
-        width: 60px;
-        height: 60px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-    .card-icon .feather { width: 28px; height: 28px; }
-    .card-title { 
-        font-size: 0.875rem; 
-        color: var(--text-muted); 
-        margin: 0 0 8px 0; 
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-    }
-    .card-value { 
-        font-size: 1.875rem; 
-        font-weight: 800; 
-        color: var(--text-color); 
-        margin: 0; 
-        line-height: 1.2;
-    }
-    .section-container { 
-        margin-top: 2.5rem; 
-        background: var(--card-bg);
-        background-image: var(--gradient-card);
-        border-radius: 1rem;
-        box-shadow: var(--shadow);
-        border: 1px solid var(--border-color);
-        overflow: hidden;
-        transition: var(--transition);
-    }
-    
-    .section-container:hover {
-        box-shadow: var(--shadow-lg);
-        border-color: var(--border-light);
-    }
-    
-    .section-header { 
-        padding: 2rem; 
-        border-bottom: 1px solid var(--border-color); 
-        background: var(--card-secondary);
-    }
-    .section-title { 
-        font-size: 1.375rem; 
-        font-weight: 700; 
-        margin: 0; 
-        color: var(--text-color);
-        background: linear-gradient(135deg, var(--primary-light) 0%, var(--primary-color) 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-    }
-    .badge {
-        background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-hover) 100%);
-        color: white;
-        padding: 0.375rem 1rem;
-        border-radius: 9999px;
-        font-weight: 600;
-        font-size: 0.875rem;
-        border: 1px solid var(--primary-color);
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
-    
-    /* Page actions */
-    .page-actions {
-        display: flex;
-        gap: 1rem;
-        align-items: center;
-    }
-    
-    /* Dropdown */
-    .dropdown {
-        position: relative;
-        display: inline-block;
-    }
-    
-    .dropdown-content {
-        display: none;
-        position: absolute;
-        right: 0;
-        background-color: var(--card-bg);
-        min-width: 220px;
-        box-shadow: var(--shadow-lg);
-        border-radius: var(--border-radius);
-        border: 1px solid var(--border-color);
-        z-index: 1000;
-        padding: 0.5rem 0;
-        margin-top: 0.5rem;
-    }
-    
-    .dropdown-content.show {
-        display: block;
-        animation: slideDown 0.2s ease-out;
-    }
-    
-    .dropdown-content a {
-        color: var(--text-color);
-        padding: 0.75rem 1.25rem;
-        text-decoration: none;
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-        font-weight: 500;
-        transition: var(--transition);
-    }
-    
-    .dropdown-content a:hover {
-        background-color: var(--card-hover);
-        color: var(--primary-light);
-    }
-    
-    .dropdown-content a .feather {
-        width: 16px;
-        height: 16px;
-    }
-    
-    @keyframes slideDown {
-        from {
-            opacity: 0;
-            transform: translateY(-10px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-    
-    /* System Info Modal */
-    .system-info-modal {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0, 0, 0, 0.5);
-        z-index: 1000;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        animation: fadeIn 0.3s ease-out;
-    }
-    
-    .modal-content {
-        background-color: var(--card-bg);
-        border-radius: var(--border-radius);
-        box-shadow: var(--shadow-lg);
-        max-width: 600px;
-        max-height: 80vh;
-        width: 90%;
-        overflow: hidden;
-        animation: slideIn 0.3s ease-out;
-    }
-    
-    .modal-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 1.5rem 2rem;
-        border-bottom: 1px solid var(--border-color);
-        background: var(--card-secondary);
-    }
-    
-    .modal-header h3 {
-        margin: 0;
-        font-size: 1.25rem;
-        font-weight: 700;
-        color: var(--text-color);
-    }
-    
-    .modal-header button {
-        background: none;
-        border: none;
-        font-size: 1.5rem;
-        cursor: pointer;
-        color: var(--text-muted);
-        padding: 0.25rem 0.5rem;
-        border-radius: 0.25rem;
-        transition: var(--transition);
-    }
-    
-    .modal-header button:hover {
-        background-color: #fee2e2;
-        color: #dc2626;
-    }
-    
-    .system-info-text {
-        padding: 2rem;
-        margin: 0;
-        background-color: var(--bg-secondary);
-        color: var(--text-color);
-        font-family: 'Courier New', monospace;
-        font-size: 0.875rem;
-        line-height: 1.6;
-        max-height: 60vh;
-        overflow-y: auto;
-        white-space: pre-wrap;
-    }
-    
-    @media (max-width: 768px) {
-        .page-actions {
-            flex-direction: column;
-            align-items: stretch;
-            gap: 0.75rem;
-            margin-top: 1rem;
-        }
-        
-        .dropdown-content {
-            right: auto;
-            left: 0;
-            min-width: 100%;
-        }
-        
-        .modal-content {
-            width: 95%;
-            max-height: 90vh;
-        }
-        
-        .modal-header {
-            padding: 1rem;
-        }
-        
-        .system-info-text {
-            padding: 1rem;
-            font-size: 0.8rem;
-        }
-    }
-</style>
