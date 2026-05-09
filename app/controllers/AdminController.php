@@ -1261,7 +1261,9 @@ class AdminController extends Controller
     public function exportData($type = 'all')
     {
         // Suppress any output that could interfere with headers
-        ob_clean();
+        if (ob_get_length()) {
+            ob_end_clean();
+        }
 
         try {
             $allowedTypes = ['sessions', 'packages', 'transactions', 'all'];
@@ -1303,7 +1305,9 @@ class AdminController extends Controller
 
                 $zip->close();
 
-                ob_clean();
+                if (ob_get_length()) {
+                    ob_end_clean();
+                }
                 header('Content-Type: application/zip');
                 header('Content-Disposition: attachment; filename="' . $filename . '"');
                 header('Content-Length: ' . filesize($zipFile));
@@ -1335,7 +1339,9 @@ class AdminController extends Controller
                         break;
                 }
 
-                ob_clean();
+                if (ob_get_length()) {
+                    ob_end_clean();
+                }
                 header('Content-Type: text/csv');
                 header('Content-Disposition: attachment; filename="' . $filename . '"');
                 echo $this->arrayToCsv($data);
@@ -1639,6 +1645,9 @@ class AdminController extends Controller
             }
 
             // Set headers for file download
+            if (ob_get_length()) {
+                ob_end_clean();
+            }
             header('Content-Type: text/plain');
             header('Content-Disposition: attachment; filename="photobooth_logs_' . date('Y-m-d_H-i-s') . '.log"');
             header('Content-Length: ' . strlen($logContent));
