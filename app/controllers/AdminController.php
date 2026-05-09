@@ -1681,11 +1681,11 @@ class AdminController extends Controller
 
     private function tail($file, $lines = 50)
     {
-        if (!file_exists($file)) {
-            return "File not found: $file\n";
+        if (!file_exists($file) || !is_readable($file)) {
+            return "File not found or not readable: $file\n";
         }
 
-        $handle = fopen($file, 'r');
+        $handle = @fopen($file, 'r');
         if (!$handle) {
             return "Could not open file: $file\n";
         }
