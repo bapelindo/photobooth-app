@@ -16,6 +16,7 @@ class Controller
         $public_pages = [
             '/packages', // The packages page itself
             '/login', // Login page
+            '/logout', // Logout page
             '/admin/login', // Allow admin login to be accessed without workflow_step
 
             '/payment/process', // Allow payment process to initiate workflow

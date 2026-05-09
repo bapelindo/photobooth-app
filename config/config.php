@@ -146,7 +146,7 @@ define('REPLICATE_API_TOKEN', 'r8_dAuspDDjH4ZIKtHLowDJLNLSVDIXpHT3ex9MW');
 // Model img2img yang benar (gunakan VERSION HASH, bukan nama owner/model):
 //   SD 2.1 img2img (RECOMMENDED): '15a3689ee13b0d2616e98820eca31d4c3abcd36672df6afce5cb6feb1d66087d'
 //   SD 1.5 img2img (alternatif) : '9a9b6aa5ac2793993aaaff48fd0e05fc5be213bc85a0bafd24e578d3bb81e628'
-define('REPLICATE_MODEL', '15a3689ee13b0d2616e98820eca31d4c3abcd36672df6afce5cb6feb1d66087d');
+define('REPLICATE_MODEL', 'gemini-2.5-flash-image');
 
 // Parameter Generasi AI (Image-to-Image)
 // prompt_strength: 0.0 = gambar asli tidak berubah, 1.0 = gambar asli diabaikan sepenuhnya
