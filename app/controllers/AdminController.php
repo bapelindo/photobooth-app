@@ -1030,16 +1030,102 @@ class AdminController extends Controller
     public function updateSettings()
     {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-            $settings = [
-                'default_session_duration' => $_POST['default_session_duration'] ?? DEFAULT_SESSION_DURATION,
-                'default_max_save_photos' => $_POST['default_max_save_photos'] ?? DEFAULT_MAX_SAVE_PHOTOS,
-                'default_frame_limit' => $_POST['default_frame_limit'] ?? DEFAULT_FRAME_LIMIT,
-                'auto_print_enabled' => isset($_POST['auto_print_enabled']),
-                'photo_quality' => $_POST['photo_quality'] ?? PHOTO_QUALITY,
-            ];
+            
+            // 1. Update config.php
+            $configPath = APPROOT . '/../config/config.php';
+            if (file_exists($configPath)) {
+                $content = file_get_contents($configPath);
+                
+                $replaceDefine = function($key, $value, $isString = true) use (&$content) {
+                    if ($isString) {
+                        $val = str_replace("'", "\'", $value);
+                        $pattern = "/define\s*\(\s*['\"]" . preg_quote($key, '/') . "['\"]\s*,\s*['\"].*?['\"]\s*\)\s*;/";
+                        $replacement = "define('$key', '$val');";
+                    } else {
+                        $valStr = is_bool($value) ? ($value ? 'true' : 'false') : $value;
+                        $pattern = "/define\s*\(\s*['\"]" . preg_quote($key, '/') . "['\"]\s*,\s*[^'\"]+?\s*\)\s*;/";
+                        $replacement = "define('$key', $valStr);";
+                    }
+                    if (preg_match($pattern, $content)) {
+                        $content = preg_replace($pattern, $replacement, $content);
+                    }
+                };
+                
+                if (isset($_POST['app_name'])) $replaceDefine('SITENAME', trim($_POST['app_name']), true);
+                if (isset($_POST['live_view_websocket_url'])) $replaceDefine('LIVE_VIEW_WEBSOCKET_URL', trim($_POST['live_view_websocket_url']), true);
+                if (isset($_POST['company_name'])) $replaceDefine('EMAIL_FROM_NAME', trim($_POST['company_name']), true);
+                if (isset($_POST['contact_email'])) $replaceDefine('EMAIL_FROM_ADDRESS', trim($_POST['contact_email']), true);
+                if (isset($_POST['enable_session_refresh_back'])) $replaceDefine('ENABLE_SESSION_REFRESH_BACK', $_POST['enable_session_refresh_back'] == '1', false);
+                if (isset($_POST['enable_payment_bypass'])) $replaceDefine('ENABLE_PAYMENT_BYPASS', $_POST['enable_payment_bypass'] == '1', false);
+                
+                if (isset($_POST['default_session_duration'])) $replaceDefine('DEFAULT_SESSION_DURATION', (int)$_POST['default_session_duration'], false);
+                if (isset($_POST['default_max_save_photos'])) $replaceDefine('DEFAULT_MAX_SAVE_PHOTOS', (int)$_POST['default_max_save_photos'], false);
+                if (isset($_POST['default_frame_limit'])) $replaceDefine('DEFAULT_FRAME_LIMIT', (int)$_POST['default_frame_limit'], false);
+                if (isset($_POST['max_photo_file_size'])) $replaceDefine('MAX_PHOTO_FILE_SIZE', (int)$_POST['max_photo_file_size'], false);
+                
+                if (isset($_POST['auto_print'])) $replaceDefine('AUTO_PRINT_ENABLED', $_POST['auto_print'] == '1', false);
+                if (isset($_POST['print_queue_interval'])) $replaceDefine('PRINT_QUEUE_INTERVAL', (int)$_POST['print_queue_interval'], false);
+                if (isset($_POST['print_method'])) $replaceDefine('PRINT_METHOD', trim($_POST['print_method']), true);
+                
+                if (isset($_POST['smtp_host'])) $replaceDefine('SMTP_HOST', trim($_POST['smtp_host']), true);
+                if (isset($_POST['smtp_port'])) $replaceDefine('SMTP_PORT', (int)$_POST['smtp_port'], false);
+                if (isset($_POST['smtp_secure'])) $replaceDefine('SMTP_SECURE', trim($_POST['smtp_secure']), true);
+                if (isset($_POST['smtp_username'])) $replaceDefine('SMTP_USERNAME', trim($_POST['smtp_username']), true);
+                if (!empty($_POST['smtp_password'])) $replaceDefine('SMTP_PASSWORD', trim($_POST['smtp_password']), true);
+                
+                if (isset($_POST['print_quality'])) {
+                    $q = $_POST['print_quality'];
+                    $qualityValue = $q === 'high' ? 100 : ($q === 'draft' ? 60 : 80);
+                    $replaceDefine('PHOTO_QUALITY', $qualityValue, false);
+                }
+                
+                if (isset($_POST['ai_provider'])) $replaceDefine('AI_PROVIDER', trim($_POST['ai_provider']), true);
+                if (isset($_POST['ai_enhance_enabled'])) $replaceDefine('AI_ENHANCE_ENABLED', $_POST['ai_enhance_enabled'] == '1', false);
+                if (isset($_POST['ai_enhance_default_prompt'])) $replaceDefine('AI_ENHANCE_DEFAULT_PROMPT', trim($_POST['ai_enhance_default_prompt']), true);
+                
+                if (isset($_POST['google_cloud_project_id'])) $replaceDefine('GOOGLE_CLOUD_PROJECT_ID', trim($_POST['google_cloud_project_id']), true);
+                if (isset($_POST['google_cloud_location'])) $replaceDefine('GOOGLE_CLOUD_LOCATION', trim($_POST['google_cloud_location']), true);
+                if (isset($_POST['gemini_model'])) $replaceDefine('GEMINI_MODEL', trim($_POST['gemini_model']), true);
+                
+                if (!empty($_POST['replicate_api_token'])) $replaceDefine('REPLICATE_API_TOKEN', trim($_POST['replicate_api_token']), true);
+                if (isset($_POST['replicate_model'])) $replaceDefine('REPLICATE_MODEL', trim($_POST['replicate_model']), true);
+                
+                file_put_contents($configPath, $content);
+            }
+            
+            // 2. Update payment.php
+            $paymentPath = APPROOT . '/../config/payment.php';
+            if (file_exists($paymentPath)) {
+                $oldConfig = require $paymentPath;
+                $serverKey = !empty($_POST['midtrans_server_key']) ? $_POST['midtrans_server_key'] : ($oldConfig['server_key'] ?? '');
+                $clientKey = $_POST['midtrans_client_key'] ?? ($oldConfig['client_key'] ?? '');
+                $isProd = isset($_POST['midtrans_environment']) && $_POST['midtrans_environment'] === 'production';
+                
+                $isProdStr = $isProd ? 'true' : 'false';
+                $paymentContent = "<?php\n\nreturn [\n    'server_key' => '$serverKey',\n    'client_key' => '$clientKey',\n    'is_production' => $isProdStr,\n];\n";
+                file_put_contents($paymentPath, $paymentContent);
+            }
 
-            // Save settings to configuration or database
-            $this->saveSettings($settings);
+            // 3. Update database.php
+            $dbPath = APPROOT . '/../config/database.php';
+            if (file_exists($dbPath) && isset($_POST['db_host'])) {
+                $content = file_get_contents($dbPath);
+                
+                $host = $_POST['db_host'] ?? 'localhost';
+                $user = $_POST['db_user'] ?? 'root';
+                $dbname = $_POST['db_name'] ?? 'photobooth_db';
+                $pass = !empty($_POST['db_password']) ? $_POST['db_password'] : null;
+
+                $content = preg_replace("/'host'\s*=>\s*getEnvVar\('DB_HOST',\s*'.*?'\)/", "'host' => getEnvVar('DB_HOST', '$host')", $content);
+                $content = preg_replace("/'user'\s*=>\s*getEnvVar\('DB_USER',\s*'.*?'\)/", "'user' => getEnvVar('DB_USER', '$user')", $content);
+                $content = preg_replace("/'dbname'\s*=>\s*getEnvVar\('DB_NAME',\s*'.*?'\)/", "'dbname' => getEnvVar('DB_NAME', '$dbname')", $content);
+                
+                if ($pass !== null) {
+                    $content = preg_replace("/'password'\s*=>\s*getEnvVar\('DB_PASS',\s*'.*?'\)/", "'password' => getEnvVar('DB_PASS', '$pass')", $content);
+                }
+                
+                file_put_contents($dbPath, $content);
+            }
 
             $this->flashAndRedirect('admin/settings', 'Pengaturan berhasil disimpan!', 'success');
         }
@@ -1047,20 +1133,31 @@ class AdminController extends Controller
 
     private function getCurrentSettings()
     {
+        $paymentConfig = file_exists(APPROOT . '/../config/payment.php') ? require APPROOT . '/../config/payment.php' : [];
+        $databaseConfig = file_exists(APPROOT . '/../config/database.php') ? require APPROOT . '/../config/database.php' : [];
+        
         return [
-            'default_session_duration' => DEFAULT_SESSION_DURATION,
-            'default_max_save_photos' => DEFAULT_MAX_SAVE_PHOTOS,
-            'default_frame_limit' => DEFAULT_FRAME_LIMIT,
-            'auto_print_enabled' => AUTO_PRINT_ENABLED,
-            'photo_quality' => PHOTO_QUALITY,
+            'app_name' => defined('SITENAME') ? SITENAME : 'Photobooth App',
+            'contact_email' => defined('EMAIL_FROM_ADDRESS') ? EMAIL_FROM_ADDRESS : '',
+            
+            'default_session_duration' => defined('DEFAULT_SESSION_DURATION') ? DEFAULT_SESSION_DURATION : 300,
+            'default_max_save_photos' => defined('DEFAULT_MAX_SAVE_PHOTOS') ? DEFAULT_MAX_SAVE_PHOTOS : 20,
+            'default_frame_limit' => defined('DEFAULT_FRAME_LIMIT') ? DEFAULT_FRAME_LIMIT : 2,
+            'auto_print' => (defined('AUTO_PRINT_ENABLED') && AUTO_PRINT_ENABLED) ? '1' : '0',
+            
+            'smtp_host' => defined('SMTP_HOST') ? SMTP_HOST : '',
+            'smtp_port' => defined('SMTP_PORT') ? SMTP_PORT : '587',
+            'smtp_username' => defined('SMTP_USERNAME') ? SMTP_USERNAME : '',
+            
+            'midtrans_client_key' => $paymentConfig['client_key'] ?? '',
+            'midtrans_environment' => (isset($paymentConfig['is_production']) && $paymentConfig['is_production']) ? 'production' : 'sandbox',
+            
+            'db_host' => $databaseConfig['host'] ?? 'localhost',
+            'db_user' => $databaseConfig['user'] ?? 'root',
+            'db_name' => $databaseConfig['dbname'] ?? 'photobooth_db',
+            
+            'print_quality' => defined('PHOTO_QUALITY') ? (PHOTO_QUALITY >= 100 ? 'high' : (PHOTO_QUALITY <= 60 ? 'draft' : 'normal')) : 'normal',
         ];
-    }
-
-    private function saveSettings($settings)
-    {
-        // This would save settings to database or config file
-        // For now, just log them
-        error_log('Settings updated: ' . json_encode($settings));
     }
 
     // === ADVANCED ADMIN FEATURES ===

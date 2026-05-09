@@ -127,6 +127,34 @@
             </div>
         </div>
         
+        <!-- Database Settings -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title" style="display: flex; align-items: center; gap: 0.5rem;"><i data-feather="database" style="width: 18px; color: var(--primary);"></i> Database Settings</h3>
+            </div>
+            <div class="card-body">
+                <div class="form-group">
+                    <label for="db_host" class="form-label">Database Host</label>
+                    <input type="text" name="db_host" id="db_host" class="form-control" value="<?= htmlspecialchars($settings['db_host'] ?? 'localhost') ?>">
+                </div>
+                
+                <div class="form-group">
+                    <label for="db_user" class="form-label">Database User</label>
+                    <input type="text" name="db_user" id="db_user" class="form-control" value="<?= htmlspecialchars($settings['db_user'] ?? 'root') ?>">
+                </div>
+                
+                <div class="form-group">
+                    <label for="db_password" class="form-label">Database Password</label>
+                    <input type="password" name="db_password" id="db_password" class="form-control" placeholder="Leave empty to keep existing password">
+                </div>
+                
+                <div class="form-group">
+                    <label for="db_name" class="form-label">Database Name</label>
+                    <input type="text" name="db_name" id="db_name" class="form-control" value="<?= htmlspecialchars($settings['db_name'] ?? 'photobooth_db') ?>">
+                </div>
+            </div>
+        </div>
+        
         <!-- Printer Settings -->
         <div class="card" style="grid-column: 1 / -1;">
             <div class="card-header">
