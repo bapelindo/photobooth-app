@@ -31,6 +31,27 @@
                     <label for="contact_email" class="form-label">Contact Email</label>
                     <input type="email" name="contact_email" id="contact_email" class="form-control" value="<?= htmlspecialchars($settings['contact_email'] ?? '') ?>">
                 </div>
+
+                <div class="form-group">
+                    <label for="live_view_websocket_url" class="form-label">Live View WebSocket URL</label>
+                    <input type="text" name="live_view_websocket_url" id="live_view_websocket_url" class="form-control" value="<?= htmlspecialchars($settings['live_view_websocket_url'] ?? 'ws://localhost:8765') ?>">
+                </div>
+                
+                <div class="form-group">
+                    <label for="enable_session_refresh_back" class="form-label">Enable Session Refresh Back</label>
+                    <select name="enable_session_refresh_back" id="enable_session_refresh_back" class="form-control">
+                        <option value="1" <?= ($settings['enable_session_refresh_back'] ?? '1') === '1' ? 'selected' : '' ?>>Yes</option>
+                        <option value="0" <?= ($settings['enable_session_refresh_back'] ?? '1') === '0' ? 'selected' : '' ?>>No</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="enable_payment_bypass" class="form-label">Enable Payment Bypass (Skip Payment)</label>
+                    <select name="enable_payment_bypass" id="enable_payment_bypass" class="form-control">
+                        <option value="1" <?= ($settings['enable_payment_bypass'] ?? '0') === '1' ? 'selected' : '' ?>>Yes</option>
+                        <option value="0" <?= ($settings['enable_payment_bypass'] ?? '0') === '0' ? 'selected' : '' ?>>No</option>
+                    </select>
+                </div>
                 
                 <div class="form-group">
                     <label for="timezone" class="form-label">Timezone</label>
@@ -64,6 +85,11 @@
                 </div>
                 
                 <div class="form-group">
+                    <label for="max_photo_file_size" class="form-label">Max Photo File Size (Bytes)</label>
+                    <input type="number" name="max_photo_file_size" id="max_photo_file_size" class="form-control" min="102400" value="<?= htmlspecialchars($settings['max_photo_file_size'] ?? 10485760) ?>">
+                </div>
+
+                <div class="form-group">
                     <label for="auto_print" class="form-label">Auto Print After Session</label>
                     <select name="auto_print" id="auto_print" class="form-control">
                         <option value="1" <?= ($settings['auto_print'] ?? '0') === '1' ? 'selected' : '' ?>>Yes</option>
@@ -89,6 +115,15 @@
                     <input type="number" name="smtp_port" id="smtp_port" class="form-control" value="<?= htmlspecialchars($settings['smtp_port'] ?? '587') ?>">
                 </div>
                 
+                <div class="form-group">
+                    <label for="smtp_secure" class="form-label">SMTP Secure</label>
+                    <select name="smtp_secure" id="smtp_secure" class="form-control">
+                        <option value="tls" <?= ($settings['smtp_secure'] ?? 'tls') === 'tls' ? 'selected' : '' ?>>TLS</option>
+                        <option value="ssl" <?= ($settings['smtp_secure'] ?? 'tls') === 'ssl' ? 'selected' : '' ?>>SSL</option>
+                        <option value="" <?= ($settings['smtp_secure'] ?? 'tls') === '' ? 'selected' : '' ?>>None</option>
+                    </select>
+                </div>
+
                 <div class="form-group">
                     <label for="smtp_username" class="form-label">SMTP Username</label>
                     <input type="text" name="smtp_username" id="smtp_username" class="form-control" value="<?= htmlspecialchars($settings['smtp_username'] ?? '') ?>">
@@ -165,6 +200,19 @@
                     <label for="printer_name" class="form-label">Default Printer Name</label>
                     <input type="text" name="printer_name" id="printer_name" class="form-control" value="<?= htmlspecialchars($settings['printer_name'] ?? '') ?>" placeholder="e.g. Canon SELPHY CP1300">
                 </div>
+
+                <div class="form-group">
+                    <label for="print_method" class="form-label">Print Method</label>
+                    <select name="print_method" id="print_method" class="form-control">
+                        <option value="windows" <?= ($settings['print_method'] ?? 'windows') === 'windows' ? 'selected' : '' ?>>Windows Print API</option>
+                        <option value="cups" <?= ($settings['print_method'] ?? 'windows') === 'cups' ? 'selected' : '' ?>>CUPS (Linux/Mac)</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="print_queue_interval" class="form-label">Print Queue Interval (sec)</label>
+                    <input type="number" name="print_queue_interval" id="print_queue_interval" class="form-control" min="1" value="<?= htmlspecialchars($settings['print_queue_interval'] ?? 5) ?>">
+                </div>
                 
                 <div class="form-group">
                     <label for="print_quality" class="form-label">Print Quality</label>
@@ -176,6 +224,65 @@
                 </div>
             </div>
         </div>
+
+        <!-- AI Settings -->
+        <div class="card" style="grid-column: 1 / -1;">
+            <div class="card-header">
+                <h3 class="card-title" style="display: flex; align-items: center; gap: 0.5rem;"><i data-feather="cpu" style="width: 18px; color: var(--primary);"></i> AI Settings</h3>
+            </div>
+            <div class="card-body" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
+                
+                <div class="form-group">
+                    <label for="ai_enhance_enabled" class="form-label">Enable AI Enhance Step</label>
+                    <select name="ai_enhance_enabled" id="ai_enhance_enabled" class="form-control">
+                        <option value="1" <?= ($settings['ai_enhance_enabled'] ?? '1') === '1' ? 'selected' : '' ?>>Yes</option>
+                        <option value="0" <?= ($settings['ai_enhance_enabled'] ?? '1') === '0' ? 'selected' : '' ?>>No</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="ai_provider" class="form-label">AI Provider</label>
+                    <select name="ai_provider" id="ai_provider" class="form-control">
+                        <option value="google" <?= ($settings['ai_provider'] ?? 'google') === 'google' ? 'selected' : '' ?>>Google Cloud AI (Vertex)</option>
+                        <option value="replicate" <?= ($settings['ai_provider'] ?? 'google') === 'replicate' ? 'selected' : '' ?>>Replicate</option>
+                    </select>
+                </div>
+
+                <div class="form-group" style="grid-column: 1 / -1;">
+                    <label for="ai_enhance_default_prompt" class="form-label">AI Enhance Default Prompt</label>
+                    <textarea name="ai_enhance_default_prompt" id="ai_enhance_default_prompt" class="form-control" rows="3"><?= htmlspecialchars($settings['ai_enhance_default_prompt'] ?? 'Enhance this photobooth photo: make it vibrant, well-lit, and professional looking.') ?></textarea>
+                </div>
+
+                <!-- Google Cloud Settings -->
+                <div class="form-group">
+                    <label for="google_cloud_project_id" class="form-label">Google Cloud Project ID</label>
+                    <input type="text" name="google_cloud_project_id" id="google_cloud_project_id" class="form-control" value="<?= htmlspecialchars($settings['google_cloud_project_id'] ?? '') ?>">
+                </div>
+
+                <div class="form-group">
+                    <label for="google_cloud_location" class="form-label">Google Cloud Location</label>
+                    <input type="text" name="google_cloud_location" id="google_cloud_location" class="form-control" value="<?= htmlspecialchars($settings['google_cloud_location'] ?? 'us-central1') ?>">
+                </div>
+
+                <div class="form-group">
+                    <label for="gemini_model" class="form-label">Gemini Model</label>
+                    <input type="text" name="gemini_model" id="gemini_model" class="form-control" value="<?= htmlspecialchars($settings['gemini_model'] ?? 'gemini-1.5-pro-preview-0409') ?>">
+                </div>
+
+                <!-- Replicate Settings -->
+                <div class="form-group">
+                    <label for="replicate_api_token" class="form-label">Replicate API Token</label>
+                    <input type="password" name="replicate_api_token" id="replicate_api_token" class="form-control" placeholder="Leave empty to keep existing token">
+                </div>
+
+                <div class="form-group" style="grid-column: span 2;">
+                    <label for="replicate_model" class="form-label">Replicate Model</label>
+                    <input type="text" name="replicate_model" id="replicate_model" class="form-control" value="<?= htmlspecialchars($settings['replicate_model'] ?? 'tencent/arc2face') ?>">
+                </div>
+
+            </div>
+        </div>
+
     </div>
 
     <div style="margin-top: 1rem; text-align: right; border-top: 1px solid var(--border-color); padding-top: 1.5rem;">

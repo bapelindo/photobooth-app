@@ -1138,15 +1138,26 @@ class AdminController extends Controller
         
         return [
             'app_name' => defined('SITENAME') ? SITENAME : 'Photobooth App',
+            'company_name' => defined('EMAIL_FROM_NAME') ? EMAIL_FROM_NAME : '',
             'contact_email' => defined('EMAIL_FROM_ADDRESS') ? EMAIL_FROM_ADDRESS : '',
+            'live_view_websocket_url' => defined('LIVE_VIEW_WEBSOCKET_URL') ? LIVE_VIEW_WEBSOCKET_URL : 'ws://localhost:8765',
+            'enable_session_refresh_back' => (defined('ENABLE_SESSION_REFRESH_BACK') && ENABLE_SESSION_REFRESH_BACK) ? '1' : '0',
+            'enable_payment_bypass' => (defined('ENABLE_PAYMENT_BYPASS') && ENABLE_PAYMENT_BYPASS) ? '1' : '0',
             
             'default_session_duration' => defined('DEFAULT_SESSION_DURATION') ? DEFAULT_SESSION_DURATION : 300,
             'default_max_save_photos' => defined('DEFAULT_MAX_SAVE_PHOTOS') ? DEFAULT_MAX_SAVE_PHOTOS : 20,
             'default_frame_limit' => defined('DEFAULT_FRAME_LIMIT') ? DEFAULT_FRAME_LIMIT : 2,
+            'max_photo_file_size' => defined('MAX_PHOTO_FILE_SIZE') ? MAX_PHOTO_FILE_SIZE : 10485760,
             'auto_print' => (defined('AUTO_PRINT_ENABLED') && AUTO_PRINT_ENABLED) ? '1' : '0',
+            
+            'printer_name' => defined('PRINTER_NAME') ? PRINTER_NAME : '',
+            'print_method' => defined('PRINT_METHOD') ? PRINT_METHOD : 'windows',
+            'print_queue_interval' => defined('PRINT_QUEUE_INTERVAL') ? PRINT_QUEUE_INTERVAL : 5,
+            'print_quality' => defined('PHOTO_QUALITY') ? (PHOTO_QUALITY >= 100 ? 'high' : (PHOTO_QUALITY <= 60 ? 'draft' : 'normal')) : 'normal',
             
             'smtp_host' => defined('SMTP_HOST') ? SMTP_HOST : '',
             'smtp_port' => defined('SMTP_PORT') ? SMTP_PORT : '587',
+            'smtp_secure' => defined('SMTP_SECURE') ? SMTP_SECURE : 'tls',
             'smtp_username' => defined('SMTP_USERNAME') ? SMTP_USERNAME : '',
             
             'midtrans_client_key' => $paymentConfig['client_key'] ?? '',
@@ -1156,7 +1167,13 @@ class AdminController extends Controller
             'db_user' => $databaseConfig['user'] ?? 'root',
             'db_name' => $databaseConfig['dbname'] ?? 'photobooth_db',
             
-            'print_quality' => defined('PHOTO_QUALITY') ? (PHOTO_QUALITY >= 100 ? 'high' : (PHOTO_QUALITY <= 60 ? 'draft' : 'normal')) : 'normal',
+            'ai_enhance_enabled' => (defined('AI_ENHANCE_ENABLED') && AI_ENHANCE_ENABLED) ? '1' : '0',
+            'ai_provider' => defined('AI_PROVIDER') ? AI_PROVIDER : 'google',
+            'ai_enhance_default_prompt' => defined('AI_ENHANCE_DEFAULT_PROMPT') ? AI_ENHANCE_DEFAULT_PROMPT : '',
+            'google_cloud_project_id' => defined('GOOGLE_CLOUD_PROJECT_ID') ? GOOGLE_CLOUD_PROJECT_ID : '',
+            'google_cloud_location' => defined('GOOGLE_CLOUD_LOCATION') ? GOOGLE_CLOUD_LOCATION : 'us-central1',
+            'gemini_model' => defined('GEMINI_MODEL') ? GEMINI_MODEL : 'gemini-1.5-pro-preview-0409',
+            'replicate_model' => defined('REPLICATE_MODEL') ? REPLICATE_MODEL : 'tencent/arc2face',
         ];
     }
 
