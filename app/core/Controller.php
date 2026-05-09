@@ -52,14 +52,17 @@ class Controller
 
         $is_bypass_payment = strpos($path, '/payment/bypass-payment') === 0;
 
+        $is_download_session = strpos($path, '/photo/download-session') === 0;
+
         error_log('Controller __construct: is_public_page: ' . ($is_public_page ? 'true' : 'false'));
         error_log('Controller __construct: is_payment_process: ' . ($is_payment_process ? 'true' : 'false'));
         error_log('Controller __construct: is_getting_snap_token: ' . ($is_getting_snap_token ? 'true' : 'false'));
         error_log('Controller __construct: is_frame_selection: ' . ($is_frame_selection ? 'true' : 'false'));
         error_log('Controller __construct: is_bypass_payment: ' . ($is_bypass_payment ? 'true' : 'false'));
+        error_log('Controller __construct: is_download_session: ' . ($is_download_session ? 'true' : 'false'));
 
         // Check if the current page is a public page, payment initiation page, or frame selection
-        if ($is_public_page || $is_payment_process || $is_getting_snap_token || $is_frame_selection || $is_bypass_payment) {
+        if ($is_public_page || $is_payment_process || $is_getting_snap_token || $is_frame_selection || $is_bypass_payment || $is_download_session) {
             error_log('Controller __construct: Path is public, payment process, or frame selection, returning.');
             return; // No session check needed for public pages, payment initiation, or frame selection
         }

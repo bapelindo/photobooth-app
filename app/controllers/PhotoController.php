@@ -1115,6 +1115,28 @@ class PhotoController extends Controller
         return file_exists($zipPath) ? $zipPath : null;
     }
 
+    public function downloadSession($session_id)
+    {
+        $photoSessionModel = $this->model('PhotoSession');
+        $session = $photoSessionModel->find($session_id);
+
+        if (!$session) {
+            die('Session not found');
+        }
+
+        $photostripModel = $this->model('Photostrip');
+        $photostrips = $photostripModel->getBySessionId($session_id);
+        $sessionPhotos = $photoSessionModel->getSavedPhotos($session_id);
+
+        $data = [
+            'session' => $session,
+            'photostrips' => $photostrips,
+            'session_photos' => $sessionPhotos,
+        ];
+
+        $this->view('photo/download_gallery', $data);
+    }
+
     public function checkPrintStatus($session_id)
     {
         header('Content-Type: application/json');

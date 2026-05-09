@@ -85,7 +85,7 @@ define('EMAIL_FROM_ADDRESS', 'bapelhacker@gmail.com');
 define('EMAIL_FROM_NAME', 'Photobooth App');
 
 // Enable/Disable Session Refresh and Back Functionality
-define('ENABLE_SESSION_REFRESH_BACK', true);
+define('ENABLE_SESSION_REFRESH_BACK', false);
 
 // Enable/Disable Payment Bypass (for testing only - set to false in production)
 define('ENABLE_PAYMENT_BYPASS', true);
@@ -109,7 +109,7 @@ define('PRINT_QUEUE_INTERVAL', 30);
 // Print method: 'gdi' (Windows Printer Driver - Recommended) or 'raw' (Raw BMP data)
 // Use 'gdi' for most printers including Epson L3110
 // Use 'raw' if your printer supports raw BMP data
-define('PRINT_METHOD', 'windows');
+define('PRINT_METHOD', 'gdi');
 
 // Maximum file size for photo uploads (bytes)
 define('MAX_PHOTO_FILE_SIZE', 20971520); // 20MB
@@ -127,7 +127,7 @@ define('THUMBNAIL_HEIGHT', 150);
 // --- GOOGLE CLOUD SETTINGS ---
 define('GOOGLE_CLOUD_PROJECT_ID', 'still-summit-495602-v8');
 define('GOOGLE_CLOUD_LOCATION', 'us-central1'); // Default location for Vertex AI
-define('AI_PROVIDER', 'google'); // Choices: 'REPLICATE' or 'GEMINI'
+define('AI_PROVIDER', 'GEMINI'); // Choices: 'REPLICATE' or 'GEMINI'
 define('GEMINI_MODEL', 'gemini-2.5-flash-image'); // Code name: nano banana 2
 
 // Parameter Generasi AI (Gemini)

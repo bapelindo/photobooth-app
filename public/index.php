@@ -45,6 +45,7 @@ $router->get('photo/finalize/{session_id}', 'App\Controllers\PhotoController@fin
 $router->post('photo/print-photostrip', 'App\Controllers\PhotoController@printPhotostrip');
 $router->post('photo/send-session-email', 'App\Controllers\PhotoController@sendSessionEmail');
 $router->get('photo/check-print-status/{session_id}', 'App\Controllers\PhotoController@checkPrintStatus');
+$router->get('photo/download-session/{session_id}', 'App\Controllers\PhotoController@downloadSession');
 // Removed legacy capture route - using new session workflow
 // Removed legacy editor route - using new session workflow
 // Removed duplicate route - using finalizeSession instead

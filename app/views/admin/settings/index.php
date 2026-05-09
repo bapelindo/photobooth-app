@@ -204,8 +204,8 @@
                 <div class="form-group">
                     <label for="print_method" class="form-label">Print Method</label>
                     <select name="print_method" id="print_method" class="form-control">
-                        <option value="windows" <?= ($settings['print_method'] ?? 'windows') === 'windows' ? 'selected' : '' ?>>Windows Print API</option>
-                        <option value="cups" <?= ($settings['print_method'] ?? 'windows') === 'cups' ? 'selected' : '' ?>>CUPS (Linux/Mac)</option>
+                        <option value="gdi" <?= ($settings['print_method'] ?? 'gdi') === 'gdi' ? 'selected' : '' ?>>GDI (Windows Printer Driver)</option>
+                        <option value="raw" <?= ($settings['print_method'] ?? 'gdi') === 'raw' ? 'selected' : '' ?>>RAW (Raw BMP Data)</option>
                     </select>
                 </div>
                 
@@ -243,8 +243,8 @@
                 <div class="form-group">
                     <label for="ai_provider" class="form-label">AI Provider</label>
                     <select name="ai_provider" id="ai_provider" class="form-control">
-                        <option value="google" <?= ($settings['ai_provider'] ?? 'google') === 'google' ? 'selected' : '' ?>>Google Cloud AI (Vertex)</option>
-                        <option value="replicate" <?= ($settings['ai_provider'] ?? 'google') === 'replicate' ? 'selected' : '' ?>>Replicate</option>
+                        <option value="GEMINI" <?= ($settings['ai_provider'] ?? 'GEMINI') === 'GEMINI' ? 'selected' : '' ?>>Google Gemini AI</option>
+                        <option value="REPLICATE" <?= ($settings['ai_provider'] ?? 'GEMINI') === 'REPLICATE' ? 'selected' : '' ?>>Replicate</option>
                     </select>
                 </div>
 

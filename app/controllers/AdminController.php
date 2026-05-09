@@ -1151,7 +1151,7 @@ class AdminController extends Controller
             'auto_print' => (defined('AUTO_PRINT_ENABLED') && AUTO_PRINT_ENABLED) ? '1' : '0',
             
             'printer_name' => defined('PRINTER_NAME') ? PRINTER_NAME : '',
-            'print_method' => defined('PRINT_METHOD') ? PRINT_METHOD : 'windows',
+            'print_method' => defined('PRINT_METHOD') ? PRINT_METHOD : 'gdi',
             'print_queue_interval' => defined('PRINT_QUEUE_INTERVAL') ? PRINT_QUEUE_INTERVAL : 5,
             'print_quality' => defined('PHOTO_QUALITY') ? (PHOTO_QUALITY >= 100 ? 'high' : (PHOTO_QUALITY <= 60 ? 'draft' : 'normal')) : 'normal',
             
@@ -1168,7 +1168,7 @@ class AdminController extends Controller
             'db_name' => $databaseConfig['dbname'] ?? 'photobooth_db',
             
             'ai_enhance_enabled' => (defined('AI_ENHANCE_ENABLED') && AI_ENHANCE_ENABLED) ? '1' : '0',
-            'ai_provider' => defined('AI_PROVIDER') ? AI_PROVIDER : 'google',
+            'ai_provider' => defined('AI_PROVIDER') ? AI_PROVIDER : 'GEMINI',
             'ai_enhance_default_prompt' => defined('AI_ENHANCE_DEFAULT_PROMPT') ? AI_ENHANCE_DEFAULT_PROMPT : '',
             'google_cloud_project_id' => defined('GOOGLE_CLOUD_PROJECT_ID') ? GOOGLE_CLOUD_PROJECT_ID : '',
             'google_cloud_location' => defined('GOOGLE_CLOUD_LOCATION') ? GOOGLE_CLOUD_LOCATION : 'us-central1',

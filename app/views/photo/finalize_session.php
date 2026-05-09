@@ -575,6 +575,35 @@
             letter-spacing: 1px;
         }
 
+        .qr-section {
+            border: 2px solid #2a5298;
+            border-radius: 10px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.4);
+            text-align: center;
+            margin-bottom: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .qr-section h4 {
+            margin: 0;
+            font-family: 'Orbitron', sans-serif;
+            color: #2a5298;
+            text-align: center;
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+        }
+
+        .qr-image-container {
+            background: white;
+            padding: 10px;
+            border-radius: 8px;
+            display: inline-block;
+        }
+
         .form-group {
             margin-bottom: 15px;
         }
@@ -958,6 +987,23 @@
                             <div class="progress-fill" id="progress-fill"></div>
                         </div>
                     </div>
+                </div>
+
+                <div class="qr-section">
+                    <h4>
+                        <svg class="icon-svg" style="width: 1em; height: 1em;" viewBox="0 0 24 24">
+                            <rect x="3" y="3" width="7" height="7" />
+                            <rect x="14" y="3" width="7" height="7" />
+                            <rect x="14" y="14" width="7" height="7" />
+                            <rect x="3" y="14" width="7" height="7" />
+                        </svg>
+                        Scan QR Code
+                    </h4>
+                    <div class="qr-image-container">
+                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=<?= urlencode(URLROOT . '/photo/download-session/' . $data['session']->id) ?>"
+                            alt="Scan untuk Download">
+                    </div>
+                    <p style="margin: 0; font-size: 0.85rem; color: #666;">Scan QR ini untuk mendownload foto sesi Anda</p>
                 </div>
 
                 <button class="btn btn-success" onclick="printAllPhotostrips()" id="print-all-btn">
