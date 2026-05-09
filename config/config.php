@@ -85,7 +85,7 @@ define('EMAIL_FROM_ADDRESS', 'bapelhacker@gmail.com');
 define('EMAIL_FROM_NAME', 'Photobooth App');
 
 // Enable/Disable Session Refresh and Back Functionality
-define('ENABLE_SESSION_REFRESH_BACK', false);
+define('ENABLE_SESSION_REFRESH_BACK', true);
 
 // Enable/Disable Payment Bypass (for testing only - set to false in production)
 define('ENABLE_PAYMENT_BYPASS', true);
