@@ -65,15 +65,17 @@ class EmailQueueService
         $baseUrl = defined('WEBHOOK_URL') && !empty(WEBHOOK_URL) ? rtrim(WEBHOOK_URL, '/') : URLROOT;
         $url = $baseUrl . "/webhook/{$type}";
 
-        // Asynchronous cURL request (timeout 1ms)
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_TIMEOUT_MS, 100); // 100ms timeout
-        curl_setopt($ch, CURLOPT_NOSIGNAL, 1);
-        // Execute and immediately ignore response
-        curl_exec($ch);
-        curl_close($ch);
+        // Asynchronous cURL request (timeout 1s)
+        $ch = @curl_init();
+        if ($ch !== false) {
+            @curl_setopt($ch, CURLOPT_URL, $url);
+            @curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            @curl_setopt($ch, CURLOPT_TIMEOUT, 1); // 1s timeout
+            @curl_setopt($ch, CURLOPT_NOSIGNAL, 1);
+            // Execute and immediately ignore response
+            @curl_exec($ch);
+            @curl_close($ch);
+        }
     }
 
     /**

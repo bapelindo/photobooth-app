@@ -1079,13 +1079,15 @@ class PhotoController extends Controller
                 $baseUrl = defined('WEBHOOK_URL') && !empty(WEBHOOK_URL) ? rtrim(WEBHOOK_URL, '/') : URLROOT;
                 $url = $baseUrl . "/webhook/email";
                 
-                $ch = curl_init();
-                curl_setopt($ch, CURLOPT_URL, $url);
-                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-                curl_setopt($ch, CURLOPT_TIMEOUT_MS, 100);
-                curl_setopt($ch, CURLOPT_NOSIGNAL, 1);
-                curl_exec($ch);
-                curl_close($ch);
+                $ch = @curl_init();
+                if ($ch !== false) {
+                    @curl_setopt($ch, CURLOPT_URL, $url);
+                    @curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                    @curl_setopt($ch, CURLOPT_TIMEOUT, 1);
+                    @curl_setopt($ch, CURLOPT_NOSIGNAL, 1);
+                    @curl_exec($ch);
+                    @curl_close($ch);
+                }
             }
 
             // Clear workflow session after successful email queue (strict mode only)
