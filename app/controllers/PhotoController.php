@@ -916,6 +916,12 @@ class PhotoController extends Controller
     {
         header('Content-Type: application/json');
 
+        if (defined('PRINT_SERVICE_ENABLED') && !PRINT_SERVICE_ENABLED) {
+            http_response_code(403);
+            echo json_encode(['success' => false, 'message' => 'Layanan cetak saat ini tidak tersedia atau dinonaktifkan.']);
+            return;
+        }
+
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             http_response_code(405);
             echo json_encode(['success' => false, 'message' => 'Method not allowed']);
@@ -965,21 +971,16 @@ class PhotoController extends Controller
             if ($queueId && defined('QUEUE_PROCESS_MODE') && QUEUE_PROCESS_MODE === 'webhook') {
                 $baseUrl = defined('WEBHOOK_URL') && !empty(WEBHOOK_URL) ? rtrim(WEBHOOK_URL, '/') : URLROOT;
                 $url = $baseUrl . "/webhook/print";
-                
-                $ch = curl_init();
-                curl_setopt($ch, CURLOPT_URL, $url);
-                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-                curl_setopt($ch, CURLOPT_TIMEOUT_MS, 100);
-                curl_setopt($ch, CURLOPT_NOSIGNAL, 1);
-                curl_exec($ch);
-                curl_close($ch);
-            }
 
-            // Clear workflow session after successful print queue (strict mode only)
-            if (ENABLE_SESSION_REFRESH_BACK) {
-                Session::set('workflow_step', null);
-                Session::set('current_session_id', null);
-                Session::set('current_transaction_id', null);
+                if (function_exists('curl_init')) {
+                    $ch = curl_init();
+                    curl_setopt($ch, CURLOPT_URL, $url);
+                    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                    curl_setopt($ch, CURLOPT_TIMEOUT_MS, 100);
+                    curl_setopt($ch, CURLOPT_NOSIGNAL, 1);
+                    curl_exec($ch);
+                    curl_close($ch);
+                }
             }
 
             echo json_encode([
@@ -988,7 +989,7 @@ class PhotoController extends Controller
                 'queue_id' => $queueId
             ]);
 
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
             http_response_code(500);
             echo json_encode(['success' => false, 'message' => $e->getMessage()]);
         }
@@ -1045,7 +1046,7 @@ class PhotoController extends Controller
                     $fullPath = dirname(APPROOT) . '/public' . $photostrip->final_image_path;
                     if (file_exists($fullPath)) {
                         $attachments[] = [
-                            'path' => URLROOT . $photostrip->final_image_path, // [DYNAMIC FIX] Use absolute URL to capture current domain
+                            'path' => URLROOT . $photostrip->final_image_path,
                             'name' => 'photostrip_' . $photostrip->frame_name . '.png'
                         ];
                     }
@@ -1054,12 +1055,11 @@ class PhotoController extends Controller
 
             // Add ZIP file
             if ($zipPath && file_exists($zipPath)) {
-                // Convert absolute path to relative web path
                 $relativePath = str_replace(dirname(APPROOT) . '/public', '', $zipPath);
                 $relativePath = str_replace('\\', '/', $relativePath);
 
                 $attachments[] = [
-                    'path' => URLROOT . $relativePath, // [DYNAMIC FIX] Use absolute URL to capture current domain
+                    'path' => URLROOT . $relativePath,
                     'name' => 'session_photos_' . $session_id . '.zip'
                 ];
             }
@@ -1078,23 +1078,18 @@ class PhotoController extends Controller
             if ($queueId && defined('QUEUE_PROCESS_MODE') && QUEUE_PROCESS_MODE === 'webhook') {
                 $baseUrl = defined('WEBHOOK_URL') && !empty(WEBHOOK_URL) ? rtrim(WEBHOOK_URL, '/') : URLROOT;
                 $url = $baseUrl . "/webhook/email";
-                
-                $ch = @curl_init();
-                if ($ch !== false) {
-                    @curl_setopt($ch, CURLOPT_URL, $url);
-                    @curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-                    @curl_setopt($ch, CURLOPT_TIMEOUT, 1);
-                    @curl_setopt($ch, CURLOPT_NOSIGNAL, 1);
-                    @curl_exec($ch);
-                    @curl_close($ch);
-                }
-            }
 
-            // Clear workflow session after successful email queue (strict mode only)
-            if (ENABLE_SESSION_REFRESH_BACK) {
-                Session::set('workflow_step', null);
-                Session::set('current_session_id', null);
-                Session::set('current_transaction_id', null);
+                if (function_exists('curl_init')) {
+                    $ch = @curl_init();
+                    if ($ch !== false) {
+                        @curl_setopt($ch, CURLOPT_URL, $url);
+                        @curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                        @curl_setopt($ch, CURLOPT_TIMEOUT, 1);
+                        @curl_setopt($ch, CURLOPT_NOSIGNAL, 1);
+                        @curl_exec($ch);
+                        @curl_close($ch);
+                    }
+                }
             }
 
             echo json_encode([
@@ -1103,7 +1098,7 @@ class PhotoController extends Controller
                 'queue_id' => $queueId
             ]);
 
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
             http_response_code(500);
             echo json_encode(['success' => false, 'message' => $e->getMessage()]);
         }
@@ -1112,6 +1107,11 @@ class PhotoController extends Controller
     private function createSessionZip($session_id, $sessionPhotos)
     {
         if (empty($sessionPhotos)) {
+            return null;
+        }
+
+        if (!class_exists('ZipArchive')) {
+            error_log("ZipArchive module is not installed. Failed to create ZIP.");
             return null;
         }
 
@@ -1188,7 +1188,8 @@ class PhotoController extends Controller
                 'updates' => $updates
             ]);
 
-        } catch (Exception $e) {
+            // MENGGUNAKAN Throwable
+        } catch (Throwable $e) {
             http_response_code(500);
             echo json_encode(['success' => false, 'message' => $e->getMessage()]);
         }
