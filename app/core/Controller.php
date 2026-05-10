@@ -43,33 +43,23 @@ class Controller
         // Ensure path starts with a single slash
         $path = '/' . ltrim($path, '/');
 
-        error_log('Controller __construct: Current path: ' . $path);
-
         $is_public_page = in_array($path, $public_pages);
         $is_payment_process = strpos($path, '/payment/process') === 0;
         $is_getting_snap_token = strpos($path, '/payment/get-snap-token') === 0;
         $is_frame_selection = strpos($path, '/photo/select_frame') === 0;
-
         $is_bypass_payment = strpos($path, '/payment/bypass-payment') === 0;
-
         $is_download_session = strpos($path, '/photo/download-session') === 0;
 
-        error_log('Controller __construct: is_public_page: ' . ($is_public_page ? 'true' : 'false'));
-        error_log('Controller __construct: is_payment_process: ' . ($is_payment_process ? 'true' : 'false'));
-        error_log('Controller __construct: is_getting_snap_token: ' . ($is_getting_snap_token ? 'true' : 'false'));
-        error_log('Controller __construct: is_frame_selection: ' . ($is_frame_selection ? 'true' : 'false'));
-        error_log('Controller __construct: is_bypass_payment: ' . ($is_bypass_payment ? 'true' : 'false'));
-        error_log('Controller __construct: is_download_session: ' . ($is_download_session ? 'true' : 'false'));
+        // TAMBAHKAN BARIS INI: Deteksi path Webhook
+        $is_webhook = strpos($path, '/webhook') === 0;
 
-        // Check if the current page is a public page, payment initiation page, or frame selection
-        if ($is_public_page || $is_payment_process || $is_getting_snap_token || $is_frame_selection || $is_bypass_payment || $is_download_session) {
-            error_log('Controller __construct: Path is public, payment process, or frame selection, returning.');
-            return; // No session check needed for public pages, payment initiation, or frame selection
+        // Check if the current page is a public page, payment initiation page, frame selection, or webhook
+        if ($is_public_page || $is_payment_process || $is_getting_snap_token || $is_frame_selection || $is_bypass_payment || $is_download_session || $is_webhook) {
+            return; // No session check needed for public pages, webhooks, etc.
         }
 
         // If workflow_step is not set, redirect to packages
         if (ENABLE_SESSION_REFRESH_BACK && !Session::get('workflow_step')) {
-            error_log('Controller __construct: workflow_step not set, redirecting to packages.');
             header('Location: ' . \URLROOT . '/packages');
             exit();
         }
