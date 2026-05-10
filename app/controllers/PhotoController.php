@@ -961,6 +961,20 @@ class PhotoController extends Controller
                 'priority' => 5 // High priority for user print requests
             ]);
 
+            // Trigger webhook if configured
+            if ($queueId && defined('QUEUE_PROCESS_MODE') && QUEUE_PROCESS_MODE === 'webhook') {
+                $baseUrl = defined('WEBHOOK_URL') && !empty(WEBHOOK_URL) ? rtrim(WEBHOOK_URL, '/') : URLROOT;
+                $url = $baseUrl . "/webhook/print";
+                
+                $ch = curl_init();
+                curl_setopt($ch, CURLOPT_URL, $url);
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                curl_setopt($ch, CURLOPT_TIMEOUT_MS, 100);
+                curl_setopt($ch, CURLOPT_NOSIGNAL, 1);
+                curl_exec($ch);
+                curl_close($ch);
+            }
+
             // Clear workflow session after successful print queue (strict mode only)
             if (ENABLE_SESSION_REFRESH_BACK) {
                 Session::set('workflow_step', null);
@@ -1059,6 +1073,20 @@ class PhotoController extends Controller
                 'Terima kasih telah menggunakan layanan photobooth kami! Terlampir adalah hasil foto session Anda.',
                 $attachments
             );
+
+            // Trigger webhook if configured
+            if ($queueId && defined('QUEUE_PROCESS_MODE') && QUEUE_PROCESS_MODE === 'webhook') {
+                $baseUrl = defined('WEBHOOK_URL') && !empty(WEBHOOK_URL) ? rtrim(WEBHOOK_URL, '/') : URLROOT;
+                $url = $baseUrl . "/webhook/email";
+                
+                $ch = curl_init();
+                curl_setopt($ch, CURLOPT_URL, $url);
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                curl_setopt($ch, CURLOPT_TIMEOUT_MS, 100);
+                curl_setopt($ch, CURLOPT_NOSIGNAL, 1);
+                curl_exec($ch);
+                curl_close($ch);
+            }
 
             // Clear workflow session after successful email queue (strict mode only)
             if (ENABLE_SESSION_REFRESH_BACK) {

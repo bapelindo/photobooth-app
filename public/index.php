@@ -114,6 +114,12 @@ $router->post('admin/clear-cache', 'App\Controllers\AdminController@clearCache')
 $router->get('admin/system-info', 'App\Controllers\AdminController@systemInfo');
 $router->get('admin/download-logs', 'App\Controllers\AdminController@downloadLogs');
 
+// Webhook Routes (For Cloud Run / Background Processing)
+$router->get('webhook/email', 'App\Controllers\WebhookController@processEmail');
+$router->post('webhook/email', 'App\Controllers\WebhookController@processEmail');
+$router->get('webhook/print', 'App\Controllers\WebhookController@processPrint');
+$router->post('webhook/print', 'App\Controllers\WebhookController@processPrint');
+
 // Rute POST (untuk AJAX)
 $router->post('photo/ajax_save_photo', 'App\\Controllers\\PhotoController@ajax_save_photo');
 // Removed legacy ajax_print_photo route - using printPhotostrip for new session workflow

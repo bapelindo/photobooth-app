@@ -53,7 +53,25 @@
                     </select>
                 </div>
                 
+                <div class="form-group" style="grid-column: 1 / -1; border-top: 1px solid var(--border-color); padding-top: 1rem; margin-top: 0.5rem;">
+                    <label class="form-label"><strong>Queue Processing System</strong></label>
+                    <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem;">Select how background tasks (email & print) are processed. Use Webhook for Cloud Run.</p>
+                </div>
+
                 <div class="form-group">
+                    <label for="queue_process_mode" class="form-label">Processing Mode</label>
+                    <select name="queue_process_mode" id="queue_process_mode" class="form-control">
+                        <option value="worker" <?= ($settings['queue_process_mode'] ?? 'worker') === 'worker' ? 'selected' : '' ?>>Background Worker (Localhost)</option>
+                        <option value="webhook" <?= ($settings['queue_process_mode'] ?? 'worker') === 'webhook' ? 'selected' : '' ?>>Webhook (Cloud Run)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="webhook_url" class="form-label">Webhook Base URL</label>
+                    <input type="text" name="webhook_url" id="webhook_url" class="form-control" placeholder="https://photobooth.bapel.my.id" value="<?= htmlspecialchars($settings['webhook_url'] ?? '') ?>">
+                </div>
+                
+                <div class="form-group" style="grid-column: 1 / -1; border-top: 1px solid var(--border-color); padding-top: 1rem; margin-top: 0.5rem;">
                     <label for="timezone" class="form-label">Timezone</label>
                     <select name="timezone" id="timezone" class="form-control">
                         <option value="Asia/Jakarta" <?= ($settings['timezone'] ?? 'Asia/Jakarta') === 'Asia/Jakarta' ? 'selected' : '' ?>>Asia/Jakarta</option>

@@ -63,6 +63,9 @@ call gcloud run deploy %SERVICE_NAME% ^
   --project=%PROJECT_ID% ^
   --execution-environment=gen2 ^
   --allow-unauthenticated ^
+  --max-instances=1 ^
+  --memory=512Mi ^
+  --cpu=1 ^
   --add-volume=name=uploads-volume,type=cloud-storage,bucket=%BUCKET_NAME% ^
   --add-volume-mount=volume=uploads-volume,mount-path=/var/www/html/public/uploads
 

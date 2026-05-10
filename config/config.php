@@ -161,3 +161,10 @@ define('AI_ENHANCE_ENABLED', true);
 
 // Default prompt jika user tidak mengubah
 define('AI_ENHANCE_DEFAULT_PROMPT', 'Enhance this photobooth photo: make it vibrant, well-lit, and professional looking.');
+
+// --- QUEUE PROCESS SETTINGS ---
+// Tentukan mode pemrosesan antrian: 'worker' atau 'webhook'
+define('QUEUE_PROCESS_MODE', 'webhook');
+
+// Base URL Webhook untuk Cloud Run / Eksternal Trigger (contoh: https://photobooth.bapel.my.id)
+define('WEBHOOK_URL', '');

@@ -1057,18 +1057,20 @@ class AdminController extends Controller
                 if (isset($_POST['contact_email'])) $replaceDefine('EMAIL_FROM_ADDRESS', trim($_POST['contact_email']), true);
                 if (isset($_POST['enable_session_refresh_back'])) $replaceDefine('ENABLE_SESSION_REFRESH_BACK', $_POST['enable_session_refresh_back'] == '1', false);
                 if (isset($_POST['enable_payment_bypass'])) $replaceDefine('ENABLE_PAYMENT_BYPASS', $_POST['enable_payment_bypass'] == '1', false);
-                
+
                 if (isset($_POST['default_session_duration'])) $replaceDefine('DEFAULT_SESSION_DURATION', (int)$_POST['default_session_duration'], false);
                 if (isset($_POST['default_max_save_photos'])) $replaceDefine('DEFAULT_MAX_SAVE_PHOTOS', (int)$_POST['default_max_save_photos'], false);
                 if (isset($_POST['default_frame_limit'])) $replaceDefine('DEFAULT_FRAME_LIMIT', (int)$_POST['default_frame_limit'], false);
                 if (isset($_POST['max_photo_file_size'])) $replaceDefine('MAX_PHOTO_FILE_SIZE', (int)$_POST['max_photo_file_size'], false);
-                
+
                 if (isset($_POST['auto_print'])) $replaceDefine('AUTO_PRINT_ENABLED', $_POST['auto_print'] == '1', false);
                 if (isset($_POST['print_queue_interval'])) $replaceDefine('PRINT_QUEUE_INTERVAL', (int)$_POST['print_queue_interval'], false);
                 if (isset($_POST['print_method'])) $replaceDefine('PRINT_METHOD', trim($_POST['print_method']), true);
-                
-                if (isset($_POST['smtp_host'])) $replaceDefine('SMTP_HOST', trim($_POST['smtp_host']), true);
-                if (isset($_POST['smtp_port'])) $replaceDefine('SMTP_PORT', (int)$_POST['smtp_port'], false);
+
+                if (isset($_POST['queue_process_mode'])) $replaceDefine('QUEUE_PROCESS_MODE', trim($_POST['queue_process_mode']), true);
+                if (isset($_POST['webhook_url'])) $replaceDefine('WEBHOOK_URL', trim($_POST['webhook_url']), true);
+
+                if (isset($_POST['smtp_host'])) $replaceDefine('SMTP_HOST', trim($_POST['smtp_host']), true);                if (isset($_POST['smtp_port'])) $replaceDefine('SMTP_PORT', (int)$_POST['smtp_port'], false);
                 if (isset($_POST['smtp_secure'])) $replaceDefine('SMTP_SECURE', trim($_POST['smtp_secure']), true);
                 if (isset($_POST['smtp_username'])) $replaceDefine('SMTP_USERNAME', trim($_POST['smtp_username']), true);
                 if (!empty($_POST['smtp_password'])) $replaceDefine('SMTP_PASSWORD', trim($_POST['smtp_password']), true);
