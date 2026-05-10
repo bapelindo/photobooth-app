@@ -14,6 +14,10 @@
 // App Root
 define('APPROOT', dirname(dirname(__FILE__)) . '/app'); // -> .../photobooth-app/app
 
+// Timezone Configuration
+define('APP_TIMEZONE', 'Asia/Jakarta');
+date_default_timezone_set(APP_TIMEZONE);
+
 // Detect environment and set URLROOT accordingly
 // 1. Check for APP_URL environment variable (standard for Cloud Run/Docker)
 $appUrl = getenv('APP_URL');
@@ -167,4 +171,4 @@ define('AI_ENHANCE_DEFAULT_PROMPT', 'Enhance this photobooth photo: make it vibr
 define('QUEUE_PROCESS_MODE', 'webhook');
 
 // Base URL Webhook untuk Cloud Run / Eksternal Trigger (contoh: https://photobooth.bapel.my.id)
-define('WEBHOOK_URL', '');
+define('WEBHOOK_URL', 'https://photobooth.bapel.my.id');

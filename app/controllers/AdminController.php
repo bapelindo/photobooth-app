@@ -1069,8 +1069,10 @@ class AdminController extends Controller
 
                 if (isset($_POST['queue_process_mode'])) $replaceDefine('QUEUE_PROCESS_MODE', trim($_POST['queue_process_mode']), true);
                 if (isset($_POST['webhook_url'])) $replaceDefine('WEBHOOK_URL', trim($_POST['webhook_url']), true);
+                if (isset($_POST['timezone'])) $replaceDefine('APP_TIMEZONE', trim($_POST['timezone']), true);
 
-                if (isset($_POST['smtp_host'])) $replaceDefine('SMTP_HOST', trim($_POST['smtp_host']), true);                if (isset($_POST['smtp_port'])) $replaceDefine('SMTP_PORT', (int)$_POST['smtp_port'], false);
+                if (isset($_POST['smtp_host'])) $replaceDefine('SMTP_HOST', trim($_POST['smtp_host']), true);
+                if (isset($_POST['smtp_port'])) $replaceDefine('SMTP_PORT', (int)$_POST['smtp_port'], false);
                 if (isset($_POST['smtp_secure'])) $replaceDefine('SMTP_SECURE', trim($_POST['smtp_secure']), true);
                 if (isset($_POST['smtp_username'])) $replaceDefine('SMTP_USERNAME', trim($_POST['smtp_username']), true);
                 if (!empty($_POST['smtp_password'])) $replaceDefine('SMTP_PASSWORD', trim($_POST['smtp_password']), true);
@@ -1176,6 +1178,9 @@ class AdminController extends Controller
             'google_cloud_location' => defined('GOOGLE_CLOUD_LOCATION') ? GOOGLE_CLOUD_LOCATION : 'us-central1',
             'gemini_model' => defined('GEMINI_MODEL') ? GEMINI_MODEL : 'gemini-1.5-pro-preview-0409',
             'replicate_model' => defined('REPLICATE_MODEL') ? REPLICATE_MODEL : 'tencent/arc2face',
+            'queue_process_mode' => defined('QUEUE_PROCESS_MODE') ? QUEUE_PROCESS_MODE : 'worker',
+            'webhook_url' => defined('WEBHOOK_URL') ? WEBHOOK_URL : '',
+            'timezone' => defined('APP_TIMEZONE') ? APP_TIMEZONE : 'Asia/Jakarta',
         ];
     }
 
