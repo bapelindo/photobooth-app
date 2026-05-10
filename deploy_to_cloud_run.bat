@@ -6,7 +6,8 @@ set "PROJECT_ID=still-summit-495602-v8"
 set "REGION=us-central1"
 set "SERVICE_NAME=photobooth-app"
 set "BUCKET_NAME=photobooth-uploads-%PROJECT_ID%"
-set "IMAGE_NAME=gcr.io/%PROJECT_ID%/%SERVICE_NAME%:latest"
+set "AR_REPO=photobooth-repo"
+set "IMAGE_NAME=%REGION%-docker.pkg.dev/%PROJECT_ID%/%AR_REPO%/%SERVICE_NAME%:latest"
 
 echo ======================================================
 echo  Deploying Photobooth App to Google Cloud Run
@@ -16,7 +17,7 @@ echo.
 
 :: 1. Enable Required APIs
 echo -^> Enabling required APIs...
-call gcloud services enable run.googleapis.com storage.googleapis.com artifactregistry.googleapis.com --project=%PROJECT_ID%
+call gcloud services enable run.googleapis.com storage.googleapis.com artifactregistry.googleapis.com cloudbuild.googleapis.com --project=%PROJECT_ID%
 if %errorlevel% neq 0 echo Warning: API enable command failed or APIs already enabled.
 
 :: 2. Create the Cloud Storage Bucket
@@ -45,16 +46,29 @@ if "%PROJECT_NUM%"=="" (
 )
 
 set "COMPUTE_SA=%PROJECT_NUM%-compute@developer.gserviceaccount.com"
-echo    Granting Storage Admin role to: %COMPUTE_SA%
+echo    Granting Storage Object Admin role specifically to bucket for: %COMPUTE_SA%
 
-call gcloud projects add-iam-policy-binding %PROJECT_ID% --member="serviceAccount:%COMPUTE_SA%" --role="roles/storage.admin" >nul 2>&1
+:: PERBAIKAN: Hanya berikan akses Admin ke bucket spesifik, bukan ke seluruh project
+call gcloud storage buckets add-iam-policy-binding "gs://%BUCKET_NAME%" --member="serviceAccount:%COMPUTE_SA%" --role="roles/storage.objectAdmin" >nul 2>&1
 
-:: 4. Build and Push Docker Image
+:: 4. Create Artifact Registry Repository (If not exists)
+echo.
+echo -^> Checking/Creating Artifact Registry Repository: %AR_REPO%...
+call gcloud artifacts repositories describe %AR_REPO% --location=%REGION% --project=%PROJECT_ID% >nul 2>&1
+if %errorlevel% neq 0 (
+    echo    Repository does not exist. Creating...
+    call gcloud artifacts repositories create %AR_REPO% --repository-format=docker --location=%REGION% --description="Docker repository for Photobooth App" --project=%PROJECT_ID%
+) else (
+    echo    Repository already exists!
+)
+
+:: 5. Build and Push Docker Image
 echo.
 echo -^> Building and pushing Docker image (this might take a few minutes)...
-call gcloud builds submit --tag %IMAGE_NAME% --project %PROJECT_ID%
+:: PERBAIKAN: Menambahkan titik (.) di akhir agar build merujuk ke direktori saat ini
+call gcloud builds submit --tag %IMAGE_NAME% --project %PROJECT_ID% .
 
-:: 5. Deploy to Cloud Run
+:: 6. Deploy to Cloud Run
 echo.
 echo -^> Deploying to Cloud Run with Gen2 and FUSE Mount...
 call gcloud run deploy %SERVICE_NAME% ^
@@ -73,7 +87,7 @@ echo.
 echo ======================================================
 echo  DEPLOYMENT COMPLETE!
 echo  Your application is now using Google Cloud Storage as
-echo  a persistent local folder. Uploads will no longer be
-echo  lost when the server restarts.
+echo  a persistent local folder.
+echo  Uploads will no longer be lost when the server restarts.
 echo ======================================================
 pause
