@@ -12,7 +12,7 @@ if (!function_exists('getEnvVar')) {
 }
 
 return [
-    'host' => getEnvVar('DB_HOST', 'localhost'),
+    'host' => getEnvVar('DB_HOST', '127.0.0.1;port=3307'),
     'socket' => getEnvVar('DB_SOCKET', null),
     'user' => getEnvVar('DB_USER', 'root'),
     'password' => getEnvVar('DB_PASS', 'root'),

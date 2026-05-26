@@ -7,6 +7,8 @@ Aktifkan Docker Anda:
 
 docker-compose up -d --build
 
-Jalankan hardware host dengan mengklik file start_hardware.bat.
+Jalankan hardware host dengan mengklik file:
+start_hardware.bat
 
-Terakhir, jalankan instruksi pencetakan php scripts/print_worker.php.
+Terakhir, jalankan instruksi pencetakan di terminal Windows Anda:
+php scripts\print_worker.php

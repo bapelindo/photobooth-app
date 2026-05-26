@@ -17,10 +17,16 @@ RUN apt-get update && apt-get install -y \
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install -j$(nproc) gd pdo_mysql zip
 
-# Install Imagick
-RUN pecl install imagick \
-    && docker-php-ext-enable imagick
-
+# Install Imagick manually from Github (Bypassing PECL)
+RUN curl -L -o /tmp/imagick.tar.gz https://github.com/Imagick/imagick/archive/refs/tags/3.7.0.tar.gz \
+    && tar -xvzf /tmp/imagick.tar.gz -C /tmp \
+    && cd /tmp/imagick-3.7.0 \
+    && phpize \
+    && ./configure \
+    && make \
+    && make install \
+    && docker-php-ext-enable imagick \
+    && rm -rf /tmp/imagick*
 # Enable Apache mod_rewrite
 RUN a2enmod rewrite
 

@@ -31,6 +31,7 @@ start "Photobooth Live View Server" cmd /c "python scripts\liveview_server.py"
 
 echo [INFO] Live View Server is running in a new window.
 echo [INFO] To handle printing, please run the Print Worker in a new terminal using:
+echo set DB_HOST=127.0.0.1;port=3307
 echo php scripts\print_worker.php
 echo.
 echo Press any key to exit this installer...
