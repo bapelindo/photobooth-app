@@ -41,7 +41,7 @@ define('SMTP_HOST', 'smtp.gmail.com');
 define('SMTP_USERNAME', 'bapelhacker@gmail.com');
 
 // Kata sandi untuk login ke server SMTP (gunakan App Password jika memakai Gmail)
-define('SMTP_PASSWORD', 'ljum wbxr dhfx jwij');
+define('SMTP_PASSWORD', 'qaon bjqw ftox hxlr');
 
 // Tipe enkripsi (biasanya 'tls' atau 'ssl')
 define('SMTP_SECURE', 'tls');
